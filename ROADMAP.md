@@ -13,7 +13,7 @@ milestone step; the progress log at the bottom is append-only.
 
 | # | Milestone | Status | Approved by user |
 |---|---|---|---|
-| 0 | Scaffold | ⏳ public repo created and pushed; first CI run pending | 2026-11-22 (go-ahead) |
+| 0 | Scaffold | ✅ public repo, CI green on 5 platforms | 2026-11-22 |
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 2 | Randomised trial with dropouts | ⬜ | — |
 | 3 | Multi-stage cluster survey | ⬜ | — |
@@ -42,7 +42,7 @@ milestone step; the progress log at the bottom is append-only.
 
 ## Phases
 
-### Milestone 0 — Scaffold 🟡
+### Milestone 0 — Scaffold ✅
 
 **Delivers:** package skeleton (DESCRIPTION, MIT licence, roxygen2 docs,
 testthat 3rd edition), git repository, pinned environment (renv),
@@ -56,7 +56,7 @@ repository exists and the CI check is green on it.
 - ✅ Local scaffold, git, renv, CI workflow file (2026-11-22).
 - ✅ Public GitHub repository `batestguy/DataFlow` created and pushed
   (2026-11-22), author email changed to the user's university address first.
-- ⬜ First green CI run on GitHub (not yet observed).
+- ✅ First green CI run on GitHub (2026-11-22, run 44993834534).
 
 ### Milestone 1 — Lab design ✅
 
@@ -219,3 +219,10 @@ what is still open.
 ### 2026-11-22 — Author name
 - Author in DESCRIPTION set to Jerry Bannister (aka batestguy), at the
   user's request. Future commits in this repo use the same name.
+
+### 2026-11-22 — First CI run green
+- Pushes did not start the check workflow (0 runs after three pushes,
+  although Actions was enabled and the workflow active). Added
+  `workflow_dispatch` and started it by hand: run 44993834534 passed on all
+  five platforms (macOS, Windows, Ubuntu release, devel, oldrel-1).
+- Open: whether pushes now trigger runs on their own.
