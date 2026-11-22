@@ -7,15 +7,16 @@ test_that("the lab design is described in plain sentences", {
       "Experiment ID: Cultures is split into Ex. 1 (n = 50) and Ex. 2 (n = 50).",
       "Culture type: Ex. 1 leads to Type A (n = 50); Ex. 2 leads to Type B",
       "(n = 50).",
-      "Batch: each of the 2 boxes above (Type A and Type B) is split into",
+      "Batch: each of the 2 boxes in the Culture type row is split into",
       "Batch 1 (n = 25) and Batch 2 (n = 25).",
-      "Cell culture composition: each of the 4 boxes above is split into",
-      "A, B and C.",
-      "Condition: 9 conditions each, applied across all boxes within each",
-      "Experiment ID (Ex. 1 and Ex. 2).",
-      "Task: 2 tasks each (per condition), for each of the 2 boxes above.",
-      "Number of trials: the outcome is 600 each, for each of the 2 boxes",
-      "above."
+      "Cell culture composition: each of the 4 boxes in the Batch row is",
+      "split into A, B and C.",
+      "Condition: 9 conditions each, applied across all boxes under each",
+      "Experiment ID box (Ex. 1 and Ex. 2).",
+      "Task: 2 tasks each (per condition), for each of the 2 boxes in the",
+      "Condition row.",
+      "Number of trials: the outcome is 600 each, for each of the 2 boxes in",
+      "the Task row."
     )
   )
 })
@@ -31,4 +32,31 @@ test_that("notes and differing labels are described", {
 
 test_that("print wraps the description", {
   expect_output(print(flow_describe(flow_example("lab"))), "Flow diagram")
+})
+
+test_that("partial splits and repeated labels are described unambiguously", {
+  d <- irregular_designs()$uneven_bracket
+  txt <- unclass(flow_describe(d))
+  expect_match(txt, "Pt: s1 under A1 and s1 under A2 are each split into",
+               fixed = TRUE)
+  expect_match(txt, "merged label, applied across all boxes under each Arm box (A1 and A2)",
+               fixed = TRUE)
+})
+
+test_that("mixed brackets and single boxes are described per box", {
+  d <- flow_start("All") |>
+    flow_split("Arm", c("Ctl", "Trt")) |>
+    flow_split("Sub", c("a", "b"), from = "Trt") |>
+    flow_apply("Cond", "m", over = "Arm")
+  txt <- unclass(flow_describe(d))
+  expect_match(txt, "Cond: m after Ctl; m across all 2 boxes under Trt.",
+               fixed = TRUE)
+})
+
+test_that("grouping over the top stage is described plainly", {
+  d <- flow_start("All") |>
+    flow_split("Arm", c("A", "B")) |>
+    flow_apply("T", "m", over = "All")
+  expect_match(unclass(flow_describe(d)),
+               "T: m, applied across all 2 boxes under All.", fixed = TRUE)
 })

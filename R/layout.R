@@ -46,6 +46,15 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   nd <- x$nodes
   ed <- x$edges
   line_in <- function(size) size * 1.2 / 72
+  measure_family <- family
+  if (!identical(family, "") &&
+      !family %in% names(grDevices::pdfFonts())) {
+    warning("Font family \"", family, "\" is not one the PDF device knows, ",
+            "so box sizes are measured with the standard sans-serif font. ",
+            "Text drawn in \"", family, "\" may not fit its boxes exactly.",
+            call. = FALSE)
+    measure_family <- ""
+  }
 
   # --- box text and size -------------------------------------------------
   text <- ifelse(
@@ -64,11 +73,11 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
 
   widths <- with_measure_device({
     list(
-      main = text_width(text, base_size, family, "plain"),
+      main = text_width(text, base_size, measure_family, "plain"),
       note = ifelse(has_note,
                     text_width(ifelse(has_note, nd$note, ""), note_size,
-                               family, "italic"), 0),
-      row = text_width(rl_wrapped, base_size, family, "bold")
+                               measure_family, "italic"), 0),
+      row = text_width(rl_wrapped, base_size, measure_family, "bold")
     )
   })
   n_lines <- function(s) lengths(strsplit(s, "\n", fixed = TRUE))
@@ -92,7 +101,8 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   per_row <- table(row)
   if (any(per_row > 20)) {
     warning("Some rows have more than 20 boxes and may not fit a page. ",
-            "Consider display = \"summary\" for those stages.", call. = FALSE)
+            "Consider shorter labels or fewer boxes; a summary display for ",
+            "large stages is planned.", call. = FALSE)
   }
 
   # --- horizontal positions (contour packing over the anchor tree) -------
@@ -101,6 +111,28 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   width_of <- stats::setNames(w, nd$id)
   row_of <- stats::setNames(row, nd$id)
   kids_of <- split(nd$id, factor(nd$anchor, levels = nd$id))
+
+  # Rows that a box's connecting lines pass through on the way to or from
+  # it (long arrows that skip rows; drop lines from a bracket source that sits
+  # higher than the others). They are reserved in the layout so no other box
+  # is placed on top of them.
+  lane_rows <- stats::setNames(vector("list", nrow(nd)), nd$id)
+  add_lane <- function(id, from_row, to_row) {
+    if (to_row > from_row) {
+      key <- as.character(id)
+      lane_rows[[key]] <<- c(lane_rows[[key]], seq.int(from_row + 1, to_row))
+    }
+  }
+  for (id in nd$id) {
+    src <- ed$from[ed$to == id]
+    if (length(src) == 0) next
+    start <- max(row_of[as.character(src)])
+    add_lane(id, start, row_of[[as.character(id)]] - 1)
+    if (length(src) > 1) {
+      for (s in src) add_lane(s, row_of[[as.character(s)]], start)
+    }
+  }
+  lane_w <- 0.03
 
   merge_contour <- function(a, b) {
     m <- rbind(a, b)
@@ -155,8 +187,11 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     }
     for (m in multi_kids) {
       src <- as.character(ed$from[ed$to == m])
-      left <- min(pos[src] - width_of[src] / 2)
-      right <- max(pos[src] + width_of[src] / 2)
+      # same span rule as the drawn bracket: outer edges of the lowest
+      # sources, centres of any higher ones
+      low <- row_of[src] == max(row_of[src])
+      left <- min(c(pos[src[low]] - width_of[src[low]] / 2, pos[src[!low]]))
+      right <- max(c(pos[src[low]] + width_of[src[low]] / 2, pos[src[!low]]))
       sub <- layout_subtree(m)
       off <- (left + right) / 2
       if (overlaps(acc, sub$cont, off)) off <- shift_to_clear(acc, sub$cont)
@@ -164,8 +199,12 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       acc <- merge_contour(acc, shift_cont(sub$cont, off))
     }
     pos[key] <- vx
-    own <- data.frame(row = row_of[[key]], l = vx - width_of[[key]] / 2,
-                      r = vx + width_of[[key]] / 2)
+    lanes <- unique(lane_rows[[key]])
+    own <- data.frame(row = c(row_of[[key]], lanes),
+                      l = c(vx - width_of[[key]] / 2,
+                            rep(vx - lane_w, length(lanes))),
+                      r = c(vx + width_of[[key]] / 2,
+                            rep(vx + lane_w, length(lanes))))
     acc <- merge_contour(acc, own)
     list(pos = pos - vx,
          cont = shift_cont(acc, -vx))
@@ -210,7 +249,8 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     pb <- b(p)
     for (r in unique(boxes$row[match(kids, boxes$id)])) {
       kb <- b(kids[boxes$row[match(kids, boxes$id)] == r])
-      straight <- connector == "straight" ||
+      skips <- r > pb$row + 1
+      straight <- (connector == "straight" && !skips) ||
         (nrow(kb) == 1 && abs(kb$x - pb$x) < 1e-6)
       if (straight) {
         for (i in seq_len(nrow(kb))) {
@@ -232,13 +272,29 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   for (m in unique(ed$to[ed$kind == "bracket"])) {
     sb <- b(ed$from[ed$to == m])
     mb <- b(m)
-    xl <- min(sb$xmin)
-    xr <- max(sb$xmax)
+    # the bracket spans the outer edges of the lowest boxes; boxes higher up
+    # join it with a drop line from their centre
+    low <- sb$ymin <= min(sb$ymin) + 1e-9
+    xl <- min(c(sb$xmin[low], sb$x[!low]))
+    xr <- max(c(sb$xmax[low], sb$x[!low]))
     yb <- min(sb$ymin) - drop
     brk[[length(brk) + 1]] <- data.frame(
       group = m, x = c(xl, xl, xr, xr), y = c(yb + tick, yb, yb, yb + tick)
     )
-    add_seg((xl + xr) / 2, yb, mb$x, mb$ymax, TRUE, "bracket")
+    # sources sitting higher than the lowest one drop a line to the bracket
+    high <- sb[sb$ymin > min(sb$ymin) + 1e-9, ]
+    for (i in seq_len(nrow(high))) {
+      add_seg(high$x[i], high$ymin[i], high$x[i], yb, FALSE, "bracket")
+    }
+    xm <- (xl + xr) / 2
+    if (abs(xm - mb$x) < 1e-6) {
+      add_seg(xm, yb, mb$x, mb$ymax, TRUE, "bracket")
+    } else {
+      yk <- yb - (vgap - drop) / 2
+      add_seg(xm, yb, xm, yk, FALSE, "bracket")
+      add_seg(xm, yk, mb$x, yk, FALSE, "bracket")
+      add_seg(mb$x, yk, mb$x, mb$ymax, TRUE, "bracket")
+    }
   }
   segments <- if (length(seg)) do.call(rbind, seg) else
     data.frame(x = numeric(), y = numeric(), xend = numeric(),

@@ -31,7 +31,8 @@ format_n <- function(n) {
   if (is.numeric(n)) {
     return(vapply(n, function(v) {
       if (is.na(v)) NA_character_
-      else format(v, big.mark = ",", scientific = FALSE, trim = TRUE)
+      else format(v, digits = 15, big.mark = ",", scientific = FALSE,
+                  trim = TRUE)
     }, character(1)))
   }
   if (is.character(n)) return(n)
@@ -98,7 +99,14 @@ add_edges <- function(x, from, to, kind) {
 # `from` (box ids, or labels of current leaves).
 resolve_targets <- function(x, from) {
   if (is.null(from)) return(x$leaves)
+  if (length(from) == 0 || anyNA(from)) {
+    stop("`from` is empty or has missing values.", call. = FALSE)
+  }
+  from <- unique(from)
   if (is.numeric(from)) {
+    if (any(from != round(from))) {
+      stop("Box ids in `from` must be whole numbers.", call. = FALSE)
+    }
     bad <- setdiff(from, x$nodes$id)
     if (length(bad) > 0) {
       stop("No box with id ", paste(bad, collapse = ", "),
@@ -217,9 +225,12 @@ flow_split <- function(.flow, stage, labels, n = NULL, note = NULL,
   if (any(lengths(per_target) == 0)) {
     stop("Every box needs at least one label to split into.", call. = FALSE)
   }
+  if (anyNA(unlist(per_target)) || any(unlist(per_target) == "")) {
+    stop("Labels must not be missing or empty.", call. = FALSE)
+  }
   total <- sum(lengths(per_target))
-  n_vals <- recycle_values(format_n_list(n), total, "n", per)
-  note_vals <- recycle_values(format_note_list(note), total, "note", per)
+  n_vals <- per_box_values(n, format_n, per_target, "n", per)
+  note_vals <- per_box_values(note, format_note, per_target, "note", per)
 
   s <- add_stage(.flow, stage, stage, "split", display)
   x <- s$x
@@ -231,12 +242,20 @@ flow_split <- function(.flow, stage, labels, n = NULL, note = NULL,
   validate_dataflow(x)
 }
 
-format_n_list <- function(n) {
-  if (is.list(n)) lapply(n, format_n) else format_n(n)
-}
-
-format_note_list <- function(note) {
-  if (is.list(note)) lapply(note, format_note) else format_note(note)
+# Values for the boxes of a split. A list gives one element per box being
+# split, each recycled to that box's children; anything else goes through
+# recycle_values().
+per_box_values <- function(values, fmt, per_target, arg, per) {
+  total <- sum(lengths(per_target))
+  if (!is.list(values)) return(recycle_values(fmt(values), total, arg, per))
+  if (length(values) != length(per_target)) {
+    stop("`", arg, "` is a list of ", length(values), " but there are ",
+         length(per_target), " boxes to split. Give one element per box.",
+         call. = FALSE)
+  }
+  unlist(lapply(seq_along(values), function(i) {
+    recycle_values(fmt(values[[i]]), length(per_target[[i]]), arg)
+  }))
 }
 
 # Shared engine for verbs that add one box per group of current boxes.
@@ -264,8 +283,17 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
     }
     groups <- unname(split(targets, factor(key, levels = unique(key))))
   }
+  for (g in groups) {
+    nested <- vapply(g, function(m) any(g %in% node_ancestors(x, m)), NA)
+    if (any(nested)) {
+      stop("A group cannot contain a box together with a box below it. ",
+           "Choose boxes on the same branch level with `from`.", call. = FALSE)
+    }
+  }
   k <- length(groups)
-  if (!is.character(label)) stop("`label` must be text.", call. = FALSE)
+  if (!is.character(label) || anyNA(label) || any(label == "")) {
+    stop("`label` must be text and not empty.", call. = FALSE)
+  }
   labels <- recycle_values(label, k, "label")
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")

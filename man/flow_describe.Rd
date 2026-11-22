@@ -18,6 +18,10 @@ Writes a short text description of the design, stage by stage. Use it as
 alternative text for the figure, or in a methods section. \code{\link[=autoplot]{autoplot()}}
 attaches it to the plot as alt text automatically.
 }
+\details{
+Boxes that share a label in the same row are told apart by the box they
+sit under, e.g. "Batch 1 under Type A".
+}
 \examples{
 flow_start("Cultures", n = 100) |>
   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>

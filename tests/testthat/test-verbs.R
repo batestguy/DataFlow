@@ -114,3 +114,53 @@ test_that("flow_nodes lists boxes and leaves", {
   expect_equal(sum(n$leaf), 2)
   expect_equal(n$label[n$leaf], c("600 each", "600 each"))
 })
+
+test_that("decimal and large counts are not rounded", {
+  d <- flow_start("All", n = 1234.5678) |>
+    flow_split("S", c("a", "b"), n = c(123456789.5, 0.123456789))
+  expect_equal(d$nodes$n, c("1,234.5678", "123,456,789.5", "0.123456789"))
+})
+
+test_that("a list n gives one value per box being split", {
+  d <- flow_start("C") |>
+    flow_split("Exp", c("E1", "E2")) |>
+    flow_split("Sub", c("x", "y"), n = list(5, c(6, 7)))
+  expect_equal(d$nodes$n[d$nodes$stage == 3], c("5", "5", "6", "7"))
+  d2 <- flow_start("C") |>
+    flow_split("Exp", c("E1", "E2")) |>
+    flow_split("Sub", c("x", "y"), n = list(NULL, c(1, 2)))
+  expect_equal(d2$nodes$n[d2$nodes$stage == 3], c(NA, NA, "1", "2"))
+  expect_error(
+    flow_start("C") |> flow_split("Exp", c("E1", "E2")) |>
+      flow_split("Sub", "x", n = list(1, 2, 3)),
+    "one element per box"
+  )
+})
+
+test_that("`from` input is checked", {
+  d <- flow_start("C") |> flow_split("Exp", c("E1", "E2"))
+  expect_error(flow_split(d, "S", "a", from = numeric(0)), "empty")
+  expect_error(flow_split(d, "S", "a", from = 1.5), "whole numbers")
+  dd <- flow_split(d, "S", "a", from = c(2, 2))
+  expect_equal(sum(dd$nodes$stage == 3), 1)
+})
+
+test_that("empty or missing labels are refused", {
+  d <- flow_start("C")
+  expect_error(flow_split(d, "S", c("x", NA)), "missing or empty")
+  expect_error(flow_apply(d, "S", ""), "not empty")
+})
+
+test_that("a group cannot hold a box and a box below it", {
+  expect_error(
+    flow_start("All") |> flow_split("Arm", c("A", "B")) |>
+      flow_apply("T", "m", over = "All", from = c(1, 2)),
+    "box below it"
+  )
+})
+
+test_that("validator requires exactly one top box", {
+  d <- flow_example("lab")
+  d$nodes$anchor[5] <- NA
+  expect_error(validate_dataflow(d), "exactly one top box")
+})

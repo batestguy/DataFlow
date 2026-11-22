@@ -69,6 +69,9 @@ validate_dataflow <- function(x) {
     stop("Some arrows point to or from a box that does not exist.",
          call. = FALSE)
   }
+  if (sum(is.na(nd$anchor)) != 1) {
+    stop("A dataflow must have exactly one top box.", call. = FALSE)
+  }
   root <- nd$id[nd$stage == st$id[1]]
   orphans <- setdiff(nd$id, c(root, ed$to))
   if (length(orphans) > 0) {

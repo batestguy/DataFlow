@@ -132,6 +132,9 @@ theme_dataflow <- function(base_size = 9, base_family = "") {
 #' @param filename File to write; the extension picks the format.
 #' @param width,height Size in inches. Defaults to the natural size.
 #' @param dpi Resolution for bitmap formats.
+#' @param bg Background colour.
+#' @param device Optional device passed to [ggplot2::ggsave()]; by default
+#'   it is chosen from the file extension.
 #' @param ... Passed to [autoplot.dataflow()] when `x` is a dataflow,
 #'   otherwise to [ggplot2::ggsave()].
 #' @return `filename`, invisibly.
@@ -142,7 +145,7 @@ theme_dataflow <- function(base_size = 9, base_family = "") {
 #' f <- tempfile(fileext = ".png")
 #' flow_save(d, f)
 flow_save <- function(x, filename, width = NULL, height = NULL, dpi = 300,
-                      ...) {
+                      bg = "white", device = NULL, ...) {
   if (inherits(x, "dataflow")) {
     p <- autoplot.dataflow(x, ...)
     dots <- list()
@@ -161,7 +164,8 @@ flow_save <- function(x, filename, width = NULL, height = NULL, dpi = 300,
   }
   do.call(ggplot2::ggsave, c(list(filename = filename, plot = p,
                                   width = width, height = height,
-                                  units = "in", dpi = dpi, bg = "white"),
+                                  units = "in", dpi = dpi, bg = bg,
+                                  device = device),
                              dots))
   invisible(filename)
 }

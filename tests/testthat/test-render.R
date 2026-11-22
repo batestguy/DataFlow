@@ -35,5 +35,17 @@ test_that("flow_save refuses other objects", {
 test_that("the lab diagram looks right", {
   skip_if_not_installed("vdiffr")
   skip_on_cran()
+  # fonts differ between machines; the layout-as-data tests are the main
+  # guard, this snapshot is for local review of visual changes
+  skip_on_ci()
   vdiffr::expect_doppelganger("lab design", autoplot(flow_example("lab")))
+})
+
+test_that("flow_save passes bg and device through", {
+  f <- tempfile(fileext = ".png")
+  flow_save(flow_example("lab"), f, dpi = 50, bg = "grey90")
+  expect_gt(file.size(f), 0)
+  f2 <- tempfile(fileext = ".out")
+  flow_save(flow_example("lab"), f2, device = "pdf")
+  expect_gt(file.size(f2), 0)
 })

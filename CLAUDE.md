@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Package `DataFlow` (MIT) scaffolded by hand on 2026-11-22; git repo on branch `main`, no remote yet (creating the public GitHub repo needs the user's go-ahead). Milestone 1 (lab design: `flow_start`, `flow_split`, `flow_apply`, `flow_outcome`, layout, renderer, `flow_describe`) is built and awaiting the user's approval of the picture. The full plan lives in the session plan; verbs are prefixed `flow_`.
+Package `DataFlow` (MIT) scaffolded by hand on 2026-11-22; git repo: scaffold on `main`, milestone 1 on branch `m1-lab-design`; no remote yet (creating the public GitHub repo needs the user's go-ahead). Milestone 1 (lab design: `flow_start`, `flow_split`, `flow_apply`, `flow_outcome`, layout, renderer, `flow_describe`) is built, reviewed (fixes applied: lanes reserved for long connectors, bracket drop lines, exact number formatting, unambiguous descriptions) and awaiting the user's approval of the picture. The full plan lives in the session plan; verbs are prefixed `flow_`.
 
 ## Pinned environment
 

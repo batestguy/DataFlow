@@ -4,7 +4,16 @@
 \alias{flow_save}
 \title{Save a flow diagram to PDF, PNG or another format}
 \usage{
-flow_save(x, filename, width = NULL, height = NULL, dpi = 300, ...)
+flow_save(
+  x,
+  filename,
+  width = NULL,
+  height = NULL,
+  dpi = 300,
+  bg = "white",
+  device = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{dataflow} object or a plot made by \code{\link[=autoplot.dataflow]{autoplot.dataflow()}}.}
@@ -14,6 +23,11 @@ flow_save(x, filename, width = NULL, height = NULL, dpi = 300, ...)
 \item{width, height}{Size in inches. Defaults to the natural size.}
 
 \item{dpi}{Resolution for bitmap formats.}
+
+\item{bg}{Background colour.}
+
+\item{device}{Optional device passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}; by default
+it is chosen from the file extension.}
 
 \item{...}{Passed to \code{\link[=autoplot.dataflow]{autoplot.dataflow()}} when \code{x} is a dataflow,
 otherwise to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}.}

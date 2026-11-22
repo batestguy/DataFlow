@@ -101,3 +101,42 @@ test_that("layout does not change the open graphics device", {
   lab_layout()
   expect_equal(grDevices::dev.cur(), before)
 })
+
+test_that("irregular designs: no overlaps and no line through a box", {
+  for (nm in names(irregular_designs())) {
+    lay <- flow_layout(irregular_designs()[[nm]])
+    expect_equal(boxes_overlap(lay$boxes), 0, label = nm)
+    expect_equal(crossings(lay), 0, label = nm)
+    expect_equal(crossings(flow_layout(irregular_designs()[[nm]],
+                                       connector = "straight")), 0,
+                 label = paste(nm, "straight"))
+  }
+  expect_equal(crossings(lab_layout()), 0)
+})
+
+test_that("a bracket source higher than the others gets a drop line", {
+  lay <- flow_layout(irregular_designs()$uneven_bracket)
+  b <- lay$boxes
+  s2 <- b[b$label == "s2", ]
+  expect_equal(nrow(s2), 2)
+  for (i in seq_len(nrow(s2))) {
+    drop <- lay$segments[abs(lay$segments$x - s2$x[i]) < 1e-9 &
+                           abs(lay$segments$y - s2$ymin[i]) < 1e-9, ]
+    expect_equal(nrow(drop), 1)
+    expect_true(drop$yend < min(b$ymin[b$label == "p1"]))
+  }
+})
+
+test_that("an unknown font family warns once and still lays out", {
+  w <- character()
+  lay <- withCallingHandlers(
+    lab_layout(family = "NoSuchFontXYZ"),
+    warning = function(cnd) {
+      w <<- c(w, conditionMessage(cnd))
+      invokeRestart("muffleWarning")
+    }
+  )
+  expect_length(w, 1)
+  expect_match(w, "NoSuchFontXYZ")
+  expect_equal(lay$size, lab_layout()$size)
+})
