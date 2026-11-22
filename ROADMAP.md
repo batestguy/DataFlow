@@ -294,5 +294,6 @@ what is still open.
   limitations brought up to date.
 - Not changed (recorded as limitations): reasons ignore `count_format`; no
   wrapping of long reasons; the wide-row warning ignores exclusion boxes.
-- User approved the trial picture. 247 tests pass; check 0/0/0.
+- User approved the trial picture. 247 tests pass; check 0/0/0. Merged
+  into `main` (`4f8cd31`); CI run 44999943531 green on all 5 platforms.
 - A cross-family review is still advisable before the first release.
