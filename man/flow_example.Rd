@@ -4,7 +4,7 @@
 \alias{flow_example}
 \title{Example study designs}
 \usage{
-flow_example(name = c("lab"))
+flow_example(name = c("lab", "trial"))
 }
 \arguments{
 \item{name}{Which example.}
@@ -23,8 +23,13 @@ each with one culture type, two batches and three culture compositions;
 nine conditions are applied across all compositions within each
 experiment, then two tasks per condition. Counts are the design author's
 own figures, drawn as given.
+\item \code{"trial"}: a made-up two-arm randomised trial laid out like the CONSORT
+2025 flow diagram (enrolment, allocation, follow-up, analysis), with an
+exclusion box at screening and losses to follow-up in each arm. All
+numbers are invented for illustration.
 }
 }
 \examples{
 flow_example("lab")
+flow_example("trial")
 }

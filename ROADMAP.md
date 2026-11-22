@@ -15,7 +15,7 @@ milestone step; the progress log at the bottom is append-only.
 |---|---|---|---|
 | 0 | Scaffold | ✅ public repo, CI green on 5 platforms | 2026-11-22 |
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
-| 2 | Randomised trial with dropouts | ⬜ | — |
+| 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ⬜ | — |
 | 4 | Factorial design | ⬜ | — |
 | 5 | Examples from recent papers | ⬜ | — |
@@ -83,7 +83,7 @@ viewed it, and the user approves it.
 **Status:** built, two review rounds passed (see log). Lab diagram renders at
 6.75 × 6.26 in. Approved by the user on 2026-11-22 and merged into `main`.
 
-### Milestone 2 — Randomised trial with dropouts ⬜
+### Milestone 2 — Randomised trial with dropouts ✅
 
 **Delivers:** `flow_assign` (arms, `method = "random"` etc.),
 `flow_exclude` (side box with reasons and counts), side-box layout to the
@@ -95,6 +95,11 @@ arms, and losses to follow-up renders cleanly and the user approves it.
 **Checks:** side boxes don't cover arrows or other boxes; exclusion reasons
 and counts described in the alt text; validator requires every exclusion to
 have a parent.
+
+**Status:** built and reviewed (2026-11-22). Example follows the CONSORT
+2025 flow diagram (Hopewell et al., BMJ 2025;389:e081123,
+doi:10.1136/bmj-2024-081123) with invented numbers. Picture approved by the
+user on 2026-11-22; merged into `main`.
 
 ### Milestone 3 — Multi-stage cluster survey ⬜
 
@@ -148,12 +153,19 @@ A separate decision, taken after milestone 6.
   Drawing far below the natural size can make text spill out of boxes.
 - Top-to-bottom diagrams only.
 - `display = "summary"` is not built yet (errors until milestone 3).
+- Exclusion boxes always sit to the right of the line they hang off. Long
+  reasons are not wrapped, so many wide exclusion boxes make wide diagrams.
+- Reasons are listed with an ASCII "- " and a fixed "(n = ...)"; they do not
+  follow `count_format` or `side_format`.
+- Where a bracket joins boxes that have exclusion boxes below them, the join
+  is drawn as a plain horizontal line under the exclusion boxes (no end
+  ticks).
+- The "more than 20 boxes in a row" warning does not count exclusion boxes.
 
 ## Open risks
 
 - Wide designs in `"all"` mode may not fit a journal page until summary rows
   exist (milestone 3).
-- CI has not run yet; the first push may surface platform differences.
 - Reviews so far were by the same model family as the builder; a
   cross-family review is advisable before the first public release.
 
@@ -240,3 +252,47 @@ what is still open.
   the new repository until a workflow file was added.
 - The empty test commits (`3661372`, `88a62a9`) and the temporary workflow
   stay in history.
+
+### 2026-11-22 — Milestone 2: trial design built
+- New verbs `flow_assign()` (a split that records how boxes were assigned,
+  e.g. randomly; shown in the description only) and `flow_exclude()`
+  (exclusion box to the right of the line leaving each end box, with
+  optional reasons and counts; the flow continues below the same boxes).
+- New `row_label =` argument on `flow_split`, `flow_apply`, `flow_outcome`,
+  `flow_assign` (`""` hides a row label). `flow_example("trial")`: an
+  invented two-arm trial in the CONSORT 2025 layout.
+- Layout: each exclusion has its own row; the exclusion box is reserved in
+  its parent's outline so neighbouring branches make room for it; lines
+  that branch out below a parent with exclusion boxes, and brackets below
+  them, start under the exclusion boxes.
+- Description: "Excluded (n = 112) after ...: reason (n = 68), ...";
+  "randomly assigned to"; note lines joined with "; ".
+- Checked: 244 tests pass (112 new); `devtools::check()` 0/0/0; lab
+  picture snapshot unchanged; 9 awkward trial designs and 400 random designs
+  mixing all steps (795 exclusion boxes) gave 0 overlaps and 0 lines
+  through boxes in both connector styles. Random testing found two bugs
+  (a line to a lower exclusion box crossing a neighbour's exclusion box;
+  child lines skipping a row crossing their parent's own exclusion box),
+  both fixed; their regression tests were confirmed to fail without the fix.
+  Pictures viewed: the trial and all awkward designs.
+- Open: independent review; user approval of the trial picture.
+
+### 2026-11-22 — Milestone 2: review and approval
+- Independent review (same model family) re-ran 244 tests and the check
+  (0/0/0), reproduced the 400-design stress result, ran its own wider random
+  designs (five seeds, varied font sizes and gaps: 0 problems) and hand-built
+  awkward cases, and confirmed milestone 1 layouts are identical to `main`
+  on 200 random designs. It could not check the claim that the regression
+  tests fail without the fixes (single commit); that was checked in-session
+  by swapping the old layout code back in (1 crossing each).
+- Fixed from the review: CONSORT citation volume 388 -> 389 (verified
+  against the BMJ record) with DOI; named reasons with a missing count are
+  refused (the description read as if one count covered two reasons);
+  `flow_exclude(stage = "")` refused; note lines joined with ", " in
+  descriptions (was "; ", the same as the count separator); describe copes
+  with objects that have no reasons table; CLAUDE.md and the known
+  limitations brought up to date.
+- Not changed (recorded as limitations): reasons ignore `count_format`; no
+  wrapping of long reasons; the wide-row warning ignores exclusion boxes.
+- User approved the trial picture. 247 tests pass; check 0/0/0.
+- A cross-family review is still advisable before the first release.

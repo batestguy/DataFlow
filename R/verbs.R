@@ -8,6 +8,14 @@ check_string <- function(x, arg) {
   }
 }
 
+# The row label drawn in the left margin: the stage name unless the caller
+# gives another, or "" for none.
+pick_row_label <- function(row_label, stage) {
+  if (is.null(row_label)) return(stage)
+  check_string(row_label, "row_label")
+  row_label
+}
+
 check_flow <- function(x) {
   if (!inherits(x, "dataflow")) {
     stop("The first argument must be a dataflow. Start one with flow_start().",
@@ -63,7 +71,7 @@ recycle_values <- function(values, total, arg, per = NULL) {
 }
 
 add_stage <- function(x, name, row_label, type, display,
-                      over = NA_character_) {
+                      over = NA_character_, method = NA_character_) {
   if (name %in% x$stages$name) {
     stop("There is already a stage called \"", name,
          "\". Stage names must be unique.", call. = FALSE)
@@ -71,7 +79,8 @@ add_stage <- function(x, name, row_label, type, display,
   id <- if (nrow(x$stages) == 0) 1L else max(x$stages$id) + 1L
   x$stages <- rbind(x$stages, data.frame(
     id = id, name = name, row_label = row_label, type = type,
-    display = display, over = over, stringsAsFactors = FALSE
+    display = display, over = over, method = method,
+    stringsAsFactors = FALSE
   ))
   list(x = x, id = id)
 }
@@ -161,7 +170,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
     stages = data.frame(id = integer(), name = character(),
                         row_label = character(), type = character(),
                         display = character(), over = character(),
-                        stringsAsFactors = FALSE),
+                        method = character(), stringsAsFactors = FALSE),
     nodes = data.frame(id = integer(), stage = integer(), label = character(),
                        n = character(), note = character(),
                        anchor = integer(), stringsAsFactors = FALSE),
@@ -194,6 +203,9 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
 #'   version.
 #' @param from Optional box ids or labels to split instead of all current end
 #'   boxes. See [flow_nodes()].
+#' @param row_label Text drawn in the left margin for this row. Defaults to
+#'   `stage`; use `""` for no label (e.g. when a row continues the section
+#'   labelled above it).
 #' @return The updated `dataflow`.
 #' @export
 #' @examples
@@ -201,10 +213,17 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_split("Culture type", list("Type A", "Type B"), n = 50)
 flow_split <- function(.flow, stage, labels, n = NULL, note = NULL,
-                       display = "all", from = NULL) {
+                       display = "all", from = NULL, row_label = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
+  split_boxes(.flow, stage, labels, n, note, from,
+              pick_row_label(row_label, stage), "split", display)
+}
+
+# Shared engine for one-to-many steps (split, assign).
+split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
+                        display, method = NA_character_) {
   targets <- resolve_targets(.flow, from)
   if (is.list(labels)) {
     if (length(labels) != length(targets)) {
@@ -232,7 +251,7 @@ flow_split <- function(.flow, stage, labels, n = NULL, note = NULL,
   n_vals <- per_box_values(n, format_n, per_target, "n", per)
   note_vals <- per_box_values(note, format_note, per_target, "note", per)
 
-  s <- add_stage(.flow, stage, stage, "split", display)
+  s <- add_stage(.flow, stage, row_label, type, display, method = method)
   x <- s$x
   anchors <- rep(targets, lengths(per_target))
   a <- add_nodes(x, s$id, unlist(per_target), n_vals, note_vals, anchors)
@@ -261,7 +280,7 @@ per_box_values <- function(values, fmt, per_target, arg, per) {
 # Shared engine for verbs that add one box per group of current boxes.
 # Groups of one are joined by an arrow; larger groups by a bracket.
 attach_per_group <- function(x, stage, label, n, note, over, from, type,
-                             display) {
+                             display, row_label = stage) {
   targets <- resolve_targets(x, from)
   if (is.null(over)) {
     groups <- as.list(targets)
@@ -301,7 +320,8 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
     if (length(g) == 1) g else lowest_common_ancestor(x, g)
   }, integer(1))
 
-  s <- add_stage(x, stage, stage, type, display, over %||% NA_character_)
+  s <- add_stage(x, stage, row_label, type, display,
+                 over %||% NA_character_)
   a <- add_nodes(s$x, s$id, labels, n_vals, note_vals, anchors)
   x <- a$x
   for (i in seq_len(k)) {
@@ -338,11 +358,13 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
 #'   flow_split("Composition", c("A", "B", "C")) |>
 #'   flow_apply("Condition", "9 conditions each", over = "Experiment ID")
 flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
-                       over = NULL, display = "all", from = NULL) {
+                       over = NULL, display = "all", from = NULL,
+                       row_label = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
-  attach_per_group(.flow, stage, label, n, note, over, from, "apply", display)
+  attach_per_group(.flow, stage, label, n, note, over, from, "apply", display,
+                   pick_row_label(row_label, stage))
 }
 
 #' Add the outcome or measurement at the end of each branch
@@ -354,10 +376,10 @@ flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_outcome("Number of trials", "600 each")
 flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
-                         display = "all", from = NULL) {
+                         display = "all", from = NULL, row_label = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
   attach_per_group(.flow, stage, label, n, note, NULL, from, "outcome",
-                   display)
+                   display, pick_row_label(row_label, stage))
 }

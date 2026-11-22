@@ -12,7 +12,8 @@ flow_apply(
   note = NULL,
   over = NULL,
   display = "all",
-  from = NULL
+  from = NULL,
+  row_label = NULL
 )
 }
 \arguments{
@@ -31,6 +32,10 @@ version.}
 
 \item{from}{Optional box ids or labels to split instead of all current end
 boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}
+
+\item{row_label}{Text drawn in the left margin for this row. Defaults to
+\code{stage}; use \code{""} for no label (e.g. when a row continues the section
+labelled above it).}
 }
 \description{
 Adds a box for a treatment, condition or task applied to the current

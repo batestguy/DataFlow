@@ -1,14 +1,5 @@
 lab_layout <- function(...) flow_layout(flow_example("lab"), ...)
 
-boxes_overlap <- function(b) {
-  hits <- 0
-  for (i in seq_len(nrow(b) - 1)) for (j in (i + 1):nrow(b)) {
-    if (b$xmin[i] < b$xmax[j] && b$xmin[j] < b$xmax[i] &&
-        b$ymin[i] < b$ymax[j] && b$ymin[j] < b$ymax[i]) hits <- hits + 1
-  }
-  hits
-}
-
 test_that("layout is a set of data frames with one box per node", {
   lay <- lab_layout()
   expect_s3_class(lay, "dataflow_layout")

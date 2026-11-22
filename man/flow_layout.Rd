@@ -16,7 +16,9 @@ flow_layout(
   pad_y = 0.06,
   min_width = 0.3,
   row_label_width = 16,
-  connector = c("elbow", "straight")
+  connector = c("elbow", "straight"),
+  side_format = "{label} (n = {n})",
+  side_gap = 0.3
 )
 }
 \arguments{
@@ -44,11 +46,18 @@ wrapped onto several lines.}
 
 \item{connector}{\code{"elbow"} (right-angled lines, the default) or
 \code{"straight"} (one straight arrow per box).}
+
+\item{side_format}{How an exclusion box's heading and count are combined,
+as in \code{count_format}. Reasons are listed below it, one per line.}
+
+\item{side_gap}{Length of the arrow from the flow line to an exclusion
+box, in inches.}
 }
 \value{
-A \code{dataflow_layout}: a list of data frames \code{boxes}, \code{segments},
-\code{brackets} and \code{row_labels}, plus \code{extent} (xmin, xmax, ymin, ymax) and
-\code{size} (natural width and height in inches).
+A \code{dataflow_layout}: a list of data frames \code{boxes}, \code{side}
+(exclusion boxes), \code{segments}, \code{brackets} and \code{row_labels}, plus
+\code{extent} (xmin, xmax, ymin, ymax) and \code{size} (natural width and height
+in inches).
 }
 \description{
 Turns a \code{dataflow} into coordinates, in inches, for every box, arrow,

@@ -3,15 +3,20 @@
 # A dataflow is pure data: no coordinates, no drawing.
 #
 # * stages: one row per stage (= one row of the diagram), in drawing order.
-#     id, name (used by `over =`), row_label (drawn in the left margin),
-#     type, display.
+#     id, name (used by `over =`), row_label (drawn in the left margin; "" for
+#     none), type, display, over, method (how boxes were assigned, for
+#     "assign" stages; used in the description only).
 # * nodes: one row per box.
 #     id, stage, label, n (character, drawn exactly as given), note,
 #     anchor (the node whose layout block this node belongs to: its parent for
 #     single-parent nodes, the lowest common ancestor of its sources for
 #     brackets and pools).
 # * edges: from, to, kind ("arrow" or "bracket").
-# * side: exclusion side boxes (used from milestone 2 on).
+# * side: exclusion side boxes. Each sits on its own "exclude" stage row,
+#     to the right of the line leaving its parent box. Side boxes never
+#     change `leaves`: the flow continues below the parent.
+#     id, stage, parent, label, n, note.
+# * reasons: reasons listed in a side box, in order. side, label, n.
 # * leaves: ids of the nodes the next verb attaches to by default.
 
 stage_types <- c(
@@ -19,12 +24,18 @@ stage_types <- c(
   "apply", "pool", "exclude", "outcome"
 )
 
-new_dataflow <- function(stages, nodes, edges, side, leaves) {
+new_dataflow <- function(stages, nodes, edges, side, leaves,
+                         reasons = empty_reasons()) {
   structure(
     list(stages = stages, nodes = nodes, edges = edges, side = side,
-         leaves = leaves),
+         reasons = reasons, leaves = leaves),
     class = "dataflow"
   )
+}
+
+empty_reasons <- function() {
+  data.frame(side = integer(), label = character(), n = character(),
+             stringsAsFactors = FALSE)
 }
 
 empty_side <- function() {
@@ -86,9 +97,29 @@ validate_dataflow <- function(x) {
            nd$label[nd$id == id], "\").", call. = FALSE)
     }
   }
-  if (!is.null(x$side) && nrow(x$side) > 0 &&
-      !all(x$side$parent %in% nd$id)) {
-    stop("Every exclusion box must hang off an existing box.", call. = FALSE)
+  sd <- x$side
+  if (!is.null(sd) && nrow(sd) > 0) {
+    if (!all(sd$parent %in% nd$id)) {
+      stop("Every exclusion box must hang off an existing box.",
+           call. = FALSE)
+    }
+    if (!all(st$type[match(sd$stage, st$id)] %in% "exclude")) {
+      stop("Exclusion boxes must belong to an exclusion stage.",
+           call. = FALSE)
+    }
+    if (any(nd$stage %in% st$id[st$type == "exclude"])) {
+      stop("An exclusion stage holds only exclusion boxes.", call. = FALSE)
+    }
+    parent_row <- match(nd$stage[match(sd$parent, nd$id)], st$id)
+    if (any(match(sd$stage, st$id) <= parent_row)) {
+      stop("An exclusion box must come after the box it hangs off.",
+           call. = FALSE)
+    }
+  }
+  rs <- x$reasons
+  if (!is.null(rs) && nrow(rs) > 0 && !all(rs$side %in% sd$id)) {
+    stop("Every exclusion reason must belong to an exclusion box.",
+         call. = FALSE)
   }
   invisible(x)
 }
@@ -123,17 +154,24 @@ flow_nodes <- function(x) {
 #' @export
 print.dataflow <- function(x, ...) {
   st <- x$stages
+  ns <- if (is.null(x$side)) 0 else nrow(x$side)
   cat("<dataflow> ", nrow(st), " stage", if (nrow(st) != 1) "s", ", ",
-      nrow(x$nodes), " box", if (nrow(x$nodes) != 1) "es", "\n", sep = "")
+      nrow(x$nodes), " box", if (nrow(x$nodes) != 1) "es",
+      if (ns > 0) paste0(", ", ns, " exclusion box", if (ns != 1) "es"),
+      "\n", sep = "")
   for (i in seq_len(nrow(st))) {
-    labs <- x$nodes$label[x$nodes$stage == st$id[i]]
+    labs <- if (st$type[i] == "exclude") {
+      x$side$label[x$side$stage == st$id[i]]
+    } else {
+      x$nodes$label[x$nodes$stage == st$id[i]]
+    }
     shown <- if (length(labs) > 6) {
       c(utils::head(labs, 5), paste0("... (", length(labs), " boxes)"))
     } else {
       labs
     }
     shown <- gsub("[[:space:]]*\n[[:space:]]*", " ", shown)
-    cat(sprintf("  %-8s %s: %s\n", paste0("[", st$type[i], "]"),
+    cat(sprintf("  %-9s %s: %s\n", paste0("[", st$type[i], "]"),
                 st$name[i], paste(shown, collapse = ", ")))
   }
   invisible(x)
