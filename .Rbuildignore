@@ -1,0 +1,15 @@
+^renv$
+^renv\.lock$
+^.*\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$
+^\.github$
+^CLAUDE\.md$
+^AGENTS\.md$
+^StudyDesign R package\.txt$
+^RDT_.*\.jpg$
+^dev$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.Rprofile$

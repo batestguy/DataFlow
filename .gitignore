@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+docs/
+dev/
+Rplots.pdf
+# 6 MB reference photo: keep out of git (use a downscaled copy if needed)
+RDT_*.jpg

@@ -1,0 +1,27 @@
+Package: DataFlow
+Title: Publication-Quality Study-Design Flow Diagrams
+Version: 0.0.0.9000
+Authors@R:
+    person("batestguy", email = "batesthommie@gmail.com", role = c("aut", "cre"))
+Description: Build study-design flow diagrams (sampling, clustering,
+    selection, assignment, splits, exclusions and merges) with a small set of
+    pipe-friendly verbs, and draw them as 'ggplot2' graphics for publication.
+    Counts are drawn exactly as typed; they are never computed or checked.
+    Every diagram also has a plain-language written description for use as
+    alternative text.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Depends:
+    R (>= 4.1.0)
+Imports:
+    ggplot2 (>= 3.5.0),
+    grDevices,
+    stats,
+    grid,
+    utils
+Suggests:
+    testthat (>= 3.0.0),
+    vdiffr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.1
