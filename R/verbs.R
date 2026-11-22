@@ -68,8 +68,9 @@ recycle_values <- function(values, total, arg, per = NULL) {
   if (!is.null(per) && len == per && total %% per == 0) {
     return(rep(values, total / per))
   }
-  stop("`", arg, "` has ", len, " values but there are ", total,
-       " boxes to fill. Give one value, or one per box",
+  stop("`", arg, "` has ", len, " values but there ",
+       if (total == 1) "is 1 box" else paste("are", total, "boxes"),
+       " to fill. Give one value, or one per box",
        if (!is.null(per)) paste0(", or one per label (", per, ")"), ".",
        call. = FALSE)
 }
@@ -201,7 +202,8 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
 #'   list with one character vector per current box (for different children
 #'   under different boxes, including one-to-one steps). With
 #'   `display = "summary"` it may also be the number of boxes under each
-#'   current box: one number for all, or one per box.
+#'   current box: one number for all, or one per box. With text labels, a
+#'   summary shows only how many there are, not the labels themselves.
 #' @param n Optional counts, drawn exactly as given: one value for all new
 #'   boxes, one per label, one per new box, or a list matching `labels`.
 #'   With `display = "summary"`: one value, or one per summary box.

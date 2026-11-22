@@ -74,7 +74,8 @@ flow_describe <- function(x) {
       if (type == "outcome") body <- paste0("the outcome is ", body)
     }
     if (st$display[s] == "summary") {
-      body <- paste0(body, " (each box stands for several boxes, not drawn)")
+      body <- paste0(body, "; these are summary boxes, and the boxes they ",
+                     "stand for are not drawn one by one")
     }
     sentences <- c(sentences, paste0(head, ": ", body, "."))
   }
@@ -196,7 +197,7 @@ unique_names <- function(x, flat) {
         if (length(chains[[j]]) >= depth) {
           anc <- chains[[j]][depth]
           names_s[j] <- paste0(names_s[j], " under ",
-                               flat(nd$label[nd$id == anc]))
+                               out[[as.character(anc)]])
         }
       }
     }

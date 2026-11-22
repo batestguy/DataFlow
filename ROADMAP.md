@@ -16,11 +16,18 @@ milestone step; the progress log at the bottom is append-only.
 | 0 | Scaffold | ✅ public repo, CI green on 5 platforms | 2026-11-22 |
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
-| 3 | Multi-stage cluster survey | 🟡 built; review and picture approval pending | — |
-| 4 | Factorial design | ⬜ | — |
-| 5 | Examples from recent papers | ⬜ | — |
-| 6 | Documentation and website | ⬜ | — |
-| 7 | CRAN submission | ⏸ separate decision, later | — |
+| 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
+| 4 | Factorial design, pooling, several starting streams | ⬜ | — |
+| 5 | Machine-learning designs | ⬜ | — |
+| 6 | Reporting-guideline templates | ⬜ | — |
+| 7 | Examples from recent papers | ⬜ | — |
+| 8 | Documentation and website | ⬜ | — |
+| 9 | CRAN submission | ⏸ separate decision, later | — |
+| T | Time-based designs (later track) | ⏸ after milestone 8 | — |
+
+Plan revised on 2026-11-22 after a survey of reporting guidelines, other R
+packages and machine-learning designs (see "Positioning" and the progress
+log). Milestones 4 to 9 replace the earlier 4 to 7.
 
 ## Locked decisions
 
@@ -101,7 +108,7 @@ have a parent.
 doi:10.1136/bmj-2024-081123) with invented numbers. Picture approved by the
 user on 2026-11-22; merged into `main`.
 
-### Milestone 3 — Multi-stage cluster survey 🟡
+### Milestone 3 — Multi-stage cluster survey ✅
 
 **Delivers:** `flow_select` (sampling/selection, `method =`),
 `flow_cluster` (cluster sampling), and `display = "summary"` for stages too
@@ -116,40 +123,106 @@ rows over about 20 boxes and now points to `display = "summary"`.
 **Status:** built on branch `m3-survey` (2026-11-22). Example
 `flow_example("survey")`: an invented two-stage household survey in the
 style of a Demographic and Health Survey. Natural size 7.50 x 10.24 in at
-9 pt; scaled to a 6.5 in text width the text is about 7.8 pt. Awaiting
-review and the user's approval of the picture.
+9 pt; scaled to a 6.5 in text width the text is about 7.8 pt. Reviewed;
+picture approved by the user on 2026-11-22; merged into `main`.
 
-### Milestone 4 — Factorial design ⬜
+### Milestone 4 — Factorial design, pooling, several starting streams ⬜
 
 **Delivers:** crossing splits (every level of one factor under every level
-of another) and `flow_pool` (several sources merging into one box with
-converging arrows).
+of another); `flow_pool` (several sources merging into one box with
+converging arrows); several starting boxes in one diagram whose streams run
+side by side and later join. The last one unlocks systematic reviews
+(PRISMA 2020: databases and other sources in two columns), case-control
+studies (cases and controls from different sources), external validation
+datasets, and mixed-methods designs.
 
-**Done when:** a 2 × 2 (or larger) factorial design and a pooled analysis
-render cleanly, and the user approves.
+**Done when:** a 2 x 2 factorial with a pooled analysis and a two-stream
+diagram that joins render cleanly, and the user approves.
 
 **Checks:** validator requires at least two sources per pool; pooled boxes
-centred under their sources; no crossings.
+centred under their sources; parallel streams keep their own rows and
+exclusion boxes without overlap; no crossings; random stress test extended.
 
-### Milestone 5 — Examples from recent papers ⬜
+### Milestone 5 — Machine-learning designs ⬜
 
-**Delivers:** redrawn design charts from recent open-access papers: an
-experiment, a machine-learning dataset (train/validation/test split and
-cross-validation folds), and a survey.
+**Delivers:** dataset splits (train / validation / test) including grouped
+splits (all records of a patient or site on one side) and time-ordered
+splits (older data for training, newer for testing); external validation on
+a second dataset; participant flow for prediction-model studies following
+TRIPOD+AI item 20a (numbers and outcome events per analysis); a new grid
+drawing for cross-validation folds (rows = folds, blocks = train / test),
+which is a second diagram type next to the flow diagram.
+
+**Done when:** a model-development flow with a grouped split and external
+validation, and a 5-fold cross-validation grid, render cleanly and the user
+approves.
+
+**Checks:** the description says which data were used for what and that test
+data were kept apart; fold grids are tested as data like the flow layout.
+
+### Milestone 6 — Reporting-guideline templates ⬜
+
+**Delivers:** one-call starting points that follow the official layouts:
+CONSORT 2025 (trial), PRISMA 2020 (systematic review), STARD 2015
+(diagnostic accuracy: index test, reference standard, true/false
+positives/negatives), STROBE-style cohort attrition, TRIPOD+AI. Each cites
+its guideline and is checked against the official template before it is
+built (not yet seen for STARD and TRIPOD+AI; STROBE flow-diagram wording
+not yet verified).
+
+**Done when:** each template renders, matches its guideline's boxes, and the
+user approves.
+
+### Milestone 7 — Examples from recent papers ⬜
+
+**Delivers:** redrawn design charts from recent open-access papers, at least
+one per design family (experiment, trial, survey, machine learning,
+systematic review).
 
 **Process:** Claude proposes a shortlist with full citations; only the
 examples the user approves are redrawn. Each example records its source
 (citation and DOI) and what was simplified.
 
-### Milestone 6 — Documentation and website ⬜
+### Milestone 8 — Documentation and website ⬜
 
 **Delivers:** full README, one vignette per design family, a pkgdown
 website, `R CMD check` with 0 errors/warnings/notes, CI green on all
-platforms.
+platforms, and a short honest comparison with other R packages.
 
-### Milestone 7 — CRAN submission ⏸
+### Milestone 9 — CRAN submission ⏸
 
-A separate decision, taken after milestone 6.
+A separate decision, taken after milestone 8.
+
+### Later track T — Time-based designs ⏸
+
+Designs whose shape is a timeline rather than a flow: crossover trials
+(periods and washout), stepped-wedge cluster trials (staggered switch-over;
+CONSORT extension template), panel surveys with waves and attrition,
+platform trials (arms added and dropped). Needs a left-to-right time axis.
+Also: "cloning" in target trial emulation (the same people copied into every
+strategy), which needs its own wording.
+
+**Out of scope:** causal diagrams (DAGs), already covered by the ggdag
+package.
+
+## Positioning (2026-11-22, from documentation only; not tested side by side)
+
+Other R packages that draw study-flow charts: `consort`, `flowchart` (on
+CRAN since February 2024, pipe verbs `fc_filter`, `fc_split`, `fc_merge`,
+`fc_stack`), `visR` (attrition charts), `GroupCONSORT` (per-site counts) and
+`PRISMA2020` (systematic reviews, built on DiagrammeR). Most build CONSORT
+or attrition charts and compute counts from a data frame.
+
+Where DataFlow differs: design-shaped diagrams beyond attrition (nested
+splits, brackets that rejoin groups, summary rows, cluster sampling); output
+is a restyleable ggplot; every diagram carries a plain-language description
+as alt text; layout tested as data (no overlaps, no lines through boxes,
+random stress tests). Where others are ahead: counts computed from data, a
+CRAN release, more users and a longer track record.
+
+**Open decision (user):** add an optional data-driven mode that computes
+counts from a data frame (typed counts stay). It would make each number
+trace to a file and a command.
 
 ## Known limitations (current)
 
@@ -158,6 +231,7 @@ A separate decision, taken after milestone 6.
   font families trigger one warning and may not fit their boxes exactly.
   Drawing far below the natural size can make text spill out of boxes.
 - Top-to-bottom diagrams only.
+- One starting box per diagram until milestone 4.
 - `display = "summary"` works for steps that split boxes (`flow_split`,
   `flow_assign`, `flow_cluster`); the summary box shows a count, not the
   names of the boxes it stands for.
@@ -329,3 +403,25 @@ what is still open.
   including cluster, select and summary splits (seed 20261123,
   `dev/stress3.R`): 0 overlaps, 0 lines through boxes. Picture viewed.
 - Open: independent review; user approval of the survey picture.
+
+### 2026-11-22 — Milestone 3: review, approval and plan revision
+- Independent review (same model family): 293 tests and the check re-run
+  (0/0/0); stress script instrumented and confirmed it really produced
+  cluster (181), select (188) and summary (344) stages; milestone 1 and 2
+  layouts and descriptions identical to `main` on 300 random designs.
+- Fixed from the review: repeated box names in descriptions are qualified by
+  the parent's full name ("40 EAs selected under Urban under North", not
+  the ambiguous "under Urban"); summary note reworded so it is also true for
+  one box and avoids double brackets; "there is 1 box" grammar; docs say
+  summary rows show a count, not labels; CLAUDE.md and README brought up to
+  date; tests added for summary with `from =`, summary with exclusions and a
+  bracket, the wide-row warning counting exclusion boxes. 307 tests pass.
+- Not changed (nits): default summary templates do not handle singulars
+  ("1 clusters selected"); "assigned by <method> to" reads oddly with a bare
+  method word.
+- User approved the survey picture.
+- Plan revised after research: new milestones for several starting streams
+  (in 4), machine-learning designs (5) and reporting-guideline templates
+  (6); examples, documentation and CRAN move to 7 to 9; time-based designs
+  become a later track. Positioning section added. Open decision: optional
+  counts computed from data.

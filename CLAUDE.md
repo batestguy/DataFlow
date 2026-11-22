@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Package `DataFlow` (MIT), public at github.com/batestguy/DataFlow; CI (R CMD check, 5 platforms) runs on every push to `main`. Milestones 0 (scaffold), 1 (lab design) and 2 (randomised trial: `flow_assign`, `flow_exclude`) are done and approved by the user. Phases, locked decisions, status, known limitations and the progress log are in `ROADMAP.md`; verbs are prefixed `flow_`. Session handover notes (transient, git-ignored) are in `CLAUDE.local.md`.
+Package `DataFlow` (MIT), public at github.com/batestguy/DataFlow; CI (R CMD check, 5 platforms) runs on every push to `main`. Milestones 0 (scaffold), 1 (lab design), 2 (randomised trial: `flow_assign`, `flow_exclude`) and 3 (survey: summary rows, `flow_cluster`, `flow_select`) are done and approved by the user. The plan was revised on 2026-11-22 (milestones 4 to 9 plus a later time-based track). Phases, locked decisions, status, known limitations and the progress log are in `ROADMAP.md`; verbs are prefixed `flow_`. Session handover notes (transient, git-ignored) are in `CLAUDE.local.md`.
 
 ## Pinned environment
 
@@ -37,12 +37,13 @@ Key layout features: row labels down the left margin; one-to-many splits with ar
 ## Architecture (as built)
 
 - `R/flow.R` — S3 class `dataflow`: `stages` (id, name, row_label, type, display, over, method), `nodes` (id, stage, label, n as text, note, anchor), `edges` (from, to, kind = arrow/bracket), `side` (exclusion boxes: id, stage, parent, label, n, note), `reasons` (side, label, n), `leaves`. `anchor` = parent for single-parent boxes, lowest common ancestor of the sources for brackets/pools; the layout tree is built from it. `validate_dataflow()` checks structure only, never counts.
-- `R/verbs.R` — `flow_start`, `flow_split`, `flow_apply` (`over =` draws brackets), `flow_outcome`. Shared engine `attach_per_group()`. Every verb takes `from =` (box ids or leaf labels) and `row_label =` (`""` hides it). `display = "summary"` errors until milestone 3.
+- `R/verbs.R` — `flow_start`, `flow_split`, `flow_apply` (`over =` draws brackets), `flow_outcome`. Shared engine `attach_per_group()`. Every verb takes `from =` (box ids or leaf labels) and `row_label =` (`""` hides it). `display = "summary"` (one box per parent, label from a `summary` template with `{k}`/`{stage}`; helper `summary_counts()`) works for the split engine `split_boxes()` and is refused for apply/outcome.
 - `R/trial.R` — `flow_assign` (a split of type "assign" with `method`, shared engine `split_boxes()`) and `flow_exclude` (side boxes on their own "exclude" stage row, hanging off current end boxes only; never changes `leaves`).
+- `R/survey.R` — `flow_cluster` (split of type "cluster", summary by default, `method`) and `flow_select` (one box per current box via `attach_per_group(method =)`).
 - `R/layout.R` — `flow_layout()`: pure function, coordinates in inches. Text measured on an off-screen `pdf(NULL)` device. Contour packing over the anchor tree; bracket/pool boxes centred under their sources. `group_gap` separates groups, `hgap` single boxes. Side boxes sit at parent x + `side_gap` and are reserved in the parent's contour; `crossed_rows()` decides where a line still runs down the parent's centre (past its exclusion boxes) before branching, for elbows and brackets alike.
 - `R/render.R` — `autoplot.dataflow()` / `plot.dataflow()` / `theme_dataflow()` / `flow_save()` (natural size from the layout). Alt text from `flow_describe()` via `labs(alt =)`.
-- `R/describe.R` — `flow_describe()`.
-- `R/examples.R` — `flow_example("lab")`, `flow_example("trial")` (invented CONSORT 2025-style trial); each example records its source in `attr(, "source")`.
+- `R/describe.R` — `flow_describe()`. Repeated box names are qualified by the parent's full name (`unique_names()`); cluster/select stages read "<stage>, selected by <method>: ... from <box>".
+- `R/examples.R` — `flow_example("lab")`, `flow_example("trial")` (invented CONSORT 2025-style trial), `flow_example("survey")` (invented DHS-style household survey); each example records its source in `attr(, "source")`.
 
 Scope for MVP: vertical top-down flows and the bracket merge. Horizontal/crossing flows and CRAN submission come later.
 

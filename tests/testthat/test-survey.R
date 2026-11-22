@@ -79,7 +79,7 @@ test_that("the survey describes methods and summary boxes", {
   txt <- unclass(flow_describe(flow_example("survey")))
   expect_match(txt, "Clusters, selected by probability proportional to size: 40 EAs selected from Urban under North;",
                fixed = TRUE)
-  expect_match(txt, "(each box stands for several boxes, not drawn)",
+  expect_match(txt, "these are summary boxes, and the boxes they stand for are not drawn one by one",
                fixed = TRUE)
   expect_match(txt, "Households, selected by systematic random sampling: 25 per EA (n = 1,000)",
                fixed = TRUE)
@@ -87,6 +87,55 @@ test_that("the survey describes methods and summary boxes", {
                fixed = TRUE)
   expect_match(txt, "Analysis: the outcome is Women interviewed (n = 7,904)",
                fixed = TRUE)
+  # a repeated box is named the same way in every sentence, down to a box
+  # that is unique ("under Urban" alone would match three boxes)
+  expect_match(txt, "25 per EA (n = 1,000) from 40 EAs selected under Urban under North;",
+               fixed = TRUE)
+  expect_match(txt, "25 per EA (n = 1,500) from 60 EAs selected;", fixed = TRUE)
+  expect_false(grepl("under Urban;", txt, fixed = TRUE))
+})
+
+test_that("summary rows work with from =, exclusions and brackets", {
+  base <- flow_start("Frame") |>
+    flow_split("Region", c("N", "S", "C"))
+  part <- flow_cluster(base, "Cl", 5, from = c("N", "S"),
+                       summary = "{k} villages")
+  expect_equal(flow_nodes(part)$label[part$leaves], c("5 villages",
+                                                      "5 villages", "C"))
+  expect_match(flow_describe(part), "Cl: 5 villages, from each of N and S;",
+               fixed = TRUE)
+  full <- base |>
+    flow_cluster("Cl", c(4, 6, 8), summary = "{k} EAs") |>
+    flow_exclude("Not visited", n = 1) |>
+    flow_select("HH", "20 per EA") |>
+    flow_apply("Pooled", "All households", over = "Frame")
+  for (con in c("elbow", "straight")) {
+    lay <- flow_layout(full, connector = con)
+    expect_equal(boxes_overlap(all_boxes(lay)), 0)
+    expect_equal(crossings(lay), 0)
+  }
+  expect_match(flow_describe(full),
+               "Pooled: All households, applied across all 3 boxes",
+               fixed = TRUE)
+})
+
+test_that("the wide-row warning also counts exclusion boxes", {
+  d <- flow_start("All") |>
+    flow_split("Few", as.character(1:21), display = "summary") |>
+    flow_split("One each", as.character(1:21), display = "summary")
+  expect_silent(flow_layout(d))
+  # end boxes on two rows (11 + 10), no row over 20 boxes; one exclusion box
+  # each puts 21 exclusion boxes on one row
+  two_rows <- flow_start("All") |>
+    flow_split("A", paste0("a", 1:12)) |>
+    flow_split("B", paste0("b", 1:10), from = "a1")
+  expect_silent(flow_layout(two_rows))
+  expect_warning(flow_layout(flow_exclude(two_rows, "Out")), "more than 20")
+})
+
+test_that("count errors read correctly for a single box", {
+  expect_error(flow_cluster(flow_start("a"), "C", 3, n = c(1, 2)),
+               "there is 1 box to fill")
 })
 
 test_that("survey layout: no overlaps, no crossings, fits a page when scaled", {

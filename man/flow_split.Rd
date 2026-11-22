@@ -25,7 +25,8 @@ flow_split(
 list with one character vector per current box (for different children
 under different boxes, including one-to-one steps). With
 \code{display = "summary"} it may also be the number of boxes under each
-current box: one number for all, or one per box.}
+current box: one number for all, or one per box. With text labels, a
+summary shows only how many there are, not the labels themselves.}
 
 \item{n}{Optional counts, drawn exactly as given: one value for all new
 boxes, one per label, one per new box, or a list matching \code{labels}.
