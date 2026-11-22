@@ -13,3 +13,5 @@
 ^docs$
 ^pkgdown$
 ^\.Rprofile$
+^ROADMAP\.md$
+^CLAUDE\.local\.md$
