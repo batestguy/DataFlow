@@ -226,3 +226,17 @@ what is still open.
   `workflow_dispatch` and started it by hand: run 44993834534 passed on all
   five platforms (macOS, Windows, Ubuntu release, devel, oldrel-1).
 - Open: whether pushes now trigger runs on their own.
+
+### 2026-11-22 — Push-triggered CI fixed
+- Symptom: GitHub received every push (repository activity log) and other
+  apps got check suites, but Actions created none for 7 pushes to `main`.
+  Not explained by GitHub status (all operational), branch or path filters,
+  token type, or turning the workflow off and on.
+- Adding a second, minimal `on: push` workflow made both it and
+  `R-CMD-check` start on that push; after removing it, an ordinary push
+  started `R-CMD-check` by itself (run 44996079146, green on all 5
+  platforms). Root cause on GitHub's
+  side not established: most likely the push trigger was not registered for
+  the new repository until a workflow file was added.
+- The empty test commits (`3661372`, `88a62a9`) and the temporary workflow
+  stay in history.
