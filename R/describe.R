@@ -107,7 +107,7 @@ assign_verb <- function(method) {
 # Other reasons (n = 13)", one clause per exclusion box.
 describe_exclude <- function(x, stage_id, name, flat) {
   sd <- x$side[x$side$stage == stage_id, ]
-  rs <- x$reasons
+  rs <- x$reasons %||% empty_reasons()
   parts <- vapply(seq_len(nrow(sd)), function(i) {
     extra <- c(if (!is.na(sd$n[i])) paste0("n = ", sd$n[i]),
                if (!is.na(sd$note[i])) flat_note(sd$note[i]))
@@ -205,5 +205,6 @@ and_list <- function(x) {
   paste0(paste(x[-length(x)], collapse = ", "), " and ", x[length(x)])
 }
 
-# Notes may span several lines; in a sentence the lines are joined with "; ".
-flat_note <- function(s) gsub("[[:space:]]*\n[[:space:]]*", "; ", s)
+# Notes may span several lines; in a sentence the lines are joined with ", "
+# (the "; " separator is kept for between the count and the note).
+flat_note <- function(s) gsub("[[:space:]]*\n[[:space:]]*", ", ", s)

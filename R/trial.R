@@ -102,6 +102,10 @@ flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
     row_label <- ""
   } else {
     check_string(stage, "stage")
+    if (stage == "") {
+      stop("`stage` must not be empty; leave it out for no row label.",
+           call. = FALSE)
+    }
     name <- stage
     row_label <- stage
   }
@@ -142,6 +146,10 @@ parse_reasons <- function(r) {
   if (anyNA(names(r)) || any(names(r) == "")) {
     stop("Every reason needs a name, e.g. c(\"Declined\" = 12).",
          call. = FALSE)
+  }
+  if (anyNA(r)) {
+    stop("A named reason has a missing count. Give every reason a count, ",
+         "or give the reasons as unnamed text without counts.", call. = FALSE)
   }
   data.frame(label = names(r), n = format_n(unname(r)),
              stringsAsFactors = FALSE)

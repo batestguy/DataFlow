@@ -48,6 +48,16 @@ test_that("exclusion reasons: unnamed, per box, and bad input", {
   expect_error(flow_exclude(d, "Lost", reasons = c(a = 1, 2)),
                "needs a name")
   expect_error(flow_exclude(d, ""), "not empty")
+  # a missing count would read as if a later count covered it
+  expect_error(flow_exclude(d, "Lost", reasons = c(a = NA, b = 2)),
+               "missing count")
+  expect_error(flow_exclude(d, "Lost", stage = ""), "must not be empty")
+})
+
+test_that("objects without a reasons table are still described", {
+  z <- flow_exclude(flow_start("a"), "x")
+  z$reasons <- NULL
+  expect_match(flow_describe(z), "x after a")
 })
 
 test_that("exclusions hang off end boxes only and get unique stage names", {
@@ -167,7 +177,7 @@ test_that("the trial is described in plain sentences", {
       "Randomisation: Assessed for eligibility leads to Randomised",
       "(n = 300).",
       "Allocation: Randomised is randomly assigned to Exercise programme",
-      "(n = 150; Received allocated intervention (n = 146); Did not receive",
+      "(n = 150; Received allocated intervention (n = 146), Did not receive",
       "it (n = 4)) and Usual care (n = 150; Received usual care (n = 150)).",
       "Follow-up: Lost to follow-up (n = 9) after Exercise programme: Moved",
       "away (n = 5) and Withdrew consent (n = 4); Lost to follow-up (n = 6)",

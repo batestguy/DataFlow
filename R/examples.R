@@ -56,7 +56,8 @@ flow_example <- function(name = c("lab", "trial")) {
     ),
     trial = paste(
       "Invented two-arm trial following the layout of the CONSORT 2025 flow",
-      "diagram (Hopewell et al., BMJ 2025;388:e081123). Numbers are made up",
+      "diagram (Hopewell et al., BMJ 2025;389:e081123,",
+      "doi:10.1136/bmj-2024-081123). Numbers are made up",
       "for illustration and do not describe a real study."
     )
   )

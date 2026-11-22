@@ -15,7 +15,7 @@ milestone step; the progress log at the bottom is append-only.
 |---|---|---|---|
 | 0 | Scaffold | ✅ public repo, CI green on 5 platforms | 2026-11-22 |
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
-| 2 | Randomised trial with dropouts | 🟡 built; review and picture approval pending | — |
+| 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ⬜ | — |
 | 4 | Factorial design | ⬜ | — |
 | 5 | Examples from recent papers | ⬜ | — |
@@ -83,7 +83,7 @@ viewed it, and the user approves it.
 **Status:** built, two review rounds passed (see log). Lab diagram renders at
 6.75 × 6.26 in. Approved by the user on 2026-11-22 and merged into `main`.
 
-### Milestone 2 — Randomised trial with dropouts 🟡
+### Milestone 2 — Randomised trial with dropouts ✅
 
 **Delivers:** `flow_assign` (arms, `method = "random"` etc.),
 `flow_exclude` (side box with reasons and counts), side-box layout to the
@@ -96,10 +96,10 @@ arms, and losses to follow-up renders cleanly and the user approves it.
 and counts described in the alt text; validator requires every exclusion to
 have a parent.
 
-**Status:** built on branch `m2-trial` (2026-11-22). Example follows the
-CONSORT 2025 flow diagram (Hopewell et al., BMJ 2025;388:e081123) with
-invented numbers. Awaiting independent review and the user's approval of the
-picture.
+**Status:** built and reviewed (2026-11-22). Example follows the CONSORT
+2025 flow diagram (Hopewell et al., BMJ 2025;389:e081123,
+doi:10.1136/bmj-2024-081123) with invented numbers. Picture approved by the
+user on 2026-11-22; merged into `main`.
 
 ### Milestone 3 — Multi-stage cluster survey ⬜
 
@@ -153,12 +153,19 @@ A separate decision, taken after milestone 6.
   Drawing far below the natural size can make text spill out of boxes.
 - Top-to-bottom diagrams only.
 - `display = "summary"` is not built yet (errors until milestone 3).
+- Exclusion boxes always sit to the right of the line they hang off. Long
+  reasons are not wrapped, so many wide exclusion boxes make wide diagrams.
+- Reasons are listed with an ASCII "- " and a fixed "(n = ...)"; they do not
+  follow `count_format` or `side_format`.
+- Where a bracket joins boxes that have exclusion boxes below them, the join
+  is drawn as a plain horizontal line under the exclusion boxes (no end
+  ticks).
+- The "more than 20 boxes in a row" warning does not count exclusion boxes.
 
 ## Open risks
 
 - Wide designs in `"all"` mode may not fit a journal page until summary rows
   exist (milestone 3).
-- CI has not run yet; the first push may surface platform differences.
 - Reviews so far were by the same model family as the builder; a
   cross-family review is advisable before the first public release.
 
@@ -269,3 +276,23 @@ what is still open.
   both fixed; their regression tests were confirmed to fail without the fix.
   Pictures viewed: the trial and all awkward designs.
 - Open: independent review; user approval of the trial picture.
+
+### 2026-11-22 — Milestone 2: review and approval
+- Independent review (same model family) re-ran 244 tests and the check
+  (0/0/0), reproduced the 400-design stress result, ran its own wider random
+  designs (five seeds, varied font sizes and gaps: 0 problems) and hand-built
+  awkward cases, and confirmed milestone 1 layouts are identical to `main`
+  on 200 random designs. It could not check the claim that the regression
+  tests fail without the fixes (single commit); that was checked in-session
+  by swapping the old layout code back in (1 crossing each).
+- Fixed from the review: CONSORT citation volume 388 -> 389 (verified
+  against the BMJ record) with DOI; named reasons with a missing count are
+  refused (the description read as if one count covered two reasons);
+  `flow_exclude(stage = "")` refused; note lines joined with ", " in
+  descriptions (was "; ", the same as the count separator); describe copes
+  with objects that have no reasons table; CLAUDE.md and the known
+  limitations brought up to date.
+- Not changed (recorded as limitations): reasons ignore `count_format`; no
+  wrapping of long reasons; the wide-row warning ignores exclusion boxes.
+- User approved the trial picture. 247 tests pass; check 0/0/0.
+- A cross-family review is still advisable before the first release.
