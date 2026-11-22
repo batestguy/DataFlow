@@ -424,4 +424,5 @@ what is still open.
   (in 4), machine-learning designs (5) and reporting-guideline templates
   (6); examples, documentation and CRAN move to 7 to 9; time-based designs
   become a later track. Positioning section added. Open decision: optional
-  counts computed from data.
+  counts computed from data. Merged into `main` (`dca78c6`); CI run
+  45002933135 green on all 5 platforms.
