@@ -2,7 +2,8 @@ Package: DataFlow
 Title: Publication-Quality Study-Design Flow Diagrams
 Version: 0.0.0.9000
 Authors@R:
-    person("batestguy", email = "jzbannister@atbu.edu.ng", role = c("aut", "cre"))
+    person("Jerry", "Bannister", email = "jzbannister@atbu.edu.ng",
+           role = c("aut", "cre"), comment = "aka batestguy")
 Description: Build study-design flow diagrams (sampling, clustering,
     selection, assignment, splits, exclusions and merges) with a small set of
     pipe-friendly verbs, and draw them as 'ggplot2' graphics for publication.

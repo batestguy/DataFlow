@@ -215,3 +215,7 @@ what is still open.
   `053a91d` → `339381a`, `8d99630` → `48537fc`, `4d405c9` → `1e4a1b1`.
 - `m1-lab-design` merged into `main`; both branches pushed.
 - Open: result of the first CI run on GitHub.
+
+### 2026-11-22 — Author name
+- Author in DESCRIPTION set to Jerry Bannister (aka batestguy), at the
+  user's request. Future commits in this repo use the same name.

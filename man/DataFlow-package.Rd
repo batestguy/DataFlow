@@ -9,11 +9,11 @@
 Build study-design flow diagrams (sampling, clustering, selection, assignment, splits, exclusions and merges) with a small set of pipe-friendly verbs, and draw them as 'ggplot2' graphics for publication. Counts are drawn exactly as typed; they are never computed or checked. Every diagram also has a plain-language written description for use as alternative text.
 }
 \author{
-\strong{Maintainer}: batestguy \email{jzbannister@atbu.edu.ng}
+\strong{Maintainer}: Jerry Bannister \email{jzbannister@atbu.edu.ng} (aka batestguy)
 
 Authors:
 \itemize{
-  \item batestguy \email{jzbannister@atbu.edu.ng}
+  \item Jerry Bannister \email{jzbannister@atbu.edu.ng} (aka batestguy)
 }
 
 }
