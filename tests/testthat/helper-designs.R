@@ -28,7 +28,13 @@ irregular_designs <- function() {
 # start or end boxes.
 crossings <- function(lay) {
   b <- lay$boxes
-  sg <- lay$segments
+  sg <- lay$segments[, c("x", "y", "xend", "yend")]
+  # bracket paths, as segments between consecutive points
+  for (g in split(lay$brackets, lay$brackets$group)) {
+    k <- nrow(g)
+    sg <- rbind(sg, data.frame(x = g$x[-k], y = g$y[-k],
+                               xend = g$x[-1], yend = g$y[-1]))
+  }
   eps <- 1e-6
   hits <- 0
   for (i in seq_len(nrow(sg))) {
