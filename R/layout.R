@@ -147,11 +147,11 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     list(trunk = rows[rows <= last], rest = rows[rows > last])
   }
 
-  per_row <- table(row)
+  per_row <- table(c(row, side_row))
   if (any(per_row > 20)) {
     warning("Some rows have more than 20 boxes and may not fit a page. ",
-            "Consider shorter labels or fewer boxes; a summary display for ",
-            "large stages is planned.", call. = FALSE)
+            "Draw large stages as one box per group with ",
+            "display = \"summary\", or use shorter labels.", call. = FALSE)
   }
 
   # --- horizontal positions (contour packing over the anchor tree) -------

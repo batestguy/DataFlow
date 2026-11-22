@@ -27,8 +27,9 @@ flow_apply(
 
 \item{over}{Optional name of an earlier stage to group by (draws brackets).}
 
-\item{display}{\code{"all"} draws every box. \code{"summary"} is planned for a later
-version.}
+\item{display}{\code{"all"} draws every box. \code{"summary"} draws one box under
+each current box standing for all of its boxes in this stage, labelled
+by \code{summary}; use it for stages too large to draw box by box.}
 
 \item{from}{Optional box ids or labels to split instead of all current end
 boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}

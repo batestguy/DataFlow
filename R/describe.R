@@ -57,15 +57,26 @@ flow_describe <- function(x) {
         if (st$row_label[s] != "") paste0(st$name[s], ": "), body, "."))
       next
     }
+    head <- st$name[s]
     if (type %in% c("split", "assign")) {
       verb <- if (type == "split") "split into" else
         assign_verb(st$method[s])
       body <- describe_split(ids, srcs, say, name, whole_row, verb)
+    } else if (type %in% c("cluster", "select")) {
+      # "Clusters, selected by <method>: 40 EAs selected from Urban; ..."
+      if (!is.na(st$method[s])) {
+        head <- paste0(head, ", selected by ", st$method[s])
+      }
+      body <- describe_attach(x, s, ids, srcs, say, name, whole_row,
+                              link = "from")
     } else {
       body <- describe_attach(x, s, ids, srcs, say, name, whole_row)
       if (type == "outcome") body <- paste0("the outcome is ", body)
     }
-    sentences <- c(sentences, paste0(st$name[s], ": ", body, "."))
+    if (st$display[s] == "summary") {
+      body <- paste0(body, " (each box stands for several boxes, not drawn)")
+    }
+    sentences <- c(sentences, paste0(head, ": ", body, "."))
   }
   structure(paste(sentences, collapse = " "), class = "dataflow_description")
 }
@@ -124,7 +135,8 @@ describe_exclude <- function(x, stage_id, name, flat) {
   paste(parts, collapse = "; ")
 }
 
-describe_attach <- function(x, s, ids, srcs, say, name, whole_row) {
+describe_attach <- function(x, s, ids, srcs, say, name, whole_row,
+                            link = "after") {
   st <- x$stages
   nd <- x$nodes
   texts <- vapply(ids, say, "")
@@ -142,7 +154,7 @@ describe_attach <- function(x, s, ids, srcs, say, name, whole_row) {
       paste0("across all ", length(srcs[[i]]), " boxes under ",
              name(groups[i]))
     } else {
-      paste0("after ", name(srcs[[i]]))
+      paste0(link, " ", name(srcs[[i]]))
     }
   }, "")
   if (length(unique(texts)) == 1) {
@@ -159,7 +171,8 @@ describe_attach <- function(x, s, ids, srcs, say, name, whole_row) {
         return(paste0(texts[1], ", for each of the ", length(all_src),
                       " boxes in the ", row, " row"))
       }
-      return(paste0(texts[1], ", after each of ", and_list(name(all_src))))
+      return(paste0(texts[1], ", ", link, " each of ",
+                    and_list(name(all_src))))
     }
   }
   paste(paste(texts, part), collapse = "; ")

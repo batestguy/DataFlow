@@ -16,7 +16,7 @@ milestone step; the progress log at the bottom is append-only.
 | 0 | Scaffold | ✅ public repo, CI green on 5 platforms | 2026-11-22 |
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
-| 3 | Multi-stage cluster survey | ⬜ | — |
+| 3 | Multi-stage cluster survey | 🟡 built; review and picture approval pending | — |
 | 4 | Factorial design | ⬜ | — |
 | 5 | Examples from recent papers | ⬜ | — |
 | 6 | Documentation and website | ⬜ | — |
@@ -101,7 +101,7 @@ have a parent.
 doi:10.1136/bmj-2024-081123) with invented numbers. Picture approved by the
 user on 2026-11-22; merged into `main`.
 
-### Milestone 3 — Multi-stage cluster survey ⬜
+### Milestone 3 — Multi-stage cluster survey 🟡
 
 **Delivers:** `flow_select` (sampling/selection, `method =`),
 `flow_cluster` (cluster sampling), and `display = "summary"` for stages too
@@ -112,6 +112,12 @@ large to draw box by box.
 
 **Checks:** a summary stage draws one box per parent; the layout warns for
 rows over about 20 boxes and now points to `display = "summary"`.
+
+**Status:** built on branch `m3-survey` (2026-11-22). Example
+`flow_example("survey")`: an invented two-stage household survey in the
+style of a Demographic and Health Survey. Natural size 7.50 x 10.24 in at
+9 pt; scaled to a 6.5 in text width the text is about 7.8 pt. Awaiting
+review and the user's approval of the picture.
 
 ### Milestone 4 — Factorial design ⬜
 
@@ -152,7 +158,11 @@ A separate decision, taken after milestone 6.
   font families trigger one warning and may not fit their boxes exactly.
   Drawing far below the natural size can make text spill out of boxes.
 - Top-to-bottom diagrams only.
-- `display = "summary"` is not built yet (errors until milestone 3).
+- `display = "summary"` works for steps that split boxes (`flow_split`,
+  `flow_assign`, `flow_cluster`); the summary box shows a count, not the
+  names of the boxes it stands for.
+- Large designs can still exceed a page at 9 pt (the survey example is
+  7.5 x 10.2 in); journals scale figures, or use a smaller `base_size`.
 - Exclusion boxes always sit to the right of the line they hang off. Long
   reasons are not wrapped, so many wide exclusion boxes make wide diagrams.
 - Reasons are listed with an ASCII "- " and a fixed "(n = ...)"; they do not
@@ -160,12 +170,9 @@ A separate decision, taken after milestone 6.
 - Where a bracket joins boxes that have exclusion boxes below them, the join
   is drawn as a plain horizontal line under the exclusion boxes (no end
   ticks).
-- The "more than 20 boxes in a row" warning does not count exclusion boxes.
 
 ## Open risks
 
-- Wide designs in `"all"` mode may not fit a journal page until summary rows
-  exist (milestone 3).
 - Reviews so far were by the same model family as the builder; a
   cross-family review is advisable before the first public release.
 
@@ -297,3 +304,28 @@ what is still open.
 - User approved the trial picture. 247 tests pass; check 0/0/0. Merged
   into `main` (`4f8cd31`); CI run 44999943531 green on all 5 platforms.
 - A cross-family review is still advisable before the first release.
+
+### 2026-11-22 — Milestone 3: survey design built
+- `display = "summary"` for `flow_split` and `flow_assign`, and the default
+  for the new `flow_cluster()` (cluster sampling): one box per current box,
+  labelled by a `summary` template with `{k}` (number of boxes it stands
+  for; `labels` may be that number) and `{stage}`.
+- New `flow_select()` (units selected within each box, e.g. households per
+  EA) with `method =`. Methods of `flow_cluster`/`flow_select` are described
+  as "<stage>, selected by <method>: ... from <box>".
+- Descriptions of summary stages say each box stands for several boxes not
+  drawn. The wide-row warning now points to `display = "summary"` and counts
+  exclusion boxes. `display = "summary"` on `flow_apply`/`flow_outcome`
+  is refused with an explanation.
+- `flow_example("survey")`: invented household survey (frame of 9,200 EAs,
+  3 regions x urban/rural, 270 EAs by PPS shown as 6 summary boxes, 25
+  households per EA, non-response boxes for households and women). Region
+  names are invented on purpose so the numbers cannot be mistaken for a real
+  survey. Arithmetic: 3,100+2,800+3,300 = 9,200; strata sum to their
+  regions; 270 EAs x 25 = 6,750 households; 6,750-412 = 6,338;
+  8,211-307 = 7,904; reasons sum to their totals.
+- Checked: 293 tests pass (46 new); `devtools::check()` 0/0/0; lab and
+  trial picture snapshots unchanged; 400 random designs mixing every step
+  including cluster, select and summary splits (seed 20261123,
+  `dev/stress3.R`): 0 overlaps, 0 lines through boxes. Picture viewed.
+- Open: independent review; user approval of the survey picture.

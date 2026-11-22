@@ -89,9 +89,14 @@ test_that("stage names must be unique and `over` must exist", {
   expect_error(flow_apply(d, "T", "t", over = "Nope"), "no stage")
 })
 
-test_that("display = 'summary' is refused until it is built", {
-  expect_error(flow_start("C") |> flow_split("S", "a", display = "summary"),
-               "not available yet")
+test_that("display = 'summary' is refused where it means nothing", {
+  d <- flow_start("C") |> flow_split("S", c("a", "b"))
+  expect_error(flow_apply(d, "T", "x", display = "summary"),
+               "for steps that split boxes")
+  expect_error(flow_outcome(d, "T", "x", display = "summary"),
+               "for steps that split boxes")
+  expect_error(flow_split(d, "T", "x", display = "some"),
+               "must be \"all\" or \"summary\"")
 })
 
 test_that("validator catches broken objects", {

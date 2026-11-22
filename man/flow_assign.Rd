@@ -12,7 +12,9 @@ flow_assign(
   note = NULL,
   method = "random",
   from = NULL,
-  row_label = NULL
+  row_label = NULL,
+  display = "all",
+  summary = "{k} {stage}"
 )
 }
 \arguments{
@@ -25,7 +27,8 @@ A list gives different groups under different boxes, as in
 \code{\link[=flow_split]{flow_split()}}.}
 
 \item{n}{Optional counts, drawn exactly as given: one value for all new
-boxes, one per label, one per new box, or a list matching \code{labels}.}
+boxes, one per label, one per new box, or a list matching \code{labels}.
+With \code{display = "summary"}: one value, or one per summary box.}
 
 \item{note}{Optional notes, recycled like \code{n}.}
 
@@ -40,6 +43,14 @@ boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}
 \item{row_label}{Text drawn in the left margin for this row. Defaults to
 \code{stage}; use \code{""} for no label (e.g. when a row continues the section
 labelled above it).}
+
+\item{display}{\code{"all"} draws every box. \code{"summary"} draws one box under
+each current box standing for all of its boxes in this stage, labelled
+by \code{summary}; use it for stages too large to draw box by box.}
+
+\item{summary}{Label of each summary box. \code{{k}} is replaced by the number
+of boxes it stands for and \code{{stage}} by the stage name, e.g.
+\code{"{k} districts"}.}
 }
 \value{
 The updated \code{dataflow}.

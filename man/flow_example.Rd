@@ -4,7 +4,7 @@
 \alias{flow_example}
 \title{Example study designs}
 \usage{
-flow_example(name = c("lab", "trial"))
+flow_example(name = c("lab", "trial", "survey"))
 }
 \arguments{
 \item{name}{Which example.}
@@ -27,9 +27,16 @@ own figures, drawn as given.
 2025 flow diagram (enrolment, allocation, follow-up, analysis), with an
 exclusion box at screening and losses to follow-up in each arm. All
 numbers are invented for illustration.
+\item \code{"survey"}: a made-up two-stage household survey in the style of a
+Demographic and Health Survey: enumeration areas (clusters) selected
+within urban and rural strata of three regions, households sampled in
+each, then eligible women interviewed, with non-response shown beside
+the flow. Clusters are drawn as summary boxes. Region names and all
+numbers are invented for illustration.
 }
 }
 \examples{
 flow_example("lab")
 flow_example("trial")
+flow_example("survey")
 }

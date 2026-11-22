@@ -23,11 +23,15 @@ check_flow <- function(x) {
   }
 }
 
-check_display <- function(display) {
-  display <- match.arg(display, c("all", "summary"))
-  if (display == "summary") {
-    stop("display = \"summary\" is not available yet; it arrives in a later ",
-         "version. Use display = \"all\".", call. = FALSE)
+check_display <- function(display, summary_ok = FALSE) {
+  if (!is.character(display) || length(display) != 1 ||
+      !display %in% c("all", "summary")) {
+    stop("`display` must be \"all\" or \"summary\".", call. = FALSE)
+  }
+  if (display == "summary" && !summary_ok) {
+    stop("display = \"summary\" is for steps that split boxes ",
+         "(flow_split(), flow_assign(), flow_cluster()). This step already ",
+         "draws one box per group.", call. = FALSE)
   }
   display
 }
@@ -195,12 +199,19 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
 #' @param stage Name of the new stage; drawn as the row label.
 #' @param labels Either a character vector, used for every current box, or a
 #'   list with one character vector per current box (for different children
-#'   under different boxes, including one-to-one steps).
+#'   under different boxes, including one-to-one steps). With
+#'   `display = "summary"` it may also be the number of boxes under each
+#'   current box: one number for all, or one per box.
 #' @param n Optional counts, drawn exactly as given: one value for all new
 #'   boxes, one per label, one per new box, or a list matching `labels`.
+#'   With `display = "summary"`: one value, or one per summary box.
 #' @param note Optional notes, recycled like `n`.
-#' @param display `"all"` draws every box. `"summary"` is planned for a later
-#'   version.
+#' @param display `"all"` draws every box. `"summary"` draws one box under
+#'   each current box standing for all of its boxes in this stage, labelled
+#'   by `summary`; use it for stages too large to draw box by box.
+#' @param summary Label of each summary box. `{k}` is replaced by the number
+#'   of boxes it stands for and `{stage}` by the stage name, e.g.
+#'   `"{k} districts"`.
 #' @param from Optional box ids or labels to split instead of all current end
 #'   boxes. See [flow_nodes()].
 #' @param row_label Text drawn in the left margin for this row. Defaults to
@@ -213,18 +224,36 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_split("Culture type", list("Type A", "Type B"), n = 50)
 flow_split <- function(.flow, stage, labels, n = NULL, note = NULL,
-                       display = "all", from = NULL, row_label = NULL) {
+                       display = "all", from = NULL, row_label = NULL,
+                       summary = "{k} {stage}") {
   check_flow(.flow)
   check_string(stage, "stage")
-  display <- check_display(display)
+  display <- check_display(display, summary_ok = TRUE)
   split_boxes(.flow, stage, labels, n, note, from,
-              pick_row_label(row_label, stage), "split", display)
+              pick_row_label(row_label, stage), "split", display,
+              summary = summary)
 }
 
-# Shared engine for one-to-many steps (split, assign).
+# Shared engine for one-to-many steps (split, assign, cluster).
 split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
-                        display, method = NA_character_) {
+                        display, method = NA_character_,
+                        summary = "{k} {stage}") {
   targets <- resolve_targets(.flow, from)
+  if (display == "summary") {
+    check_string(summary, "summary")
+    k <- summary_counts(labels, length(targets))
+    labels <- as.list(vapply(k, function(one) {
+      out <- gsub("{k}", format_n(one), summary, fixed = TRUE)
+      gsub("{stage}", stage, out, fixed = TRUE)
+    }, character(1)))
+    if (any(unlist(labels) == "")) {
+      stop("`summary` gives an empty label.", call. = FALSE)
+    }
+  } else if (is.numeric(labels)) {
+    stop("A number of boxes can only be drawn as one summary box; use ",
+         "display = \"summary\", or give the box labels as text.",
+         call. = FALSE)
+  }
   if (is.list(labels)) {
     if (length(labels) != length(targets)) {
       stop("`labels` is a list of ", length(labels), " but there are ",
@@ -261,6 +290,41 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
   validate_dataflow(x)
 }
 
+# How many boxes each summary box stands for, one per box being split: from
+# numbers (one, or one per box), a text vector (its length, for every box), or
+# a list (one element per box, each text or a single number).
+summary_counts <- function(labels, k_targets) {
+  count_of <- function(v) {
+    if (is.numeric(v)) {
+      if (length(v) != 1 || is.na(v) || v < 1 || v != round(v)) {
+        stop("A number of boxes must be a single whole number of 1 or more.",
+             call. = FALSE)
+      }
+      return(v)
+    }
+    if (is.character(v) && length(v) > 0 && !anyNA(v) && all(v != "")) {
+      return(length(v))
+    }
+    stop("`labels` must be text or numbers of boxes.", call. = FALSE)
+  }
+  if (is.list(labels)) {
+    if (length(labels) != k_targets) {
+      stop("`labels` is a list of ", length(labels), " but there are ",
+           k_targets, " boxes to split. Give one element per box.",
+           call. = FALSE)
+    }
+    return(vapply(labels, count_of, numeric(1)))
+  }
+  if (is.numeric(labels)) {
+    if (length(labels) != 1 && length(labels) != k_targets) {
+      stop("Give one number of boxes, or one per box being split (",
+           k_targets, ").", call. = FALSE)
+    }
+    return(vapply(rep_len(labels, k_targets), count_of, numeric(1)))
+  }
+  rep(count_of(labels), k_targets)
+}
+
 # Values for the boxes of a split. A list gives one element per box being
 # split, each recycled to that box's children; anything else goes through
 # recycle_values().
@@ -280,7 +344,8 @@ per_box_values <- function(values, fmt, per_target, arg, per) {
 # Shared engine for verbs that add one box per group of current boxes.
 # Groups of one are joined by an arrow; larger groups by a bracket.
 attach_per_group <- function(x, stage, label, n, note, over, from, type,
-                             display, row_label = stage) {
+                             display, row_label = stage,
+                             method = NA_character_) {
   targets <- resolve_targets(x, from)
   if (is.null(over)) {
     groups <- as.list(targets)
@@ -321,7 +386,7 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
   }, integer(1))
 
   s <- add_stage(x, stage, row_label, type, display,
-                 over %||% NA_character_)
+                 over %||% NA_character_, method = method)
   a <- add_nodes(s$x, s$id, labels, n_vals, note_vals, anchors)
   x <- a$x
   for (i in seq_len(k)) {
