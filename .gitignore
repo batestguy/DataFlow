@@ -8,3 +8,5 @@ dev/
 Rplots.pdf
 # 6 MB reference photo: keep out of git (use a downscaled copy if needed)
 RDT_*.jpg
+# Session handover notes (transient)
+CLAUDE.local.md
