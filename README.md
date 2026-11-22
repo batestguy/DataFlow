@@ -14,8 +14,6 @@ summary rows are planned.
 
 ## Install
 
-The GitHub repository is not public yet. Once it is:
-
 ```r
 # install.packages("remotes")
 remotes::install_github("batestguy/DataFlow")

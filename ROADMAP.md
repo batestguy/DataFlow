@@ -13,8 +13,8 @@ milestone step; the progress log at the bottom is append-only.
 
 | # | Milestone | Status | Approved by user |
 |---|---|---|---|
-| 0 | Scaffold | 🟡 local repo done; public GitHub repo awaiting go-ahead | — |
-| 1 | Lab design | 🟡 built and reviewed; picture awaiting approval | — |
+| 0 | Scaffold | ⏳ public repo created and pushed; first CI run pending | 2026-11-22 (go-ahead) |
+| 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 2 | Randomised trial with dropouts | ⬜ | — |
 | 3 | Multi-stage cluster survey | ⬜ | — |
 | 4 | Factorial design | ⬜ | — |
@@ -54,11 +54,11 @@ repository exists and the CI check is green on it.
 
 **Status:**
 - ✅ Local scaffold, git, renv, CI workflow file (2026-11-22).
-- ⏸ Create the public GitHub repository and push — needs the user's go-ahead.
-  Note: the author email in DESCRIPTION becomes public at that point.
+- ✅ Public GitHub repository `batestguy/DataFlow` created and pushed
+  (2026-11-22), author email changed to the user's university address first.
 - ⬜ First green CI run on GitHub (not yet observed).
 
-### Milestone 1 — Lab design 🟡
+### Milestone 1 — Lab design ✅
 
 **Delivers:** `flow_start`, `flow_split`, `flow_apply` (with `over =` for
 brackets), `flow_outcome`; layout engine `flow_layout()`; renderer
@@ -81,7 +81,7 @@ viewed it, and the user approves it.
 - `devtools::check()`: 0 errors, 0 warnings, 0 notes.
 
 **Status:** built, two review rounds passed (see log). Lab diagram renders at
-6.75 × 6.26 in. Awaiting the user's approval of the picture.
+6.75 × 6.26 in. Approved by the user on 2026-11-22 and merged into `main`.
 
 ### Milestone 2 — Randomised trial with dropouts ⬜
 
@@ -203,3 +203,15 @@ what is still open.
   lines (commit `053a91d`).
 - Open: user approval of the lab picture; go-ahead for the public GitHub
   repository.
+
+### 2026-11-22 — Milestone 1 approved; public repository
+- User approved the lab picture and gave the go-ahead for a public
+  repository at `github.com/batestguy/DataFlow`.
+- Author email changed from a personal address to `jzbannister@atbu.edu.ng`
+  in DESCRIPTION, and in the author/committer fields of all earlier commits
+  (rewritten before the first push, so nothing public changed). Commit ids
+  in the log entries above refer to the old history; the new ids are:
+  `3cea810` → `4f052ee`, `95a689c` → `1ecaf5b`, `636e896` → `868c061`,
+  `053a91d` → `339381a`, `8d99630` → `48537fc`, `4d405c9` → `1e4a1b1`.
+- `m1-lab-design` merged into `main`; both branches pushed.
+- Open: result of the first CI run on GitHub.
