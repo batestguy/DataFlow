@@ -15,7 +15,7 @@ milestone step; the progress log at the bottom is append-only.
 |---|---|---|---|
 | 0 | Scaffold | ✅ public repo, CI green on 5 platforms | 2026-11-22 |
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
-| 2 | Randomised trial with dropouts | ⬜ | — |
+| 2 | Randomised trial with dropouts | 🟡 built; review and picture approval pending | — |
 | 3 | Multi-stage cluster survey | ⬜ | — |
 | 4 | Factorial design | ⬜ | — |
 | 5 | Examples from recent papers | ⬜ | — |
@@ -83,7 +83,7 @@ viewed it, and the user approves it.
 **Status:** built, two review rounds passed (see log). Lab diagram renders at
 6.75 × 6.26 in. Approved by the user on 2026-11-22 and merged into `main`.
 
-### Milestone 2 — Randomised trial with dropouts ⬜
+### Milestone 2 — Randomised trial with dropouts 🟡
 
 **Delivers:** `flow_assign` (arms, `method = "random"` etc.),
 `flow_exclude` (side box with reasons and counts), side-box layout to the
@@ -95,6 +95,11 @@ arms, and losses to follow-up renders cleanly and the user approves it.
 **Checks:** side boxes don't cover arrows or other boxes; exclusion reasons
 and counts described in the alt text; validator requires every exclusion to
 have a parent.
+
+**Status:** built on branch `m2-trial` (2026-11-22). Example follows the
+CONSORT 2025 flow diagram (Hopewell et al., BMJ 2025;388:e081123) with
+invented numbers. Awaiting independent review and the user's approval of the
+picture.
 
 ### Milestone 3 — Multi-stage cluster survey ⬜
 
@@ -240,3 +245,27 @@ what is still open.
   the new repository until a workflow file was added.
 - The empty test commits (`3661372`, `88a62a9`) and the temporary workflow
   stay in history.
+
+### 2026-11-22 — Milestone 2: trial design built
+- New verbs `flow_assign()` (a split that records how boxes were assigned,
+  e.g. randomly; shown in the description only) and `flow_exclude()`
+  (exclusion box to the right of the line leaving each end box, with
+  optional reasons and counts; the flow continues below the same boxes).
+- New `row_label =` argument on `flow_split`, `flow_apply`, `flow_outcome`,
+  `flow_assign` (`""` hides a row label). `flow_example("trial")`: an
+  invented two-arm trial in the CONSORT 2025 layout.
+- Layout: each exclusion has its own row; the exclusion box is reserved in
+  its parent's outline so neighbouring branches make room for it; lines
+  that branch out below a parent with exclusion boxes, and brackets below
+  them, start under the exclusion boxes.
+- Description: "Excluded (n = 112) after ...: reason (n = 68), ...";
+  "randomly assigned to"; note lines joined with "; ".
+- Checked: 244 tests pass (112 new); `devtools::check()` 0/0/0; lab
+  picture snapshot unchanged; 9 awkward trial designs and 400 random designs
+  mixing all steps (795 exclusion boxes) gave 0 overlaps and 0 lines
+  through boxes in both connector styles. Random testing found two bugs
+  (a line to a lower exclusion box crossing a neighbour's exclusion box;
+  child lines skipping a row crossing their parent's own exclusion box),
+  both fixed; their regression tests were confirmed to fail without the fix.
+  Pictures viewed: the trial and all awkward designs.
+- Open: independent review; user approval of the trial picture.

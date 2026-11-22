@@ -28,7 +28,7 @@ flow_describe <- function(x) {
     i <- match(id, nd$id)
     out <- flat(nd$label[i])
     extra <- c(if (!is.na(nd$n[i])) paste0("n = ", nd$n[i]),
-               if (!is.na(nd$note[i])) flat(nd$note[i]))
+               if (!is.na(nd$note[i])) flat_note(nd$note[i]))
     if (length(extra)) paste0(out, " (", paste(extra, collapse = "; "), ")")
     else out
   }
@@ -51,8 +51,16 @@ flow_describe <- function(x) {
     ids <- nd$id[nd$stage == st$id[s]]
     type <- st$type[s]
     srcs <- lapply(ids, function(i) ed$from[ed$to == i])
-    if (type == "split") {
-      body <- describe_split(ids, srcs, say, name, whole_row)
+    if (type == "exclude") {
+      body <- describe_exclude(x, st$id[s], name, flat)
+      sentences <- c(sentences, paste0(
+        if (st$row_label[s] != "") paste0(st$name[s], ": "), body, "."))
+      next
+    }
+    if (type %in% c("split", "assign")) {
+      verb <- if (type == "split") "split into" else
+        assign_verb(st$method[s])
+      body <- describe_split(ids, srcs, say, name, whole_row, verb)
     } else {
       body <- describe_attach(x, s, ids, srcs, say, name, whole_row)
       if (type == "outcome") body <- paste0("the outcome is ", body)
@@ -62,29 +70,58 @@ flow_describe <- function(x) {
   structure(paste(sentences, collapse = " "), class = "dataflow_description")
 }
 
-describe_split <- function(ids, srcs, say, name, whole_row) {
+describe_split <- function(ids, srcs, say, name, whole_row,
+                           verb = "split into") {
   parents <- unique(unlist(srcs))
   kids <- lapply(parents, function(p) {
     ids[vapply(srcs, function(z) p %in% z, logical(1))]
   })
   kid_text <- vapply(kids, function(k) and_list(vapply(k, say, "")), "")
-  if (all(lengths(kids) == 1)) {
+  if (all(lengths(kids) == 1) && verb == "split into") {
     return(paste(paste0(name(parents), " leads to ", kid_text),
                  collapse = "; "))
   }
   if (length(unique(kid_text)) == 1) {
     if (length(parents) == 1) {
-      return(paste0(name(parents), " is split into ", kid_text[1]))
+      return(paste0(name(parents), " is ", verb, " ", kid_text[1]))
     }
     row <- whole_row(parents)
     if (!is.na(row)) {
       return(paste0("each of the ", length(parents), " boxes in the ", row,
-                    " row is split into ", kid_text[1]))
+                    " row is ", verb, " ", kid_text[1]))
     }
-    return(paste0(and_list(name(parents)), " are each split into ",
+    return(paste0(and_list(name(parents)), " are each ", verb, " ",
                   kid_text[1]))
   }
-  paste(paste0(name(parents), " is split into ", kid_text), collapse = "; ")
+  paste(paste0(name(parents), " is ", verb, " ", kid_text), collapse = "; ")
+}
+
+# "randomly assigned to", "assigned by minimisation to", "assigned to"
+assign_verb <- function(method) {
+  if (is.na(method)) return("assigned to")
+  if (method == "random") return("randomly assigned to")
+  paste0("assigned by ", method, " to")
+}
+
+# "Excluded (n = 112) after Assessed for eligibility: Declined (n = 31) and
+# Other reasons (n = 13)", one clause per exclusion box.
+describe_exclude <- function(x, stage_id, name, flat) {
+  sd <- x$side[x$side$stage == stage_id, ]
+  rs <- x$reasons
+  parts <- vapply(seq_len(nrow(sd)), function(i) {
+    extra <- c(if (!is.na(sd$n[i])) paste0("n = ", sd$n[i]),
+               if (!is.na(sd$note[i])) flat_note(sd$note[i]))
+    head <- paste0(flat(sd$label[i]),
+                   if (length(extra)) paste0(" (", paste(extra, collapse = "; "),
+                                             ")"),
+                   " after ", name(sd$parent[i]))
+    r <- rs[rs$side == sd$id[i], ]
+    if (nrow(r) == 0) return(head)
+    why <- ifelse(is.na(r$n), flat(r$label),
+                  paste0(flat(r$label), " (n = ", r$n, ")"))
+    paste0(head, ": ", and_list(why))
+  }, character(1))
+  paste(parts, collapse = "; ")
 }
 
 describe_attach <- function(x, s, ids, srcs, say, name, whole_row) {
@@ -167,3 +204,6 @@ and_list <- function(x) {
   if (length(x) == 2) return(paste(x, collapse = " and "))
   paste0(paste(x[-length(x)], collapse = ", "), " and ", x[length(x)])
 }
+
+# Notes may span several lines; in a sentence the lines are joined with "; ".
+flat_note <- function(s) gsub("[[:space:]]*\n[[:space:]]*", "; ", s)

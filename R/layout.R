@@ -25,9 +25,14 @@
 #'   wrapped onto several lines.
 #' @param connector `"elbow"` (right-angled lines, the default) or
 #'   `"straight"` (one straight arrow per box).
-#' @return A `dataflow_layout`: a list of data frames `boxes`, `segments`,
-#'   `brackets` and `row_labels`, plus `extent` (xmin, xmax, ymin, ymax) and
-#'   `size` (natural width and height in inches).
+#' @param side_format How an exclusion box's heading and count are combined,
+#'   as in `count_format`. Reasons are listed below it, one per line.
+#' @param side_gap Length of the arrow from the flow line to an exclusion
+#'   box, in inches.
+#' @return A `dataflow_layout`: a list of data frames `boxes`, `side`
+#'   (exclusion boxes), `segments`, `brackets` and `row_labels`, plus
+#'   `extent` (xmin, xmax, ymin, ymax) and `size` (natural width and height
+#'   in inches).
 #' @export
 #' @examples
 #' lay <- flow_start("Cultures", n = 100) |>
@@ -39,12 +44,15 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                         group_gap = 0.3,
                         pad_x = 0.08, pad_y = 0.06, min_width = 0.3,
                         row_label_width = 16,
-                        connector = c("elbow", "straight")) {
+                        connector = c("elbow", "straight"),
+                        side_format = "{label} (n = {n})", side_gap = 0.3) {
   validate_dataflow(x)
   connector <- match.arg(connector)
   st <- x$stages
   nd <- x$nodes
   ed <- x$edges
+  sd <- x$side %||% empty_side()
+  rs <- x$reasons %||% empty_reasons()
   line_in <- function(size) size * 1.2 / 72
   measure_family <- family
   if (!identical(family, "") &&
@@ -71,13 +79,29 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     if (s == "") "" else paste(strwrap(s, row_label_width), collapse = "\n")
   }, character(1), USE.NAMES = FALSE)
 
+  # exclusion boxes: heading (with count) then one line per reason
+  side_text <- vapply(seq_len(nrow(sd)), function(i) {
+    head <- if (is.na(sd$n[i])) sd$label[i] else {
+      out <- gsub("{label}", sd$label[i], side_format, fixed = TRUE)
+      gsub("{n}", sd$n[i], out, fixed = TRUE)
+    }
+    r <- rs[rs$side == sd$id[i], ]
+    lines <- ifelse(is.na(r$n), r$label, paste0(r$label, " (n = ", r$n, ")"))
+    paste(c(head, if (length(lines)) paste0("- ", lines)), collapse = "\n")
+  }, character(1))
+  side_has_note <- !is.na(sd$note)
+
   widths <- with_measure_device({
     list(
       main = text_width(text, base_size, measure_family, "plain"),
       note = ifelse(has_note,
                     text_width(ifelse(has_note, nd$note, ""), note_size,
                                measure_family, "italic"), 0),
-      row = text_width(rl_wrapped, base_size, measure_family, "bold")
+      row = text_width(rl_wrapped, base_size, measure_family, "bold"),
+      side = text_width(side_text, base_size, measure_family, "plain"),
+      side_note = ifelse(side_has_note,
+                         text_width(ifelse(side_has_note, sd$note, ""),
+                                    note_size, measure_family, "italic"), 0)
     )
   })
   n_lines <- function(s) lengths(strsplit(s, "\n", fixed = TRUE))
@@ -88,15 +112,40 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   text_h <- main_h + note_h
   h_box <- text_h + 2 * pad_y
 
+  side_main_h <- n_lines(side_text) * line_in(base_size)
+  side_note_h <- ifelse(side_has_note,
+                        n_lines(ifelse(side_has_note, sd$note, "")) *
+                          line_in(note_size) + 0.04, 0)
+  side_w <- pmax(min_width, pmax(widths$side, widths$side_note) + 2 * pad_x)
+  side_text_h <- side_main_h + side_note_h
+  side_h <- side_text_h + 2 * pad_y
+
   # --- rows ---------------------------------------------------------------
   row <- match(nd$stage, st$id)
+  side_row <- match(sd$stage, st$id)
   row_h <- vapply(seq_len(nrow(st)), function(r) {
-    if (any(row == r)) max(h_box[row == r]) else 0
+    max(c(0, h_box[row == r], side_h[side_row == r]))
   }, numeric(1))
   row_top <- -c(0, cumsum(row_h + vgap))[seq_len(nrow(st))]
   row_y <- row_top - row_h / 2
+  row_bottom <- row_top - row_h
   h <- row_h[row]
   y <- row_y[row]
+  is_side_row <- st$type == "exclude"
+  # Rows crossed by lines going down from boxes `parents` (on row `from`) to
+  # row `to`, split into the "trunk" and the rest. The trunk is where the line
+  # still runs down the parents' centres: through the exclusion rows directly
+  # below `from`, and on past the last exclusion box hanging off any of the
+  # parents, so the lines that branch out below never cross those boxes.
+  crossed_rows <- function(from, to, parents) {
+    rows <- if (to - 1 >= from + 1) seq.int(from + 1, to - 1) else integer()
+    lead <- rows[cumprod(is_side_row[rows]) == 1]
+    own <- side_row[sd$parent %in% parents]
+    own <- own[own %in% rows]
+    if (length(c(lead, own)) == 0) return(list(trunk = integer(), rest = rows))
+    last <- max(c(lead, own))
+    list(trunk = rows[rows <= last], rest = rows[rows > last])
+  }
 
   per_row <- table(row)
   if (any(per_row > 20)) {
@@ -117,6 +166,9 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   # higher than the others). They are reserved in the layout so no other box
   # is placed on top of them.
   lane_rows <- stats::setNames(vector("list", nrow(nd)), nd$id)
+  # for boxes joined from several sources across exclusion rows: the last
+  # exclusion row the join line sits below
+  bracket_trunk <- list()
   add_lane <- function(id, from_row, to_row) {
     if (to_row > from_row) {
       key <- as.character(id)
@@ -127,11 +179,31 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     src <- ed$from[ed$to == id]
     if (length(src) == 0) next
     start <- max(row_of[as.character(src)])
-    add_lane(id, start, row_of[[as.character(id)]] - 1)
-    if (length(src) > 1) {
-      for (s in src) add_lane(s, row_of[[as.character(s)]], start)
+    if (length(src) == 1) {
+      # the parent's line runs down its centre past exclusion rows directly
+      # below it; from there the line to this box runs down this box's centre
+      cr <- crossed_rows(start, row_of[[as.character(id)]], src)
+      key <- as.character(src)
+      lane_rows[[key]] <- c(lane_rows[[key]], cr$trunk)
+      key <- as.character(id)
+      lane_rows[[key]] <- c(lane_rows[[key]], cr$rest)
+    } else {
+      cr <- crossed_rows(start, row_of[[as.character(id)]], src)
+      if (length(cr$trunk)) {
+        # the join sits below the exclusion rows: every source runs a line
+        # down its centre to it, and the merged box's line starts there
+        bracket_trunk[[as.character(id)]] <- max(cr$trunk)
+        for (s in src) add_lane(s, row_of[[as.character(s)]], max(cr$trunk))
+        key <- as.character(id)
+        lane_rows[[key]] <- c(lane_rows[[key]], cr$rest)
+      } else {
+        add_lane(id, start, row_of[[as.character(id)]] - 1)
+        for (s in src) add_lane(s, row_of[[as.character(s)]], start)
+      }
     }
   }
+  # exclusion boxes hang to the right of their parent's line
+  side_of <- split(seq_len(nrow(sd)), factor(sd$parent, levels = nd$id))
   lane_w <- 0.03
 
   merge_contour <- function(a, b) {
@@ -190,6 +262,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       # same span rule as the drawn bracket: outer edges of the lowest
       # sources, centres of any higher ones
       low <- row_of[src] == max(row_of[src])
+      if (!is.null(bracket_trunk[[as.character(m)]])) low[] <- FALSE
       left <- min(c(pos[src[low]] - width_of[src[low]] / 2, pos[src[!low]]))
       right <- max(c(pos[src[low]] + width_of[src[low]] / 2, pos[src[!low]]))
       sub <- layout_subtree(m)
@@ -199,12 +272,21 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       acc <- merge_contour(acc, shift_cont(sub$cont, off))
     }
     pos[key] <- vx
-    lanes <- unique(lane_rows[[key]])
+    si <- side_of[[key]]
+    # the line from this box down to each of its exclusion boxes
+    stub <- unlist(lapply(side_row[si], function(sr) {
+      if (sr - 1 >= row_of[[key]] + 1) seq.int(row_of[[key]] + 1, sr - 1)
+    }))
+    lanes <- unique(c(lane_rows[[key]], stub))
     own <- data.frame(row = c(row_of[[key]], lanes),
                       l = c(vx - width_of[[key]] / 2,
                             rep(vx - lane_w, length(lanes))),
                       r = c(vx + width_of[[key]] / 2,
                             rep(vx + lane_w, length(lanes))))
+    if (length(si) > 0) {
+      own <- rbind(own, data.frame(row = side_row[si], l = vx - lane_w,
+                                   r = vx + side_gap + side_w[si]))
+    }
     acc <- merge_contour(acc, own)
     list(pos = pos - vx,
          cont = shift_cont(acc, -vx))
@@ -235,6 +317,23 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     stringsAsFactors = FALSE
   )
 
+  pbx <- boxes[match(sd$parent, boxes$id), ]
+  side_x <- pbx$x + side_gap + side_w / 2
+  side_y <- row_y[side_row]
+  side <- data.frame(
+    id = sd$id, parent = sd$parent, stage = st$name[side_row],
+    row = side_row, label = sd$label, n = sd$n, note = sd$note,
+    text = side_text, x = side_x, y = side_y, w = side_w, h = side_h,
+    xmin = side_x - side_w / 2, xmax = side_x + side_w / 2,
+    ymin = side_y - side_h / 2, ymax = side_y + side_h / 2,
+    text_x = side_x - side_w / 2 + pad_x,
+    text_y = side_y + side_text_h / 2 - side_main_h / 2,
+    note_y = ifelse(side_has_note,
+                    side_y + side_text_h / 2 - side_main_h - 0.04 -
+                      (side_note_h - 0.04) / 2, NA),
+    stringsAsFactors = FALSE
+  )
+
   # --- connectors ----------------------------------------------------------
   b <- function(id) boxes[match(id, boxes$id), ]
   seg <- list()
@@ -257,7 +356,11 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
           add_seg(pb$x, pb$ymin, kb$x[i], kb$ymax[i], TRUE, "arrow")
         }
       } else {
-        ymid <- pb$ymin - vgap / 2
+        # the shared horizontal line sits below any exclusion rows directly
+        # under the parent, so it never runs through an exclusion box
+        trunk <- crossed_rows(pb$row, r, p)$trunk
+        ymid <- if (length(trunk)) row_bottom[max(trunk)] - vgap / 2 else
+          pb$ymin - vgap / 2
         add_seg(pb$x, pb$ymin, pb$x, ymid, FALSE, "elbow")
         add_seg(min(kb$x, pb$x), ymid, max(kb$x, pb$x), ymid, FALSE, "elbow")
         for (i in seq_len(nrow(kb))) {
@@ -275,14 +378,26 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     # the bracket spans the outer edges of the lowest boxes; boxes higher up
     # join it with a drop line from their centre
     low <- sb$ymin <= min(sb$ymin) + 1e-9
-    xl <- min(c(sb$xmin[low], sb$x[!low]))
-    xr <- max(c(sb$xmax[low], sb$x[!low]))
-    yb <- min(sb$ymin) - drop
-    brk[[length(brk) + 1]] <- data.frame(
-      group = m, x = c(xl, xl, xr, xr), y = c(yb + tick, yb, yb, yb + tick)
-    )
-    # sources sitting higher than the lowest one drop a line to the bracket
-    high <- sb[sb$ymin > min(sb$ymin) + 1e-9, ]
+    trunk_row <- bracket_trunk[[as.character(m)]]
+    if (is.null(trunk_row)) {
+      xl <- min(c(sb$xmin[low], sb$x[!low]))
+      xr <- max(c(sb$xmax[low], sb$x[!low]))
+      yb <- min(sb$ymin) - drop
+      brk[[length(brk) + 1]] <- data.frame(
+        group = m, x = c(xl, xl, xr, xr), y = c(yb + tick, yb, yb, yb + tick)
+      )
+    } else {
+      # exclusion boxes hang below the sources: join their centre lines
+      # with a plain horizontal line below the exclusion rows
+      low[] <- FALSE
+      xl <- min(sb$x)
+      xr <- max(sb$x)
+      yb <- row_bottom[trunk_row] - drop
+      brk[[length(brk) + 1]] <- data.frame(group = m, x = c(xl, xr),
+                                           y = c(yb, yb))
+    }
+    # sources not at the bracket's edge drop a line to it from their centre
+    high <- sb[!low, ]
     for (i in seq_len(nrow(high))) {
       add_seg(high$x[i], high$ymin[i], high$x[i], yb, FALSE, "bracket")
     }
@@ -295,6 +410,13 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       add_seg(xm, yk, mb$x, yk, FALSE, "bracket")
       add_seg(mb$x, yk, mb$x, mb$ymax, TRUE, "bracket")
     }
+  }
+  # exclusion boxes: the parent's line continues down to the box's middle
+  # (if nothing else draws it), then an arrow runs right into the box
+  for (i in seq_len(nrow(side))) {
+    pb <- b(side$parent[i])
+    add_seg(pb$x, pb$ymin, pb$x, side$y[i], FALSE, "side")
+    add_seg(pb$x, side$y[i], side$xmin[i], side$y[i], TRUE, "side")
   }
   segments <- if (length(seg)) do.call(rbind, seg) else
     data.frame(x = numeric(), y = numeric(), xend = numeric(),
@@ -313,13 +435,13 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   )
   margin <- 0.1
   xmin <- (if (any(has_rl)) rl_x else min(boxes$xmin)) - margin
-  xmax <- max(boxes$xmax) + margin
-  ymin <- min(boxes$ymin) - margin
+  xmax <- max(c(boxes$xmax, side$xmax)) + margin
+  ymin <- min(c(boxes$ymin, side$ymin)) - margin
   ymax <- max(boxes$ymax) + margin
 
   structure(
     list(
-      boxes = boxes, segments = segments, brackets = brackets,
+      boxes = boxes, side = side, segments = segments, brackets = brackets,
       row_labels = row_labels,
       extent = c(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
       size = c(width = xmax - xmin, height = ymax - ymin),

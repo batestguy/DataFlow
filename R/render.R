@@ -68,6 +68,31 @@ autoplot.dataflow <- function(object, ..., fill = "white", colour = "black",
       size = ps$base_size, size.unit = "pt", family = ps$family,
       lineheight = 1.2, colour = colour
     )
+  sb <- lay$side
+  if (nrow(sb) > 0) {
+    p <- p +
+      ggplot2::geom_rect(
+        data = sb,
+        ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin,
+                     ymax = .data$ymax),
+        fill = fill, colour = colour, linewidth = linewidth
+      ) +
+      ggplot2::geom_text(
+        data = sb,
+        ggplot2::aes(x = .data$text_x, y = .data$text_y, label = .data$text),
+        size = ps$base_size, size.unit = "pt", family = ps$family,
+        hjust = 0, lineheight = 1.2, colour = colour
+      )
+    side_notes <- sb[!is.na(sb$note), ]
+    if (nrow(side_notes) > 0) {
+      p <- p + ggplot2::geom_text(
+        data = side_notes,
+        ggplot2::aes(x = .data$text_x, y = .data$note_y, label = .data$note),
+        size = ps$note_size, size.unit = "pt", family = ps$family,
+        fontface = "italic", hjust = 0, lineheight = 1.2, colour = colour
+      )
+    }
+  }
   notes <- bx[!is.na(bx$note), ]
   if (nrow(notes) > 0) {
     p <- p + ggplot2::geom_text(
