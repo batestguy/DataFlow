@@ -59,5 +59,6 @@ R 4.5.2 is on PATH as `Rscript`.
 
 - Layout bugs are visual. After changing layout or renderer code, render the reference diagram to PNG and look at it (Read the image) before claiming it works; tests on coordinates alone are not enough.
 - Test the layout as data (expected coordinates, no overlaps, bracket spans the right leaves) separately from rendering.
+- `ROADMAP.md` is the record of phases and progress. Update it at every milestone step: the status table, the milestone's status lines, and a new dated entry at the end of the progress log (what changed, how it was checked, commit, what is open). Never rewrite past log entries.
 - Scratch renders go in `dev/` (git-ignored).
 - Picture snapshots: `tests/testthat/_snaps/render/*.svg` (vdiffr). After an intended visual change, review and accept with `testthat::snapshot_review()`.

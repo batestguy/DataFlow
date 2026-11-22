@@ -13,3 +13,4 @@
 ^docs$
 ^pkgdown$
 ^\.Rprofile$
+^ROADMAP\.md$
