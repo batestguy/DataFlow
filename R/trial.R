@@ -22,21 +22,25 @@
 #'   flow_assign("Allocation", c("Intervention", "Control"), n = 150) |>
 #'   flow_describe()
 flow_assign <- function(.flow, stage, labels, n = NULL, note = NULL,
-                        method = "random", from = NULL, row_label = NULL) {
+                        method = "random", from = NULL, row_label = NULL,
+                        display = "all", summary = "{k} {stage}") {
   check_flow(.flow)
   check_string(stage, "stage")
-  if (is.null(method)) {
-    method <- NA_character_
-  } else {
-    check_string(method, "method")
-    if (method == "") {
-      stop("`method` must not be empty; use NULL for no method.",
-           call. = FALSE)
-    }
-  }
+  display <- check_display(display, summary_ok = TRUE)
   split_boxes(.flow, stage, labels, n, note, from,
-              pick_row_label(row_label, stage), "assign", "all",
-              method = method)
+              pick_row_label(row_label, stage), "assign", display,
+              method = check_method(method), summary = summary)
+}
+
+# A method as stored on the stage: NA for none.
+check_method <- function(method) {
+  if (is.null(method)) return(NA_character_)
+  check_string(method, "method")
+  if (method == "") {
+    stop("`method` must not be empty; use NULL for no method.",
+         call. = FALSE)
+  }
+  method
 }
 
 #' Add an exclusion box beside the flow

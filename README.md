@@ -8,9 +8,12 @@ brackets that bring groups back together, outcomes) from a few lines of
 pipe-friendly R code. The result is a ggplot object you can restyle, save as
 PDF or PNG, and describe in plain sentences for alternative text.
 
-**Status:** early development (milestone 1 of 7). Splits, bracket merges and
-outcomes work; exclusions, random assignment, cluster sampling, pooling and
-summary rows are planned.
+**Status:** early development (milestone 3 of 9). Splits, bracket merges,
+outcomes, random assignment, exclusion boxes with reasons, cluster sampling,
+selection and summary rows work. Pooling, diagrams with several starting
+points, machine-learning designs and reporting-guideline templates are
+planned; see `ROADMAP.md`. Built-in examples: `flow_example("lab")`,
+`flow_example("trial")`, `flow_example("survey")`.
 
 ## Install
 

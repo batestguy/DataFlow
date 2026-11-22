@@ -12,7 +12,8 @@ flow_split(
   note = NULL,
   display = "all",
   from = NULL,
-  row_label = NULL
+  row_label = NULL,
+  summary = "{k} {stage}"
 )
 }
 \arguments{
@@ -22,15 +23,20 @@ flow_split(
 
 \item{labels}{Either a character vector, used for every current box, or a
 list with one character vector per current box (for different children
-under different boxes, including one-to-one steps).}
+under different boxes, including one-to-one steps). With
+\code{display = "summary"} it may also be the number of boxes under each
+current box: one number for all, or one per box. With text labels, a
+summary shows only how many there are, not the labels themselves.}
 
 \item{n}{Optional counts, drawn exactly as given: one value for all new
-boxes, one per label, one per new box, or a list matching \code{labels}.}
+boxes, one per label, one per new box, or a list matching \code{labels}.
+With \code{display = "summary"}: one value, or one per summary box.}
 
 \item{note}{Optional notes, recycled like \code{n}.}
 
-\item{display}{\code{"all"} draws every box. \code{"summary"} is planned for a later
-version.}
+\item{display}{\code{"all"} draws every box. \code{"summary"} draws one box under
+each current box standing for all of its boxes in this stage, labelled
+by \code{summary}; use it for stages too large to draw box by box.}
 
 \item{from}{Optional box ids or labels to split instead of all current end
 boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}
@@ -38,6 +44,10 @@ boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}
 \item{row_label}{Text drawn in the left margin for this row. Defaults to
 \code{stage}; use \code{""} for no label (e.g. when a row continues the section
 labelled above it).}
+
+\item{summary}{Label of each summary box. \code{{k}} is replaced by the number
+of boxes it stands for and \code{{stage}} by the stage name, e.g.
+\code{"{k} districts"}.}
 }
 \value{
 The updated \code{dataflow}.
