@@ -18,7 +18,7 @@ milestone step; the progress log at the bottom is append-only.
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
-| 5 | Machine-learning designs, including time series | ⏳ in progress on branch `m5` | — |
+| 5 | Machine-learning designs, including time series | 🟡 built on branch `m5`, awaiting review and approval | — |
 | 6 | Reporting-guideline templates | ⬜ | — |
 | 7 | Examples from recent papers | ⬜ | — |
 | 8 | Documentation and website | ⬜ | — |
@@ -157,7 +157,7 @@ typed flows unchanged.
 `"trial_data"`. Independent review passed after fixes; pictures approved by
 the user on 2026-11-23; merged into `main`.
 
-### Milestone 5 — Machine-learning designs, including time series ⏳
+### Milestone 5 — Machine-learning designs, including time series 🟡
 
 **Delivers:** dataset splits (train / validation / test) including grouped
 splits (all records of a patient or site on one side) and time-ordered
@@ -181,6 +181,11 @@ render cleanly and the user approves.
 data were kept apart; fold grids are tested as data like the flow layout
 (blocks add up to the data, test windows never overlap training, gaps sit
 between them, time order kept).
+
+**Status:** built on branch `m5` (2026-11-23): `flow_partition()`, outcome
+events, `flow_folds()` fold grids (k-fold, blocked, expanding and rolling
+windows) with `grid_layout()`, examples `"ml"`, `"cv"` and `"forecast"`.
+Awaiting independent review and the user's approval of the pictures.
 
 ### Milestone 6 — Reporting-guideline templates ⬜
 
@@ -275,6 +280,17 @@ since the data may not reflect the whole design.
   downward (another stream, or interleaved `groups =`) crosses that line;
   the random test found such crossings in 22 of 800 layouts. Lines never
   pass through boxes.
+- Outcome events are shown in flow boxes only, not in exclusion boxes.
+- `flow_partition()` checks groups and time order only in data mode with
+  `by =`; typed `group` and `time` are described as not checked. With
+  `time`, the sets must be given in time order (`labels`).
+- Fold grids draw time on a linear scale of periods (one period per
+  distinct time value in data mode, however far apart the values are).
+  Very narrow blocks (for example a one-month gap in eight years) show as a
+  thin sliver with a dashed edge; their role is then given only by the
+  legend and the description.
+- `flow_edit()` on a fold grid changes block text and counts only; the
+  windows themselves are changed by calling `flow_folds()` again.
 - Descriptions of repeated box names in parallel streams can be long
   ("Reports assessed for eligibility under Reports sought for retrieval
   under Records screened").
@@ -578,3 +594,53 @@ what is still open.
   platforms. Open: a
   cross-family review before the first release; PRISMA 2020 citation not
   yet checked online.
+
+### 2026-11-23 — Milestone 5: machine-learning designs built
+- User approved starting milestone 5 and added time-series models to it;
+  scope recorded in the milestone text (commit `ca90e08`). Principle kept:
+  DataFlow documents a split the user made; it never splits data at random
+  or fits models, and everything drawn from data stays editable by hand,
+  with typed counts marked as typed.
+- `flow_partition()`: a split of its own stage type. With data, `by =` the
+  set column (readable names, planned sets, order as in `by` splits),
+  `group =` checked (error naming which sets share how many groups),
+  `time =` checked (each set ends strictly before the next starts) with
+  each set's date range as its note. Typed `group`/`time` are described as
+  "(not checked against data)".
+- Outcome events (TRIPOD+AI item 20a): `flow_start(events = ~ died == 1)`
+  computes events in every box with rows, drawn as "(n = 412; events =
+  37)"; typed `events =` on start, split, partition, apply, outcome and
+  pool; `flow_edit(events =)`; typed events listed as typed in the
+  description; `{events}` usable in `count_format`; `flow_nodes()` has an
+  `events` column.
+- Fold grids, a second diagram type: `flow_folds()` for k-fold (typed, or
+  from a fold column with a grouped check), blocked k-fold for
+  time-ordered data, and expanding or rolling windows with rsample's
+  rolling-origin vocabulary (`initial`, `assess`, `skip`, `gap`), typed or
+  from a date column. `grid_layout()` (tested as data), `autoplot()`,
+  `plot()`, `flow_save()`, `flow_describe()`, `flow_edit()` and
+  `flow_data()` work on grids. Every block carries its role as text or an
+  abbreviation with a legend; fills are greys, gaps dashed.
+- Examples `"ml"` (two development hospitals pooled, exclusions with
+  reasons, grouped training/test split, a third hospital as external
+  validation stream; all counts and events from invented data), `"cv"`
+  (grouped 5-fold from invented data) and `"forecast"` (expanding window
+  with a one-month gap on invented monthly sales of three stores).
+- Checked: 10,350 test expectations pass (new: test-ml.R, test-grid.R
+  with 60 random grids); `devtools::check()` 0/0/0; 323 designs from
+  `main` (typed and data examples, irregular, trial and stream designs,
+  300 random designs) give identical objects, descriptions and layouts;
+  `dev/stress4.R` 400 designs x 2 connector styles, 0 overlaps and 0 lines
+  through boxes; `dev/rv4_rand.R` 893 steps, 0 problems;
+  `dev/m5_grid_rand.R` 494 random grids built (153 expanding, 116 rolling,
+  111 blocked, 114 k-fold; 252 from data; 6 impossible settings refused),
+  0 problems (rows cover the data once, test after training plus gap,
+  counts add up, every label fits its block). Pictures viewed:
+  `dev/ml.png` (first version was 9.6 in wide; exclusions moved after the
+  pooled development box, now 7.0 in), `dev/cv.png`, `dev/forecast.png`
+  (first version had odd date ticks and hid the test counts; now year
+  ticks and "Test / 18"), and four typed grids (k-fold, expanding,
+  rolling, blocked).
+- Open: independent review; user approval of the ml, cv and forecast
+  pictures.
+
