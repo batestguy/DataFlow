@@ -12,7 +12,8 @@ flow_select(
   note = NULL,
   method = NULL,
   from = NULL,
-  row_label = NULL
+  row_label = NULL,
+  where = NULL
 )
 }
 \arguments{
@@ -22,7 +23,11 @@ flow_select(
 
 \item{label}{Text for the new box(es): one value, or one per group.}
 
-\item{n, note}{Optional count and note: one value, or one per group.}
+\item{n, note}{Optional count and note: one value, or one per group. In a
+flow with data (see \code{\link[=flow_start]{flow_start()}}), a missing \code{n} is computed from the
+rows of each group; boxes made without data have no rows, so the count
+below them stays blank. A typed \code{n} always wins (e.g. "600 trials" is
+not a number of rows).}
 
 \item{method}{Optional selection method, e.g.
 \code{"systematic random sampling"}.}
@@ -33,6 +38,14 @@ boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}
 \item{row_label}{Text drawn in the left margin for this row. Defaults to
 \code{stage}; use \code{""} for no label (e.g. when a row continues the section
 labelled above it).}
+
+\item{where}{For a flow with data (see \code{\link[=flow_start]{flow_start()}}): a one-sided
+formula such as \code{~ age >= 18}, evaluated in the data (with the
+formula's environment for other names). Only the matching rows are
+selected and continue; the count is computed. Rows where the condition
+is missing (\code{NA}) are not selected. Without \code{where}, a selection in a
+flow with data has no rows behind it (the data do not say which units
+were selected), so its count is as typed.}
 }
 \value{
 The updated \code{dataflow}.
@@ -47,4 +60,8 @@ The \code{method} appears in the plain-language description.
 flow_start("EA", n = 1) |>
   flow_select("Households", "25 households", n = 25,
               method = "systematic random sampling")
+
+people <- data.frame(age = c(12, 30, 45, 16, 70))
+flow_start("Household members", data = people) |>
+  flow_select("Adults", "Aged 18 or over", where = ~ age >= 18)
 }

@@ -29,6 +29,11 @@
 #'   with diet A or B, drawn as nested splits), an outcome box per cell, then
 #'   the cells pooled over diet for an analysis per drug group. All numbers
 #'   are invented for illustration.
+#' * `"trial_data"`: the same kind of CONSORT-style trial as `"trial"`, but
+#'   every count is computed from a small invented data frame of 412
+#'   participants (built inside the function with a fixed seed), using
+#'   formula `reasons`, `by =` and `where =`. Use [flow_data()] on it to see
+#'   the rows behind any box.
 #'
 #' @param name Which example.
 #' @return A `dataflow` object.
@@ -39,8 +44,9 @@
 #' flow_example("survey")
 #' flow_example("review")
 #' flow_example("factorial")
+#' flow_example("trial_data")
 flow_example <- function(name = c("lab", "trial", "survey", "review",
-                                  "factorial")) {
+                                  "factorial", "trial_data")) {
   name <- match.arg(name)
   x <- switch(name,
     lab = flow_start("Cultures", n = 100) |>
@@ -123,7 +129,27 @@ flow_example <- function(name = c("lab", "trial", "survey", "review",
       flow_exclude("Lost", n = c(2, 3, 1, 4), stage = "Follow-up") |>
       flow_outcome("Outcome", "Analysed", n = c(48, 47, 49, 46)) |>
       flow_pool("Pooled analysis", "Pooled over diet", n = c(95, 95),
-                over = "Drug")
+                over = "Drug"),
+    trial_data = {
+      trial_data <- example_trial_data()
+      flow_start("Assessed for eligibility", data = trial_data,
+                 stage = "Enrolment") |>
+        flow_exclude("Excluded",
+                     reasons = list("Under 18" = ~ age < 18,
+                                    "Did not meet inclusion criteria" =
+                                      ~ !eligible,
+                                    "Declined to participate" =
+                                      ~ consent == "no")) |>
+        flow_apply("Randomisation", "Randomised", row_label = "") |>
+        flow_assign("Allocation", by = "arm") |>
+        flow_exclude("Lost to follow-up", stage = "Follow-up",
+                     reasons = list("Moved away" = ~ status == "moved",
+                                    "Withdrew consent" =
+                                      ~ status == "withdrew")) |>
+        flow_exclude("No outcome recorded",
+                     where = ~ is.na(outcome_score)) |>
+        flow_outcome("Analysis", "Analysed")
+    }
   )
   attr(x, "source") <- switch(name,
     lab = paste(
@@ -150,6 +176,13 @@ flow_example <- function(name = c("lab", "trial", "survey", "review",
       "2021;372:n71, doi:10.1136/bmj.n71). Numbers are made up for",
       "illustration and do not describe a real review."
     ),
+    trial_data = paste(
+      "Invented two-arm trial in the layout of the CONSORT 2025 flow diagram",
+      "(Hopewell et al., BMJ 2025;389:e081123, doi:10.1136/bmj-2024-081123),",
+      "with every count computed from an invented data frame of 412",
+      "participants built inside flow_example() with set.seed(20261123).",
+      "The data do not describe a real study."
+    ),
     factorial = paste(
       "Invented 2 x 2 factorial trial (drug or placebo, crossed with diet A",
       "or B), drawn as nested assignments with an outcome per cell and the",
@@ -158,4 +191,38 @@ flow_example <- function(name = c("lab", "trial", "survey", "review",
     )
   )
   x
+}
+
+# Invented participant data for flow_example("trial_data"): one row per
+# person assessed. Built with a fixed seed; the caller's random number state
+# is restored afterwards.
+example_trial_data <- function() {
+  genv <- globalenv()
+  had_seed <- exists(".Random.seed", envir = genv, inherits = FALSE)
+  if (had_seed) old <- get(".Random.seed", envir = genv, inherits = FALSE)
+  on.exit(if (had_seed) assign(".Random.seed", old, envir = genv) else
+    rm(".Random.seed", envir = genv))
+  set.seed(20261123)
+  n <- 412
+  age <- sample(16:79, n, replace = TRUE)
+  eligible <- stats::runif(n) > 0.12
+  consent <- ifelse(stats::runif(n) < 0.1, "no", "yes")
+  in_trial <- age >= 18 & eligible & consent == "yes"
+  k <- sum(in_trial)
+  arm <- rep(NA_character_, n)
+  arm[in_trial] <- sample(rep(c("Exercise programme", "Usual care"),
+                              length.out = k))
+  status <- rep(NA_character_, n)
+  status[in_trial] <- sample(c("completed", "moved", "withdrew"), k,
+                             replace = TRUE, prob = c(0.92, 0.04, 0.04))
+  score <- rep(NA_real_, n)
+  done <- which(status == "completed")
+  score[done] <- round(stats::rnorm(length(done), 50, 10))
+  score[sample(done, 6)] <- NA
+  data.frame(
+    id = sprintf("P%03d", seq_len(n)), age = age, eligible = eligible,
+    consent = consent,
+    arm = factor(arm, levels = c("Exercise programme", "Usual care")),
+    status = status, outcome_score = score, stringsAsFactors = FALSE
+  )
 }

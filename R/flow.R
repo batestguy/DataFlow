@@ -146,8 +146,9 @@ validate_dataflow <- function(x) {
 #'
 #' @param x A `dataflow` object.
 #' @return A data frame with one row per box: `id`, `stage` (the stage name),
-#'   `label`, `n`, `note`, and `leaf` (`TRUE` if the next verb will attach to
-#'   it by default).
+#'   `label`, `n`, `note`, `leaf` (`TRUE` if the next verb will attach to
+#'   it by default), and `n_edited` (`TRUE` if its count was changed with
+#'   [flow_edit()]).
 #' @export
 #' @examples
 #' flow_start("Participants", n = 120) |>
@@ -163,6 +164,7 @@ flow_nodes <- function(x) {
     n = nd$n,
     note = nd$note,
     leaf = nd$id %in% x$leaves,
+    n_edited = nd$id %in% edited_ids(x, "nodes"),
     stringsAsFactors = FALSE
   )
 }
@@ -175,6 +177,14 @@ print.dataflow <- function(x, ...) {
       nrow(x$nodes), " box", if (nrow(x$nodes) != 1) "es",
       if (ns > 0) paste0(", ", ns, " exclusion box", if (ns != 1) "es"),
       "\n", sep = "")
+  if (!is.null(x$data)) {
+    sizes <- vapply(x$data$sources, nrow, integer(1))
+    cat("  counts from data: ",
+        paste0(x$data$names, " (", sizes, " rows)", collapse = ", "),
+        if (!is.null(x$data$count)) paste0("; counting distinct ",
+                                           x$data$count),
+        "\n", sep = "")
+  }
   for (i in seq_len(nrow(st))) {
     labs <- if (st$type[i] == "exclude") {
       x$side$label[x$side$stage == st$id[i]]

@@ -7,14 +7,15 @@
 flow_assign(
   .flow,
   stage,
-  labels,
+  labels = NULL,
   n = NULL,
   note = NULL,
   method = "random",
   from = NULL,
   row_label = NULL,
   display = "all",
-  summary = "{k} {stage}"
+  summary = "{k} {stage}",
+  by = NULL
 )
 }
 \arguments{
@@ -51,6 +52,20 @@ by \code{summary}; use it for stages too large to draw box by box.}
 \item{summary}{Label of each summary box. \code{{k}} is replaced by the number
 of boxes it stands for and \code{{stage}} by the stage name, e.g.
 \code{"{k} districts"}.}
+
+\item{by}{For a flow with data (see \code{\link[=flow_start]{flow_start()}}): a column name. Each
+box is split into one box per value of the column present in its rows
+(in factor level order for a factor, otherwise sorted), and counts are
+computed. \code{labels} may then be left out; if given, it fixes the order
+and must include every value present, so nothing is dropped silently.
+It may name values to draw other text, e.g.
+\code{c("Ex. 1" = "exp1", "Ex. 2" = "exp2")}, and may include planned values
+with no rows yet (drawn with a count of 0). Missing values in the
+column are an error: remove those rows
+first with \code{\link[=flow_exclude]{flow_exclude()}}. With \code{display = "summary"}, \code{{k}} is the
+number of distinct values and the count is that of the box being split.
+Without \code{by}, new boxes have no rows behind them, so automatic counts
+below them stay blank.}
 }
 \value{
 The updated \code{dataflow}.

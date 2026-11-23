@@ -7,14 +7,15 @@
 flow_cluster(
   .flow,
   stage,
-  labels,
+  labels = NULL,
   n = NULL,
   note = NULL,
   method = NULL,
   display = "summary",
   summary = "{k} clusters selected",
   from = NULL,
-  row_label = NULL
+  row_label = NULL,
+  by = NULL
 )
 }
 \arguments{
@@ -46,6 +47,20 @@ boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}
 \item{row_label}{Text drawn in the left margin for this row. Defaults to
 \code{stage}; use \code{""} for no label (e.g. when a row continues the section
 labelled above it).}
+
+\item{by}{For a flow with data (see \code{\link[=flow_start]{flow_start()}}): a column name. Each
+box is split into one box per value of the column present in its rows
+(in factor level order for a factor, otherwise sorted), and counts are
+computed. \code{labels} may then be left out; if given, it fixes the order
+and must include every value present, so nothing is dropped silently.
+It may name values to draw other text, e.g.
+\code{c("Ex. 1" = "exp1", "Ex. 2" = "exp2")}, and may include planned values
+with no rows yet (drawn with a count of 0). Missing values in the
+column are an error: remove those rows
+first with \code{\link[=flow_exclude]{flow_exclude()}}. With \code{display = "summary"}, \code{{k}} is the
+number of distinct values and the count is that of the box being split.
+Without \code{by}, new boxes have no rows behind them, so automatic counts
+below them stay blank.}
 }
 \value{
 The updated \code{dataflow}.

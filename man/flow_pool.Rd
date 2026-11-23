@@ -23,7 +23,10 @@ flow_pool(
 
 \item{label}{Text for the pooled box(es): one value, or one per pool.}
 
-\item{n, note}{Optional count and note: one value, or one per pool.}
+\item{n, note}{Optional count and note: one value, or one per pool. In a
+flow with data (see \code{\link[=flow_start]{flow_start()}}), a missing \code{n} is computed from the
+rows of the pooled boxes, also across data frames of different streams;
+a typed \code{n} always wins.}
 
 \item{groups}{Optional list of vectors of box ids or labels, one vector
 per pool, e.g. \code{list(c("A", "B"), c("C", "D"))}. Labels match current

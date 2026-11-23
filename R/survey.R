@@ -27,16 +27,16 @@
 #'   flow_split("Stratum", c("Urban", "Rural")) |>
 #'   flow_cluster("Clusters", c(40, 60), summary = "{k} EAs selected",
 #'                method = "probability proportional to size")
-flow_cluster <- function(.flow, stage, labels, n = NULL, note = NULL,
+flow_cluster <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                          method = NULL, display = "summary",
                          summary = "{k} clusters selected", from = NULL,
-                         row_label = NULL) {
+                         row_label = NULL, by = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
   split_boxes(.flow, stage, labels, n, note, from,
               pick_row_label(row_label, stage), "cluster", display,
-              method = check_method(method), summary = summary)
+              method = check_method(method), summary = summary, by = by)
 }
 
 #' Select units within each current box
@@ -49,17 +49,29 @@ flow_cluster <- function(.flow, stage, labels, n = NULL, note = NULL,
 #' @inheritParams flow_apply
 #' @param method Optional selection method, e.g.
 #'   `"systematic random sampling"`.
+#' @param where For a flow with data (see [flow_start()]): a one-sided
+#'   formula such as `~ age >= 18`, evaluated in the data (with the
+#'   formula's environment for other names). Only the matching rows are
+#'   selected and continue; the count is computed. Rows where the condition
+#'   is missing (`NA`) are not selected. Without `where`, a selection in a
+#'   flow with data has no rows behind it (the data do not say which units
+#'   were selected), so its count is as typed.
 #' @return The updated `dataflow`.
 #' @export
 #' @examples
 #' flow_start("EA", n = 1) |>
 #'   flow_select("Households", "25 households", n = 25,
 #'               method = "systematic random sampling")
+#'
+#' people <- data.frame(age = c(12, 30, 45, 16, 70))
+#' flow_start("Household members", data = people) |>
+#'   flow_select("Adults", "Aged 18 or over", where = ~ age >= 18)
 flow_select <- function(.flow, stage, label, n = NULL, note = NULL,
-                        method = NULL, from = NULL, row_label = NULL) {
+                        method = NULL, from = NULL, row_label = NULL,
+                        where = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   attach_per_group(.flow, stage, label, n, note, NULL, from, "select", "all",
                    pick_row_label(row_label, stage),
-                   method = check_method(method))
+                   method = check_method(method), where = where)
 }

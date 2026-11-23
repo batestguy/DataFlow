@@ -20,7 +20,10 @@
 #'
 #' @inheritParams flow_apply
 #' @param label Text for the pooled box(es): one value, or one per pool.
-#' @param n,note Optional count and note: one value, or one per pool.
+#' @param n,note Optional count and note: one value, or one per pool. In a
+#'   flow with data (see [flow_start()]), a missing `n` is computed from the
+#'   rows of the pooled boxes, also across data frames of different streams;
+#'   a typed `n` always wins.
 #' @param groups Optional list of vectors of box ids or labels, one vector
 #'   per pool, e.g. `list(c("A", "B"), c("C", "D"))`. Labels match current
 #'   end boxes. Cannot be combined with `over` or `from`.

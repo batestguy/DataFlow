@@ -11,7 +11,8 @@ flow_exclude(
   reasons = NULL,
   note = NULL,
   stage = NULL,
-  from = NULL
+  from = NULL,
+  where = NULL
 )
 }
 \arguments{
@@ -34,9 +35,10 @@ one such vector per box.}
 
 \item{from}{Optional ids or labels of current end boxes to attach to,
 instead of all of them. Only end boxes can take an exclusion box.}
-}
-\value{
-The updated \code{dataflow}.
+
+\item{where}{For a flow with data (see \code{\link[=flow_start]{flow_start()}}): a one-sided
+formula, e.g. \code{~ is.na(outcome)}, for an exclusion box without reasons.
+Matching rows leave the flow; the count is computed.}
 }
 \description{
 Draws a box to the right of the line leaving each current end box (or each
@@ -49,7 +51,28 @@ as before.
 Counts are drawn exactly as given; they are never checked against the
 boxes above or below.
 }
+\section{Counts from data}{
+ In a flow with data, \code{reasons} may instead be
+a named list of one-sided formulas, e.g.
+\code{list("Under 18" = ~ age < 18, "Declined" = ~ consent == "no")},
+evaluated in the rows still in the flow at each box. Rows matching any
+reason leave the flow and the rest continue. A row matching several
+reasons is counted under the \strong{first} one that matches, so the reason
+counts add up to the box count (when counting rows). Rows where a
+condition is missing (\code{NA}) do not match it. Giving \code{n} together with
+formulas is an error. An exclusion box with typed counts only (no
+formulas, no \code{where}) does not say which rows left, so automatic counts
+below it stay blank.
+}
+
 \examples{
+people <- data.frame(age = c(17, 25, 40, 33, 15, 52),
+                     consent = c("yes", "yes", "no", "yes", "yes", "no"))
+flow_start("Assessed", data = people) |>
+  flow_exclude("Excluded", reasons = list("Under 18" = ~ age < 18,
+                                          "Declined" = ~ consent == "no")) |>
+  flow_nodes()
+
 flow_start("Assessed for eligibility", n = 412) |>
   flow_exclude("Excluded", n = 112,
                reasons = c("Did not meet inclusion criteria" = 68,

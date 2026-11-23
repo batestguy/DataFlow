@@ -4,7 +4,14 @@
 \alias{flow_start}
 \title{Start a flow diagram}
 \usage{
-flow_start(label, n = NULL, note = NULL, stage = NULL)
+flow_start(
+  label,
+  n = NULL,
+  note = NULL,
+  stage = NULL,
+  data = NULL,
+  count = NULL
+)
 }
 \arguments{
 \item{label}{Text for the top box, e.g. \code{"Cultures"}, or a character
@@ -18,6 +25,21 @@ one value, or one per label.}
 
 \item{stage}{Optional row label for the top row. By default the top row
 has no label.}
+
+\item{data}{Optional data frame (or, with several labels, a list of data
+frames, one per top box) to compute counts from, instead of typing them.
+The data are stored once in the flow; each box records which rows are
+behind it (see \code{\link[=flow_data]{flow_data()}}). Later steps compute their counts from
+the data when given \verb{by =} (\code{\link[=flow_split]{flow_split()}}, \code{\link[=flow_assign]{flow_assign()}},
+\code{\link[=flow_cluster]{flow_cluster()}}), \verb{where =} (\code{\link[=flow_select]{flow_select()}}, \code{\link[=flow_exclude]{flow_exclude()}}),
+formula \code{reasons} (\code{\link[=flow_exclude]{flow_exclude()}}), or no \code{n} (\code{\link[=flow_apply]{flow_apply()}},
+\code{\link[=flow_outcome]{flow_outcome()}}, \code{\link[=flow_pool]{flow_pool()}}). The name of the data frame is
+recorded and given in \code{\link[=flow_describe]{flow_describe()}}. Giving both \code{n} and \code{data} is
+an error.}
+
+\item{count}{With \code{data}: \code{NULL} (the default) counts rows; a column name
+counts the distinct non-missing values of that column instead (e.g.
+patients, when there is one row per visit).}
 }
 \value{
 A \code{dataflow} object.
@@ -34,6 +56,12 @@ continues on a later row. \code{\link[=flow_pool]{flow_pool()}} joins streams.
 }
 \examples{
 flow_start("Cultures", n = 100)
+
+# counts from a data frame
+people <- data.frame(id = 1:6, age = c(17, 25, 40, 33, 15, 52))
+flow_start("Assessed", data = people) |>
+  flow_exclude("Excluded", reasons = list("Under 18" = ~ age < 18)) |>
+  flow_apply("Included", "Included")
 
 # two starting streams, continued one at a time
 flow_start(c("Cases", "Controls"), n = c(120, 240)) |>

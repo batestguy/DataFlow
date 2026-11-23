@@ -170,16 +170,36 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   one value, or one per label.
 #' @param stage Optional row label for the top row. By default the top row
 #'   has no label.
+#' @param data Optional data frame (or, with several labels, a list of data
+#'   frames, one per top box) to compute counts from, instead of typing them.
+#'   The data are stored once in the flow; each box records which rows are
+#'   behind it (see [flow_data()]). Later steps compute their counts from
+#'   the data when given `by =` ([flow_split()], [flow_assign()],
+#'   [flow_cluster()]), `where =` ([flow_select()], [flow_exclude()]),
+#'   formula `reasons` ([flow_exclude()]), or no `n` ([flow_apply()],
+#'   [flow_outcome()], [flow_pool()]). The name of the data frame is
+#'   recorded and given in [flow_describe()]. Giving both `n` and `data` is
+#'   an error.
+#' @param count With `data`: `NULL` (the default) counts rows; a column name
+#'   counts the distinct non-missing values of that column instead (e.g.
+#'   patients, when there is one row per visit).
 #' @return A `dataflow` object.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100)
 #'
+#' # counts from a data frame
+#' people <- data.frame(id = 1:6, age = c(17, 25, 40, 33, 15, 52))
+#' flow_start("Assessed", data = people) |>
+#'   flow_exclude("Excluded", reasons = list("Under 18" = ~ age < 18)) |>
+#'   flow_apply("Included", "Included")
+#'
 #' # two starting streams, continued one at a time
 #' flow_start(c("Cases", "Controls"), n = c(120, 240)) |>
 #'   flow_exclude("Excluded", n = 8, from = "Cases") |>
 #'   flow_pool("Analysis", "Analysed together", n = 352)
-flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
+flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
+                       data = NULL, count = NULL) {
   if (!is.character(label) || length(label) == 0 || anyNA(label) ||
       any(label == "")) {
     stop("`label` must be text and not empty.", call. = FALSE)
@@ -188,6 +208,22 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
   k <- length(label)
   if (k == 1 && (length(n) > 1 || length(note) > 1)) {
     stop("The top box takes a single `n` and `note`.", call. = FALSE)
+  }
+  store <- NULL
+  if (!is.null(data)) {
+    if (!is.null(n)) {
+      stop("Give `n` or `data`, not both: with data, counts are computed.",
+           call. = FALSE)
+    }
+    store <- new_data_store(data, k, data_names(substitute(data), data),
+                            count)
+    n <- vapply(seq_len(k), function(i) {
+      d <- list(data = store)
+      count_rows(d, store$offsets[i] + seq_len(nrow(store$sources[[i]])))
+    }, numeric(1))
+  } else if (!is.null(count)) {
+    stop("`count` is for counting from `data`; give `data` too.",
+         call. = FALSE)
   }
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")
@@ -209,6 +245,12 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
   a <- add_nodes(s$x, s$id, label, n_vals, note_vals, rep(NA, k))
   x <- a$x
   x$leaves <- a$ids
+  if (!is.null(store)) {
+    x$data <- store
+    x <- set_rows(x, a$ids, lapply(seq_len(k), function(i) {
+      store$offsets[i] + seq_len(nrow(store$sources[[i]]))
+    }))
+  }
   validate_dataflow(x)
 }
 
@@ -240,28 +282,51 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
 #' @param row_label Text drawn in the left margin for this row. Defaults to
 #'   `stage`; use `""` for no label (e.g. when a row continues the section
 #'   labelled above it).
+#' @param by For a flow with data (see [flow_start()]): a column name. Each
+#'   box is split into one box per value of the column present in its rows
+#'   (in factor level order for a factor, otherwise sorted), and counts are
+#'   computed. `labels` may then be left out; if given, it fixes the order
+#'   and must include every value present, so nothing is dropped silently.
+#'   It may name values to draw other text, e.g.
+#'   `c("Ex. 1" = "exp1", "Ex. 2" = "exp2")`, and may include planned values
+#'   with no rows yet (drawn with a count of 0). Missing values in the
+#'   column are an error: remove those rows
+#'   first with [flow_exclude()]. With `display = "summary"`, `{k}` is the
+#'   number of distinct values and the count is that of the box being split.
+#'   Without `by`, new boxes have no rows behind them, so automatic counts
+#'   below them stay blank.
 #' @return The updated `dataflow`.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100) |>
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_split("Culture type", list("Type A", "Type B"), n = 50)
-flow_split <- function(.flow, stage, labels, n = NULL, note = NULL,
+flow_split <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                        display = "all", from = NULL, row_label = NULL,
-                       summary = "{k} {stage}") {
+                       summary = "{k} {stage}", by = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
   split_boxes(.flow, stage, labels, n, note, from,
               pick_row_label(row_label, stage), "split", display,
-              summary = summary)
+              summary = summary, by = by)
 }
 
 # Shared engine for one-to-many steps (split, assign, cluster).
 split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
                         display, method = NA_character_,
-                        summary = "{k} {stage}") {
+                        summary = "{k} {stage}", by = NULL) {
   targets <- resolve_targets(.flow, from)
+  child_rows <- NULL
+  if (!is.null(by)) {
+    sp <- split_by(.flow, targets, by, labels, display, n)
+    labels <- sp$labels
+    n <- sp$n
+    child_rows <- unlist(sp$rows, recursive = FALSE)
+  } else if (is.null(labels)) {
+    stop("Give the `labels` of the new boxes (or, for a flow with data, ",
+         "`by =` a column).", call. = FALSE)
+  }
   if (display == "summary") {
     check_string(summary, "summary")
     k <- summary_counts(labels, length(targets))
@@ -310,7 +375,81 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
   x <- add_edges(a$x, anchors, a$ids, "arrow")
   x$leaves <- replace_leaves(x$leaves, targets,
                              split(a$ids, factor(anchors, levels = targets)))
+  if (!is.null(child_rows)) x <- set_rows(x, a$ids, child_rows)
   validate_dataflow(x)
+}
+
+# Labels, counts and rows for a split computed from the column `by`: per box
+# being split, one box per value present in its rows (factor level order, or
+# sorted), or with display = "summary" one box standing for them all.
+split_by <- function(x, targets, by, labels, display, n) {
+  need_data(x, "by")
+  check_string(by, "by")
+  if (!is.null(n)) {
+    stop("Give `n` or `by`, not both: with `by`, counts are computed.",
+         call. = FALSE)
+  }
+  vals <- disp <- NULL
+  if (!is.null(labels)) {
+    if (!is.character(labels) || anyNA(labels) || any(labels == "") ||
+        anyDuplicated(labels)) {
+      stop("With `by`, `labels` must be the values of \"", by, "\" as text, ",
+           "each once, in the order to draw them (named to show other ",
+           "text, e.g. c(\"Ex. 1\" = \"exp1\")).", call. = FALSE)
+    }
+    vals <- unname(labels)
+    disp <- names(labels) %||% vals
+    disp[is.na(disp) | disp == ""] <- vals[is.na(disp) | disp == ""]
+    if (anyDuplicated(disp)) {
+      stop("With `by`, the names of `labels` (the text drawn) must differ.",
+           call. = FALSE)
+    }
+  }
+  rows <- rows_of_targets(x, targets, "`by`")
+  out <- list(labels = list(), n = list(), rows = list())
+  for (i in seq_along(targets)) {
+    r <- rows[[i]]
+    v <- data_values(x, r, by)
+    box <- x$nodes$label[x$nodes$id == targets[i]]
+    if (anyNA(v)) {
+      stop("Column \"", by, "\" has ", sum(is.na(v)), " missing value",
+           if (sum(is.na(v)) != 1) "s", " in the rows of box \"", box,
+           "\". Remove them from the flow first, e.g. with ",
+           "flow_exclude(where = ~ is.na(", by, ")).", call. = FALSE)
+    }
+    present <- if (is.factor(v)) {
+      levels(v)[levels(v) %in% as.character(v)]
+    } else {
+      as.character(sort(unique(v)))
+    }
+    if (!is.null(labels)) {
+      missing <- setdiff(present, vals)
+      if (length(missing) > 0) {
+        stop("`labels` must cover every value of \"", by, "\" present; ",
+             "under box \"", box, "\" it misses ",
+             paste0("\"", missing, "\"", collapse = ", "), ".",
+             call. = FALSE)
+      }
+    }
+    if (length(present) == 0 && (is.null(labels) || display == "summary")) {
+      stop("Box \"", box, "\" has no rows left to split by \"", by, "\".",
+           call. = FALSE)
+    }
+    if (display == "summary") {
+      out$labels[[i]] <- length(present)
+      out$n[[i]] <- count_rows(x, r)
+      out$rows[[i]] <- list(r)
+    } else {
+      lv <- vals %||% present
+      vc <- as.character(v)
+      sub <- lapply(lv, function(l) r[vc == l])
+      out$labels[[i]] <- disp %||% lv
+      out$n[[i]] <- vapply(sub, function(z) count_rows(x, z), numeric(1))
+      out$rows[[i]] <- sub
+    }
+  }
+  if (display == "summary") out$n <- unlist(out$n)
+  out
 }
 
 # How many boxes each summary box stands for, one per box being split: from
@@ -371,7 +510,7 @@ per_box_values <- function(values, fmt, per_target, arg, per) {
 attach_per_group <- function(x, stage, label, n, note, over, from, type,
                              display, row_label = stage,
                              method = NA_character_, groups = NULL,
-                             join = "bracket") {
+                             join = "bracket", where = NULL) {
   if (!is.null(groups)) {
     targets <- unlist(groups)
   } else {
@@ -398,6 +537,16 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
   labels <- recycle_values(label, k, "label")
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")
+  group_rows <- NULL
+  if (has_data(x)) {
+    group_rows <- data_group_rows(x, groups, type, n, where)
+    if (is.null(n)) {
+      n_vals <- format_n(vapply(group_rows, function(r) count_rows(x, r),
+                                numeric(1)))
+    }
+  } else if (!is.null(where)) {
+    need_data(x, "where")
+  }
   anchors <- vapply(groups, function(g) {
     if (length(g) == 1) g else lowest_common_ancestor(x, g)
   }, integer(1))
@@ -406,6 +555,7 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
                  over %||% NA_character_, method = method)
   a <- add_nodes(s$x, s$id, labels, n_vals, note_vals, anchors)
   x <- a$x
+  if (!is.null(group_rows)) x <- set_rows(x, a$ids, group_rows)
   for (i in seq_len(k)) {
     kind <- if (length(groups[[i]]) == 1) "arrow" else join
     x <- add_edges(x, groups[[i]], rep(a$ids[i], length(groups[[i]])), kind)
@@ -419,6 +569,28 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
   }
   x$leaves <- replace_leaves(x$leaves, targets, new_by_target)
   validate_dataflow(x)
+}
+
+# Rows behind each new box of attach_per_group() in a flow with data. A
+# selection with `where` keeps the matching rows; a selection without it has
+# no rows (which units were selected is not in the data). Other steps carry
+# all rows of their group, or none if a box in the group has none.
+data_group_rows <- function(x, groups, type, n, where) {
+  if (!is.null(where)) {
+    if (!is.null(n)) {
+      stop("Give `n` or `where`, not both: with `where`, counts are ",
+           "computed.", call. = FALSE)
+    }
+    return(lapply(groups, function(g) {
+      r <- rows_of_targets(x, g, "`where`")[[1]]
+      r[eval_condition(x, r, where, "where")]
+    }))
+  }
+  if (type == "select") return(rep(list(NULL), length(groups)))
+  lapply(groups, function(g) {
+    rs <- lapply(g, function(t) left_rows(x, t))
+    if (any(vapply(rs, is.null, NA))) NULL else sort(unique(unlist(rs)))
+  })
 }
 
 # Group boxes by the box they sit under in the stage named `over`.
@@ -451,7 +623,11 @@ group_over <- function(x, targets, over) {
 #'
 #' @inheritParams flow_split
 #' @param label Text for the new box(es): one value, or one per group.
-#' @param n,note Optional count and note: one value, or one per group.
+#' @param n,note Optional count and note: one value, or one per group. In a
+#'   flow with data (see [flow_start()]), a missing `n` is computed from the
+#'   rows of each group; boxes made without data have no rows, so the count
+#'   below them stays blank. A typed `n` always wins (e.g. "600 trials" is
+#'   not a number of rows).
 #' @param over Optional name of an earlier stage to group by (draws brackets).
 #' @export
 #' @examples
