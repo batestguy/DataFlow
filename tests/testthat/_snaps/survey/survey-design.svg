@@ -37,8 +37,6 @@
 <line x1='363.29' y1='111.02' x2='421.90' y2='111.02' style='stroke-width: 0.85; stroke-linecap: square;' />
 <line x1='509.82' y1='98.67' x2='509.82' y2='111.02' style='stroke-width: 0.85; stroke-linecap: square;' />
 <line x1='480.51' y1='111.02' x2='539.12' y2='111.02' style='stroke-width: 0.85; stroke-linecap: square;' />
-<line x1='392.59' y1='289.66' x2='392.59' y2='334.11' style='stroke-width: 0.85; stroke-linecap: square;' />
-<line x1='392.59' y1='458.56' x2='392.59' y2='503.01' style='stroke-width: 0.85; stroke-linecap: square;' />
 <line x1='275.37' y1='63.28' x2='275.37' y2='75.62' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
 <polygon points='273.61,71.29 275.37,75.62 277.12,71.29 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
 <line x1='392.59' y1='63.28' x2='392.59' y2='75.62' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />

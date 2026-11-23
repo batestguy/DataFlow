@@ -460,7 +460,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     add_seg(pb$x, pb$ymin, pb$x, side$y[i], FALSE, "side")
     add_seg(pb$x, side$y[i], side$xmin[i], side$y[i], TRUE, "side")
   }
-  segments <- if (length(seg)) do.call(rbind, seg) else
+  segments <- if (length(seg)) merge_segments(do.call(rbind, seg)) else
     data.frame(x = numeric(), y = numeric(), xend = numeric(),
                yend = numeric(), head = logical(), kind = character())
   brackets <- if (length(brk)) do.call(rbind, brk) else
@@ -531,3 +531,83 @@ shift_cont <- function(cont, off) {
   cont$r <- cont$r + off
   cont
 }
+
+# Draw each stretch of line once. Several connectors can run along the same
+# line (an arrow down to a box and the stub down to an exclusion box beside
+# it, or a pool line); drawn on top of each other they look thicker at some
+# resolutions. Segments with an arrowhead are kept whole. Other horizontal or
+# vertical segments are taken longest first, and only the parts of them not
+# yet drawn on the same line are kept, in their original order and
+# direction. Slanted segments are kept as they are.
+merge_segments <- function(sg, eps = 1e-9) {
+  n <- nrow(sg)
+  if (n < 2) return(sg)
+  dx <- abs(sg$x - sg$xend)
+  dy <- abs(sg$y - sg$yend)
+  vert <- dx < eps & dy > eps
+  horiz <- dy < eps & dx > eps
+  pieces <- lapply(seq_len(n), function(i) sg[i, , drop = FALSE])
+  subtract <- function(lo, hi, cov) {
+    out <- list(c(lo, hi))
+    for (cv in cov) {
+      nxt <- list()
+      for (p in out) {
+        if (cv[2] <= p[1] + eps || cv[1] >= p[2] - eps) {
+          nxt <- c(nxt, list(p))
+        } else {
+          if (cv[1] - p[1] > eps) nxt <- c(nxt, list(c(p[1], cv[1])))
+          if (p[2] - cv[2] > eps) nxt <- c(nxt, list(c(cv[2], p[2])))
+        }
+      }
+      out <- nxt
+    }
+    out
+  }
+  for (o in c("v", "h")) {
+    sel <- which(if (o == "v") vert else horiz)
+    if (length(sel) < 2) next
+    line <- if (o == "v") sg$x[sel] else sg$y[sel]
+    for (grp in split(sel, round(line, 9))) {
+      if (length(grp) < 2) next
+      a0 <- if (o == "v") sg$y[grp] else sg$x[grp]
+      a1 <- if (o == "v") sg$yend[grp] else sg$xend[grp]
+      lo <- pmin(a0, a1)
+      hi <- pmax(a0, a1)
+      ord <- order(!sg$head[grp], -(hi - lo), grp)
+      cov <- list()
+      for (j in ord) {
+        i <- grp[j]
+        if (sg$head[i]) {
+          cov <- c(cov, list(c(lo[j], hi[j])))
+          next
+        }
+        keep <- subtract(lo[j], hi[j], cov)
+        cov <- c(cov, list(c(lo[j], hi[j])))
+        if (length(keep) == 1 && abs(keep[[1]][1] - lo[j]) < eps &&
+            abs(keep[[1]][2] - hi[j]) < eps) {
+          next
+        }
+        down <- a0[j] > a1[j]
+        rows <- lapply(keep, function(k) {
+          r <- sg[i, , drop = FALSE]
+          from <- if (down) k[2] else k[1]
+          to <- if (down) k[1] else k[2]
+          if (o == "v") {
+            r$y <- from
+            r$yend <- to
+          } else {
+            r$x <- from
+            r$xend <- to
+          }
+          r
+        })
+        pieces[[i]] <- if (length(rows)) do.call(rbind, rows) else
+          sg[0, , drop = FALSE]
+      }
+    }
+  }
+  out <- do.call(rbind, pieces)
+  rownames(out) <- NULL
+  out
+}
+

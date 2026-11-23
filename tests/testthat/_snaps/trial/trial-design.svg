@@ -31,9 +31,6 @@
 <rect x='53.16' y='14.16' width='613.68' height='561.84' style='stroke-width: 0.00; stroke: none; fill: #FFFFFF;' />
 <line x1='360.09' y1='259.39' x2='360.09' y2='280.95' style='stroke-width: 0.85; stroke-linecap: square;' />
 <line x1='250.49' y1='280.95' x2='469.68' y2='280.95' style='stroke-width: 0.85; stroke-linecap: square;' />
-<line x1='360.09' y1='63.97' x2='360.09' y2='141.57' style='stroke-width: 0.85; stroke-linecap: square;' />
-<line x1='250.49' y1='371.00' x2='250.49' y2='448.59' style='stroke-width: 0.85; stroke-linecap: square;' />
-<line x1='469.68' y1='371.00' x2='469.68' y2='448.59' style='stroke-width: 0.85; stroke-linecap: square;' />
 <line x1='360.09' y1='63.97' x2='360.09' y2='219.16' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
 <polygon points='358.33,214.82 360.09,219.16 361.84,214.82 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
 <line x1='250.49' y1='280.95' x2='250.49' y2='302.50' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />

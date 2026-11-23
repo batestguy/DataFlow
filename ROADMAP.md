@@ -535,3 +535,30 @@ what is still open.
   changed the order in which the random test script drew its random
   numbers, so it built different designs; the original order is kept).
 
+### 2026-11-23 — Milestone 4: each line drawn once
+- Where connectors ran along the same line (an arrow and the stub down to
+  an exclusion box beside it, a pool line), they were drawn on top of each
+  other, which looked thicker in some PNGs (seen in the review and
+  trial_data pictures). The layout now merges them: segments with an
+  arrowhead are kept whole, other horizontal and vertical segments keep only
+  the parts not already drawn (`merge_segments()` in `R/layout.R`).
+- Checked: on 315 typed designs x 2 connector styles, boxes, exclusion
+  boxes, brackets, row labels, sizes, objects and descriptions are
+  identical to `main`; segments equal `main`'s after the merge (214 of 630
+  layouts changed, 7,488 segments down to 7,157), and the stretch of line
+  covered on every line, every arrowhead and every slanted line is
+  unchanged (`dev/m4_cover.R`: 0 differences). New tests: a unit test of
+  the merge and a check that no stretch of line is drawn twice in the
+  examples and awkward designs.
+- Picture snapshots of the trial, survey, review, factorial and trial_data
+  diagrams changed: each new SVG only drops duplicate line elements
+  (2 to 6 per picture, nothing added or moved); reviewed and accepted. The
+  lab snapshot is unchanged (it had no doubled lines). PNGs of all six
+  examples re-rendered and viewed: the thicker line under "Exercise
+  programme" in trial_data is gone.
+- Also re-run after both review commits: `dev/stress4.R` 400 designs x 2
+  connector styles, 0 overlaps and 0 lines through boxes; line-on-line
+  crossings 34 in the same 22 layouts (36 before: two crossings were
+  counted twice through duplicate segments); `dev/rv4_rand.R` 893 steps, 0
+  problems; 3519 test expectations pass.
+
