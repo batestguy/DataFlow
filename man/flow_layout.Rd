@@ -25,7 +25,10 @@ flow_layout(
 \item{x}{A \code{dataflow} object.}
 
 \item{count_format}{How a box's label and count are combined. \code{{label}}
-and \code{{n}} are replaced; used only for boxes that have a count.}
+and \code{{n}} are replaced; used only for boxes that have a count. Outcome
+events (see \code{\link[=flow_start]{flow_start()}}) are added to the count as
+"(n = 412; events = 37)", or placed where \code{{events}} appears if the
+format has it.}
 
 \item{base_size}{Font size of box text, in points.}
 

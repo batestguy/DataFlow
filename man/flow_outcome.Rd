@@ -12,7 +12,8 @@ flow_outcome(
   note = NULL,
   display = "all",
   from = NULL,
-  row_label = NULL
+  row_label = NULL,
+  events = NULL
 )
 }
 \arguments{
@@ -38,6 +39,11 @@ boxes. See \code{\link[=flow_nodes]{flow_nodes()}}.}
 \item{row_label}{Text drawn in the left margin for this row. Defaults to
 \code{stage}; use \code{""} for no label (e.g. when a row continues the section
 labelled above it).}
+
+\item{events}{Optional typed numbers of outcome events per new box,
+recycled like \code{n}, drawn as "(n = 412; events = 37)". In a flow started
+with \code{flow_start(events = ~ ...)} they are computed from the data
+instead; typed values win and are marked as typed.}
 }
 \description{
 Add the outcome or measurement at the end of each branch

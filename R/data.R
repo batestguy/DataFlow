@@ -144,6 +144,10 @@ set_rows <- function(x, ids, rows) {
     key <- as.character(ids[i])
     x$data$rows$box[key] <- list(rows[[i]])
     x$data$rows$left[key] <- list(rows[[i]])
+    # outcome events among the rows, when flow_start(events =) was given
+    if (!is.null(x$data$events) && !is.null(rows[[i]])) {
+      x$events[key] <- format_n(count_events(x, rows[[i]]))
+    }
   }
   x
 }
@@ -179,7 +183,8 @@ need_data <- function(x, arg) {
 #' box hanging off it); for an exclusion box (`excluded = TRUE`), the rows it
 #' removed from the flow.
 #'
-#' @param x A `dataflow` with data.
+#' @param x A `dataflow` with data, or a fold grid from [flow_folds()] made
+#'   from data (then `box` is a block id, see `x$blocks`).
 #' @param box A box id or label (see [flow_nodes()]). A label must match
 #'   exactly one box.
 #' @param excluded If `TRUE`, `box` names an exclusion box (an id from
@@ -195,6 +200,7 @@ need_data <- function(x, arg) {
 #' head(flow_data(d, "Randomised"))
 #' nrow(flow_data(d, "Excluded", excluded = TRUE))
 flow_data <- function(x, box, excluded = FALSE) {
+  if (inherits(x, "dataflow_grid")) return(grid_data(x, box))
   check_flow(x)
   if (!has_data(x)) {
     stop("This flow has no data; counts were typed. Start a flow with ",
@@ -251,8 +257,9 @@ describe_data <- function(x) {
          if (!is.null(dd$count)) paste0(", as numbers of distinct values of `",
                                         dd$count, "`"),
          if (nrow(tc) > 0) paste0(", except ", nrow(tc), " typed by hand: ",
-                                  and_list(paste0(flat(tc$label), " (n = ",
-                                                  tc$n, ")"))),
+                                  and_list(paste0(flat(tc$label), " (",
+                                                  tc$what, " = ", tc$n,
+                                                  ")"))),
          ".")
 }
 

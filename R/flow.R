@@ -24,7 +24,7 @@
 
 stage_types <- c(
   "start", "select", "cluster", "split", "assign",
-  "apply", "pool", "exclude", "outcome"
+  "apply", "pool", "exclude", "outcome", "partition"
 )
 
 new_dataflow <- function(stages, nodes, edges, side, leaves,
@@ -147,8 +147,8 @@ validate_dataflow <- function(x) {
 #' @param x A `dataflow` object.
 #' @return A data frame with one row per box: `id`, `stage` (the stage name),
 #'   `label`, `n`, `note`, `leaf` (`TRUE` if the next verb will attach to
-#'   it by default), and `n_edited` (`TRUE` if its count was changed with
-#'   [flow_edit()]).
+#'   it by default), `n_edited` (`TRUE` if its count was changed with
+#'   [flow_edit()]), and `events` (outcome events, if any).
 #' @export
 #' @examples
 #' flow_start("Participants", n = 120) |>
@@ -165,6 +165,8 @@ flow_nodes <- function(x) {
     note = nd$note,
     leaf = nd$id %in% x$leaves,
     n_edited = nd$id %in% edited_ids(x, "nodes"),
+    events = if (is.null(x$events)) NA_character_ else
+      unname(x$events[as.character(nd$id)]),
     stringsAsFactors = FALSE
   )
 }

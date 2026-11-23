@@ -10,7 +10,8 @@ flow_start(
   note = NULL,
   stage = NULL,
   data = NULL,
-  count = NULL
+  count = NULL,
+  events = NULL
 )
 }
 \arguments{
@@ -44,6 +45,14 @@ in that column are not counted. If one value has rows in two boxes made
 from the same box (e.g. a patient with visits in two arms, or with some
 visits excluded and others not), the counts of those boxes add up to
 more than the box above; DataFlow warns when this happens.}
+
+\item{events}{Outcome events, shown with the count of each box as
+"(n = 412; events = 37)", as asked for prediction-model studies
+(TRIPOD+AI item 20a). With \code{data}, a one-sided formula saying which
+rows had the event, e.g. \code{~ died == 1}: every box with rows behind it
+then shows its number of events (counted like \code{n}, so in \code{count} units
+if \code{count} is given). Without \code{data}, typed numbers: one value, or one
+per label. Exclusion boxes do not show events.}
 }
 \value{
 A \code{dataflow} object.

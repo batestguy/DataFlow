@@ -16,7 +16,8 @@ flow_save(
 )
 }
 \arguments{
-\item{x}{A \code{dataflow} object or a plot made by \code{\link[=autoplot.dataflow]{autoplot.dataflow()}}.}
+\item{x}{A \code{dataflow} object, a fold grid from \code{\link[=flow_folds]{flow_folds()}}, or a plot
+made from either.}
 
 \item{filename}{File to write; the extension picks the format.}
 
@@ -29,7 +30,8 @@ flow_save(
 \item{device}{Optional device passed to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}; by default
 it is chosen from the file extension.}
 
-\item{...}{Passed to \code{\link[=autoplot.dataflow]{autoplot.dataflow()}} when \code{x} is a dataflow,
+\item{...}{Passed to \code{\link[=autoplot.dataflow]{autoplot.dataflow()}} (or
+\code{\link[=autoplot.dataflow_grid]{autoplot.dataflow_grid()}}) when \code{x} is a dataflow (or fold grid),
 otherwise to \code{\link[ggplot2:ggsave]{ggplot2::ggsave()}}.}
 }
 \value{

@@ -5,14 +5,16 @@
 \title{Example study designs}
 \usage{
 flow_example(
-  name = c("lab", "trial", "survey", "review", "factorial", "trial_data")
+  name = c("lab", "trial", "survey", "review", "factorial", "trial_data", "ml", "cv",
+    "forecast")
 )
 }
 \arguments{
 \item{name}{Which example.}
 }
 \value{
-A \code{dataflow} object.
+A \code{dataflow} object; for \code{"cv"} and \code{"forecast"}, a
+\code{dataflow_grid}.
 }
 \description{
 Ready-made designs used in the documentation and tests. Each records where
@@ -44,11 +46,25 @@ invented for illustration.
 with diet A or B, drawn as nested splits), an outcome box per cell, then
 the cells pooled over diet for an analysis per drug group. All numbers
 are invented for illustration.
+\item \code{"cv"}: a fold grid (see \code{\link[=flow_folds]{flow_folds()}}) for 5-fold cross-validation
+grouped by patient, with counts computed from an invented data frame
+whose \code{fold} column assigns whole patients to folds.
+\item \code{"forecast"}: a fold grid for time-series evaluation with an expanding
+window and a one-month gap, from invented monthly data for three
+stores (2016 to 2023).
 \item \code{"trial_data"}: the same kind of CONSORT-style trial as \code{"trial"}, but
 every count is computed from a small invented data frame of 412
 participants (built inside the function with a fixed seed), using
 formula \code{reasons}, \verb{by =} and \verb{where =}. Use \code{\link[=flow_data]{flow_data()}} on it to see
 the rows behind any box.
+\item \code{"ml"}: a made-up development and validation flow for a clinical
+prediction model, in the spirit of TRIPOD+AI item 20a (numbers and
+outcome events in each analysis). Admissions from two hospitals form the
+development data, with exclusions and a split into training and test
+sets that keeps all admissions of a patient in one set; a third
+hospital is a separate stream for external validation. Every count and
+event is computed from invented data frames built inside the function
+with a fixed seed.
 }
 }
 \examples{
@@ -58,4 +74,7 @@ flow_example("survey")
 flow_example("review")
 flow_example("factorial")
 flow_example("trial_data")
+flow_example("ml")
+flow_example("cv")
+flow_example("forecast")
 }

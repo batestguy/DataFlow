@@ -12,7 +12,8 @@ flow_edit(
   note = NULL,
   stage = NULL,
   row_label = NULL,
-  excluded = FALSE
+  excluded = FALSE,
+  events = NULL
 )
 }
 \arguments{
@@ -31,6 +32,9 @@ note. Counts are drawn as given, like typed counts.}
 its new row label (\code{""} hides it).}
 
 \item{excluded}{If \code{TRUE}, \code{box} names exclusion boxes.}
+
+\item{events}{New number of outcome events (see \code{\link[=flow_start]{flow_start()}}), marked
+as typed like an edited count. Not for exclusion boxes.}
 }
 \value{
 The updated \code{dataflow}.
@@ -45,6 +49,10 @@ A count changed here is recorded as typed by hand: \code{\link[=flow_nodes]{flow
 in its \code{n_edited} column, and for a flow with data \code{\link[=flow_describe]{flow_describe()}} lists
 it among the counts typed rather than computed. Editing never changes the
 rows of data behind a box, so \code{\link[=flow_data]{flow_data()}} still returns them.
+
+For a fold grid from \code{\link[=flow_folds]{flow_folds()}}, \code{box} gives block ids (see
+\code{x$blocks}), and \code{label} and \code{n} change the text and count of those
+blocks; edited counts are marked as typed.
 
 \code{flow_edit()} changes text only. It cannot remove boxes or branches, or
 move them: change the structure with the verbs and their \verb{from =}

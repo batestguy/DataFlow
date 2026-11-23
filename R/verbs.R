@@ -180,6 +180,13 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   [flow_outcome()], [flow_pool()]). The name of the data frame is
 #'   recorded and given in [flow_describe()]. Giving both `n` and `data` is
 #'   an error.
+#' @param events Outcome events, shown with the count of each box as
+#'   "(n = 412; events = 37)", as asked for prediction-model studies
+#'   (TRIPOD+AI item 20a). With `data`, a one-sided formula saying which
+#'   rows had the event, e.g. `~ died == 1`: every box with rows behind it
+#'   then shows its number of events (counted like `n`, so in `count` units
+#'   if `count` is given). Without `data`, typed numbers: one value, or one
+#'   per label. Exclusion boxes do not show events.
 #' @param count With `data`: `NULL` (the default) counts rows; a column name
 #'   counts the distinct non-missing values of that column instead (e.g.
 #'   patients, when there is one row per visit). Rows with a missing value
@@ -203,7 +210,7 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   flow_exclude("Excluded", n = 8, from = "Cases") |>
 #'   flow_pool("Analysis", "Analysed together", n = 352)
 flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
-                       data = NULL, count = NULL) {
+                       data = NULL, count = NULL, events = NULL) {
   if (!is.character(label) || length(label) == 0 || anyNA(label) ||
       any(label == "")) {
     stop("`label` must be text and not empty.", call. = FALSE)
@@ -221,6 +228,10 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
     }
     store <- new_data_store(data, k, data_names(substitute(data), data),
                             count)
+    if (inherits(events, "formula")) {
+      check_condition(events, "events")
+      store$events <- events
+    }
     n <- vapply(seq_len(k), function(i) {
       d <- list(data = store)
       count_rows(d, store$offsets[i] + seq_len(nrow(store$sources[[i]])))
@@ -228,6 +239,10 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
   } else if (!is.null(count)) {
     stop("`count` is for counting from `data`; give `data` too.",
          call. = FALSE)
+  }
+  if (inherits(events, "formula") && is.null(data)) {
+    stop("`events` as a formula counts events in `data`; give `data` too, ",
+         "or type the numbers of events.", call. = FALSE)
   }
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")
@@ -254,6 +269,9 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
     x <- set_rows(x, a$ids, lapply(seq_len(k), function(i) {
       store$offsets[i] + seq_len(nrow(store$sources[[i]]))
     }))
+  }
+  if (!is.null(events) && !inherits(events, "formula")) {
+    x <- set_events(x, a$ids, events)
   }
   validate_dataflow(x)
 }
@@ -286,6 +304,10 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #' @param row_label Text drawn in the left margin for this row. Defaults to
 #'   `stage`; use `""` for no label (e.g. when a row continues the section
 #'   labelled above it).
+#' @param events Optional typed numbers of outcome events per new box,
+#'   recycled like `n`, drawn as "(n = 412; events = 37)". In a flow started
+#'   with `flow_start(events = ~ ...)` they are computed from the data
+#'   instead; typed values win and are marked as typed.
 #' @param by For a flow with data (see [flow_start()]): a column name. Each
 #'   box is split into one box per value of the column present in its rows
 #'   (in factor level order for a factor, otherwise sorted), and counts are
@@ -313,19 +335,20 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #'   flow_split("Culture type", list("Type A", "Type B"), n = 50)
 flow_split <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                        display = "all", from = NULL, row_label = NULL,
-                       summary = "{k} {stage}", by = NULL) {
+                       summary = "{k} {stage}", by = NULL, events = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
   split_boxes(.flow, stage, labels, n, note, from,
               pick_row_label(row_label, stage), "split", display,
-              summary = summary, by = by)
+              summary = summary, by = by, events = events)
 }
 
 # Shared engine for one-to-many steps (split, assign, cluster).
 split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
                         display, method = NA_character_,
-                        summary = "{k} {stage}", by = NULL) {
+                        summary = "{k} {stage}", by = NULL,
+                        events = NULL) {
   targets <- resolve_targets(.flow, from)
   child_rows <- NULL
   if (!is.null(by)) {
@@ -388,6 +411,9 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
   x$leaves <- replace_leaves(x$leaves, targets,
                              split(a$ids, factor(anchors, levels = targets)))
   if (!is.null(child_rows)) x <- set_rows(x, a$ids, child_rows)
+  if (!is.null(events)) {
+    x <- set_events(x, a$ids, events, per = per, per_target = per_target)
+  }
   validate_dataflow(x)
 }
 
@@ -547,7 +573,8 @@ per_box_values <- function(values, fmt, per_target, arg, per) {
 attach_per_group <- function(x, stage, label, n, note, over, from, type,
                              display, row_label = stage,
                              method = NA_character_, groups = NULL,
-                             join = "bracket", where = NULL) {
+                             join = "bracket", where = NULL,
+                             events = NULL) {
   if (!is.null(groups)) {
     targets <- unlist(groups)
   } else {
@@ -593,6 +620,7 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
   a <- add_nodes(s$x, s$id, labels, n_vals, note_vals, anchors)
   x <- a$x
   if (!is.null(group_rows)) x <- set_rows(x, a$ids, group_rows)
+  if (!is.null(events)) x <- set_events(x, a$ids, events)
   for (i in seq_len(k)) {
     kind <- if (length(groups[[i]]) == 1) "arrow" else join
     x <- add_edges(x, groups[[i]], rep(a$ids[i], length(groups[[i]])), kind)
@@ -666,6 +694,10 @@ group_over <- function(x, targets, over) {
 #'   below them stays blank. A typed `n` always wins (e.g. "600 trials" is
 #'   not a number of rows).
 #' @param over Optional name of an earlier stage to group by (draws brackets).
+#' @param events Optional typed numbers of outcome events per new box,
+#'   recycled like `n`, drawn as "(n = 412; events = 37)". In a flow started
+#'   with `flow_start(events = ~ ...)` they are computed from the data
+#'   instead; typed values win and are marked as typed.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100) |>
@@ -674,12 +706,12 @@ group_over <- function(x, targets, over) {
 #'   flow_apply("Condition", "9 conditions each", over = "Experiment ID")
 flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
                        over = NULL, display = "all", from = NULL,
-                       row_label = NULL) {
+                       row_label = NULL, events = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
   attach_per_group(.flow, stage, label, n, note, over, from, "apply", display,
-                   pick_row_label(row_label, stage))
+                   pick_row_label(row_label, stage), events = events)
 }
 
 #' Add the outcome or measurement at the end of each branch
@@ -691,10 +723,12 @@ flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_outcome("Number of trials", "600 each")
 flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
-                         display = "all", from = NULL, row_label = NULL) {
+                         display = "all", from = NULL, row_label = NULL,
+                         events = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
   attach_per_group(.flow, stage, label, n, note, NULL, from, "outcome",
-                   display, pick_row_label(row_label, stage))
+                   display, pick_row_label(row_label, stage),
+                   events = events)
 }
