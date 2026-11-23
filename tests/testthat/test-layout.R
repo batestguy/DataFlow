@@ -131,3 +131,50 @@ test_that("an unknown font family warns once and still lays out", {
   expect_match(w, "NoSuchFontXYZ")
   expect_equal(lay$size, lab_layout()$size)
 })
+
+test_that("merge_segments draws each stretch of line once", {
+  sg <- data.frame(
+    x = c(1, 1, 1, 0, 2), y = c(0, 0, -1, -3, -3),
+    xend = c(1, 1, 1, 2, 2.5), yend = c(-2, -1, -3, -3, -3),
+    head = c(TRUE, FALSE, FALSE, FALSE, TRUE),
+    kind = c("arrow", "side", "pool", "pool", "side")
+  )
+  m <- merge_segments(sg)
+  # the stub inside the arrow is gone; the pool line keeps only its part
+  # below the arrow, still drawn downwards; the rest is unchanged
+  expect_equal(nrow(m), 4)
+  expect_equal(m$kind, c("arrow", "pool", "pool", "side"))
+  expect_equal(unlist(m[2, c("x", "y", "xend", "yend")]),
+               c(x = 1, y = -2, xend = 1, yend = -3))
+  expect_equal(m[c(1, 3, 4), ], sg[c(1, 4, 5), ], ignore_attr = TRUE)
+  expect_equal(merge_segments(sg[1, ]), sg[1, ])
+})
+
+test_that("no stretch of line is drawn twice in the example layouts", {
+  designs <- c(lapply(c(lab = "lab", trial = "trial", survey = "survey",
+                        review = "review", factorial = "factorial",
+                        trial_data = "trial_data"), flow_example),
+               trial_designs(), stream_designs())
+  for (nm in names(designs)) {
+    for (con in c("elbow", "straight")) {
+      sg <- flow_layout(designs[[nm]], connector = con)$segments
+      for (o in c("v", "h")) {
+        on <- if (o == "v") {
+          abs(sg$x - sg$xend) < 1e-9 & abs(sg$y - sg$yend) > 1e-9
+        } else {
+          abs(sg$y - sg$yend) < 1e-9 & abs(sg$x - sg$xend) > 1e-9
+        }
+        s <- sg[on, ]
+        key <- round(if (o == "v") s$x else s$y, 9)
+        lo <- if (o == "v") pmin(s$y, s$yend) else pmin(s$x, s$xend)
+        hi <- if (o == "v") pmax(s$y, s$yend) else pmax(s$x, s$xend)
+        twice <- 0
+        for (i in seq_len(nrow(s))) for (j in seq_len(nrow(s))) {
+          if (i < j && key[i] == key[j] &&
+              min(hi[i], hi[j]) - max(lo[i], lo[j]) > 1e-9) twice <- twice + 1
+        }
+        expect_equal(twice, 0, label = paste(nm, con, o))
+      }
+    }
+  }
+})

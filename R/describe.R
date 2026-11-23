@@ -7,7 +7,10 @@
 #' attaches it to the plot as alt text automatically.
 #'
 #' Boxes that share a label in the same row are told apart by the box they
-#' sit under, e.g. "Batch 1 under Type A".
+#' sit under, e.g. "Batch 1 under Type A". Several top boxes are described
+#' as "2 boxes side by side"; pools as "X and Y are combined into Z". For a
+#' flow with data, a last sentence names the data frame(s) the counts were
+#' computed from.
 #'
 #' @param x A `dataflow` object.
 #' @return A single string (class `dataflow_description`). Printing it wraps
@@ -44,9 +47,12 @@ flow_describe <- function(x) {
   }
 
   root <- nd$id[nd$stage == st$id[1]]
+  start <- if (length(root) == 1) say(root) else
+    paste0(length(root), " boxes side by side: ",
+           and_list(vapply(root, say, "")))
   sentences <- paste0("Flow diagram with ", nrow(st), " stage",
                       if (nrow(st) != 1) "s", ", read from top to bottom. ",
-                      "It starts with ", say(root), ".")
+                      "It starts with ", start, ".")
   for (s in seq_len(nrow(st))[-1]) {
     ids <- nd$id[nd$stage == st$id[s]]
     type <- st$type[s]
@@ -69,6 +75,11 @@ flow_describe <- function(x) {
       }
       body <- describe_attach(x, s, ids, srcs, say, name, whole_row,
                               link = "from")
+    } else if (type == "pool") {
+      # "X and Y are combined into Z (n = ..)", one clause per pool
+      body <- paste(vapply(seq_along(ids), function(i) {
+        paste0(and_list(name(srcs[[i]])), " are combined into ", say(ids[i]))
+      }, ""), collapse = "; ")
     } else {
       body <- describe_attach(x, s, ids, srcs, say, name, whole_row)
       if (type == "outcome") body <- paste0("the outcome is ", body)
@@ -79,6 +90,7 @@ flow_describe <- function(x) {
     }
     sentences <- c(sentences, paste0(head, ": ", body, "."))
   }
+  if (has_data(x)) sentences <- c(sentences, describe_data(x))
   structure(paste(sentences, collapse = " "), class = "dataflow_description")
 }
 

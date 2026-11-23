@@ -35,7 +35,8 @@ and \code{{n}} are replaced; used only for boxes that have a count.}
 rows, in inches.}
 
 \item{group_gap}{Horizontal gap between neighbouring groups (boxes that
-have boxes below them), in inches, so groups read as separate.}
+have boxes below them) and between starting streams, in inches, so
+groups read as separate.}
 
 \item{pad_x, pad_y}{Space between text and box edge, in inches.}
 
@@ -66,8 +67,10 @@ exported so layouts can be inspected and tested as data.
 }
 \details{
 Boxes are sized from their text. Each box is centred over the boxes that
-follow it; a box joined by a bracket is centred under the boxes it joins.
-Rows sit at fixed heights, one row per stage.
+follow it; a box joined by a bracket is centred under the boxes it joins,
+and a pooled box under the centres of its sources. Several starting
+streams sit side by side, \code{group_gap} apart. Rows sit at fixed heights, one
+row per stage.
 }
 \examples{
 lay <- flow_start("Cultures", n = 100) |>

@@ -4,24 +4,71 @@
 \alias{flow_start}
 \title{Start a flow diagram}
 \usage{
-flow_start(label, n = NULL, note = NULL, stage = NULL)
+flow_start(
+  label,
+  n = NULL,
+  note = NULL,
+  stage = NULL,
+  data = NULL,
+  count = NULL
+)
 }
 \arguments{
-\item{label}{Text for the top box, e.g. \code{"Cultures"}.}
+\item{label}{Text for the top box, e.g. \code{"Cultures"}, or a character
+vector for several top boxes side by side.}
 
-\item{n}{Optional count, drawn exactly as given (a number or text).}
+\item{n}{Optional count, drawn exactly as given (a number or text): one
+value, or one per label.}
 
-\item{note}{Optional extra line drawn in smaller italic text in the box.}
+\item{note}{Optional extra line drawn in smaller italic text in the box:
+one value, or one per label.}
 
 \item{stage}{Optional row label for the top row. By default the top row
 has no label.}
+
+\item{data}{Optional data frame (or, with several labels, a list of data
+frames, one per top box) to compute counts from, instead of typing them.
+The data are stored once in the flow; each box records which rows are
+behind it (see \code{\link[=flow_data]{flow_data()}}). Later steps compute their counts from
+the data when given \verb{by =} (\code{\link[=flow_split]{flow_split()}}, \code{\link[=flow_assign]{flow_assign()}},
+\code{\link[=flow_cluster]{flow_cluster()}}), \verb{where =} (\code{\link[=flow_select]{flow_select()}}, \code{\link[=flow_exclude]{flow_exclude()}}),
+formula \code{reasons} (\code{\link[=flow_exclude]{flow_exclude()}}), or no \code{n} (\code{\link[=flow_apply]{flow_apply()}},
+\code{\link[=flow_outcome]{flow_outcome()}}, \code{\link[=flow_pool]{flow_pool()}}). The name of the data frame is
+recorded and given in \code{\link[=flow_describe]{flow_describe()}}. Giving both \code{n} and \code{data} is
+an error.}
+
+\item{count}{With \code{data}: \code{NULL} (the default) counts rows; a column name
+counts the distinct non-missing values of that column instead (e.g.
+patients, when there is one row per visit). Rows with a missing value
+in that column are not counted. If one value has rows in two boxes made
+from the same box (e.g. a patient with visits in two arms, or with some
+visits excluded and others not), the counts of those boxes add up to
+more than the box above; DataFlow warns when this happens.}
 }
 \value{
 A \code{dataflow} object.
 }
 \description{
-Creates the top box of the diagram.
+Creates the top box of the diagram, or several top boxes side by side.
+}
+\details{
+Several labels make several starting streams, for example the two columns
+of a PRISMA 2020 flow diagram (databases and registers; other sources).
+Every top box is an end box, so the next verb attaches to all of them;
+use \verb{from =} to continue one stream only, while the other waits and
+continues on a later row. \code{\link[=flow_pool]{flow_pool()}} joins streams.
 }
 \examples{
 flow_start("Cultures", n = 100)
+
+# counts from a data frame
+people <- data.frame(id = 1:6, age = c(17, 25, 40, 33, 15, 52))
+flow_start("Assessed", data = people) |>
+  flow_exclude("Excluded", reasons = list("Under 18" = ~ age < 18)) |>
+  flow_apply("Included", "Included")
+
+# two starting streams, continued one at a time
+flow_start(c("Cases", "Controls"), n = c(120, 240)) |>
+  flow_exclude("Excluded", n = 8, from = "Cases") |>
+  flow_pool("Analysis", "Analysed together", n = 352)
 }

@@ -6,7 +6,7 @@
 \alias{DataFlow-package}
 \title{DataFlow: Publication-Quality Study-Design Flow Diagrams}
 \description{
-Build study-design flow diagrams (sampling, clustering, selection, assignment, splits, exclusions and merges) with a small set of pipe-friendly verbs, and draw them as 'ggplot2' graphics for publication. Counts are drawn exactly as typed; they are never computed or checked. Every diagram also has a plain-language written description for use as alternative text.
+Build study-design flow diagrams (sampling, clustering, selection, assignment, splits, exclusions and merges) with a small set of pipe-friendly verbs, and draw them as 'ggplot2' graphics for publication. Counts are either drawn exactly as typed, or computed from a data frame, in which case every box records the rows behind it. Every diagram also has a plain-language written description for use as alternative text.
 }
 \author{
 \strong{Maintainer}: Jerry Bannister \email{jzbannister@atbu.edu.ng} (aka batestguy)

@@ -164,8 +164,9 @@ test_that("a group cannot hold a box and a box below it", {
   )
 })
 
-test_that("validator requires exactly one top box", {
+test_that("validator requires every top box to be on the first stage", {
+  # (until milestone 4 this rule was "exactly one top box")
   d <- flow_example("lab")
   d$nodes$anchor[5] <- NA
-  expect_error(validate_dataflow(d), "exactly one top box")
+  expect_error(validate_dataflow(d), "top box must be on the first stage")
 })

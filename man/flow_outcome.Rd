@@ -22,7 +22,11 @@ flow_outcome(
 
 \item{label}{Text for the new box(es): one value, or one per group.}
 
-\item{n, note}{Optional count and note: one value, or one per group.}
+\item{n, note}{Optional count and note: one value, or one per group. In a
+flow with data (see \code{\link[=flow_start]{flow_start()}}), a missing \code{n} is computed from the
+rows of each group; boxes made without data have no rows, so the count
+below them stays blank. A typed \code{n} always wins (e.g. "600 trials" is
+not a number of rows).}
 
 \item{display}{\code{"all"} draws every box. \code{"summary"} draws one box under
 each current box standing for all of its boxes in this stage, labelled

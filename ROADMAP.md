@@ -17,7 +17,7 @@ milestone step; the progress log at the bottom is append-only.
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
-| 4 | Factorial design, pooling, several starting streams | ⬜ | — |
+| 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs | ⬜ | — |
 | 6 | Reporting-guideline templates | ⬜ | — |
 | 7 | Examples from recent papers | ⬜ | — |
@@ -36,7 +36,7 @@ log). Milestones 4 to 9 replace the earlier 4 to 7.
 | Name / licence | `DataFlow`, MIT |
 | Release | Public GitHub repository from day one; CRAN later |
 | Input | Short pipe-able R code, one verb per stage, verbs prefixed `flow_` |
-| Counts | Typed by hand, drawn exactly as given, never computed or checked (numbers only get thousands separators) |
+| Counts | Typed by hand, drawn exactly as given, never checked (numbers only get thousands separators); or, optionally, computed from a data frame, each box keeping the rows behind it (decided 2026-11-23) |
 | Output | A ggplot object (restyleable) plus saved PDF/PNG at the diagram's natural size |
 | Stage definition | Each stage has a built-in type and a free-text label and note |
 | Step types | split, apply-to-group (bracket), pool/merge, exclusion side box, cluster sampling, selection, assignment |
@@ -126,7 +126,7 @@ style of a Demographic and Health Survey. Natural size 7.50 x 10.24 in at
 9 pt; scaled to a 6.5 in text width the text is about 7.8 pt. Reviewed;
 picture approved by the user on 2026-11-22; merged into `main`.
 
-### Milestone 4 — Factorial design, pooling, several starting streams ⬜
+### Milestone 4 — Factorial design, pooling, several starting streams; counts from data ✅
 
 **Delivers:** crossing splits (every level of one factor under every level
 of another); `flow_pool` (several sources merging into one box with
@@ -139,9 +139,23 @@ datasets, and mixed-methods designs.
 **Done when:** a 2 x 2 factorial with a pooled analysis and a two-stream
 diagram that joins render cleanly, and the user approves.
 
+**Also delivers (added 2026-11-23, user decision):** an optional data mode.
+`flow_start(data =, count =)` stores the data once; `by =`, `where =` and
+formula `reasons` compute counts; `flow_data()` returns the rows behind any
+box; `flow_from_data()` draws a data frame's nested structure; `flow_edit()`
+changes labels, counts, notes and row labels afterwards (edited counts are
+marked as typed).
+
 **Checks:** validator requires at least two sources per pool; pooled boxes
 centred under their sources; parallel streams keep their own rows and
 exclusion boxes without overlap; no crossings; random stress test extended.
+Data mode: counts equal the rows (or distinct values) of the right subsets;
+typed flows unchanged.
+
+**Status:** built on branch `m4` (2026-11-23). Examples
+`flow_example("review")` (PRISMA 2020 style), `"factorial"` and
+`"trial_data"`. Independent review passed after fixes; pictures approved by
+the user on 2026-11-23; merged into `main`.
 
 ### Milestone 5 — Machine-learning designs ⬜
 
@@ -220,18 +234,42 @@ as alt text; layout tested as data (no overlaps, no lines through boxes,
 random stress tests). Where others are ahead: counts computed from data, a
 CRAN release, more users and a longer track record.
 
-**Open decision (user):** add an optional data-driven mode that computes
-counts from a data frame (typed counts stay). It would make each number
-trace to a file and a command.
+**Decision (user, 2026-11-23):** yes to an optional data-driven mode that
+computes counts from a data frame, built in milestone 4; typed counts stay as
+they are. A diagram drawn from data stays fully editable (`flow_edit()`),
+since the data may not reflect the whole design.
 
 ## Known limitations (current)
 
-- Counts are drawn as typed; a diagram is only as correct as its numbers.
+- Typed counts are drawn as typed; a typed diagram is only as correct as
+  its numbers. In data mode counts are computed, but only for steps given
+  `by =`, `where =`, formula `reasons`, or (apply, outcome, pool) no `n`;
+  boxes made without data have no rows and counts below them stay blank.
+  A typed exclusion in data mode also blanks the counts below it.
+- In data mode, formula reasons count a row under the first reason it
+  matches; with `count =` a column, reason counts need not add up to the
+  box count (a person can have rows under two reasons), and boxes made from
+  one box can share a person, so their counts add up to more than the box
+  above (a warning says so).
+- In data mode, a box with no rows (a planned group) gets no boxes below it
+  unless `labels` are given for the next level. Values of a `by` column
+  that print alike (0.3 and 0.1 + 0.2) are one group.
+- `flow_edit()` changes text and counts only; boxes and branches cannot be
+  removed or moved after they are built (use `from =` and the verbs).
 - Box sizes are measured with the PDF device's standard font metrics. Other
   font families trigger one warning and may not fit their boxes exactly.
   Drawing far below the natural size can make text spill out of boxes.
 - Top-to-bottom diagrams only.
-- One starting box per diagram until milestone 4.
+- Several starting boxes and pools exist (milestone 4). A box can feed only
+  one pool per call, so overlapping pools (for example both margins of a
+  factorial design) are not supported.
+- A pool whose sources sit either side of another line that continues
+  downward (another stream, or interleaved `groups =`) crosses that line;
+  the random test found such crossings in 22 of 800 layouts. Lines never
+  pass through boxes.
+- Descriptions of repeated box names in parallel streams can be long
+  ("Reports assessed for eligibility under Reports sought for retrieval
+  under Records screened").
 - `display = "summary"` works for steps that split boxes (`flow_split`,
   `flow_assign`, `flow_cluster`); the summary box shows a count, not the
   names of the boxes it stands for.
@@ -426,3 +464,108 @@ what is still open.
   become a later track. Positioning section added. Open decision: optional
   counts computed from data. Merged into `main` (`dca78c6`); CI run
   45002933135 green on all 5 platforms.
+
+### 2026-11-23 — Milestone 4: streams, pools, counts from data built
+- User decision recorded: optional counts computed from data, built in this
+  milestone; later in the day the user added `flow_from_data()` and
+  `flow_edit()` (a diagram drawn from data must stay editable).
+- Part A (commit `02c5972`): `flow_start()` takes several labels (streams
+  side by side, `group_gap` apart); validator relaxed to "at least one top
+  box, all on the first stage"; `flow_pool()` (default, `over =`,
+  `groups =`) drawn as converging lines into one arrow, pools across
+  streams placed after the streams (no object change); descriptions "2
+  boxes side by side" and "X and Y are combined into Z"; examples
+  `"review"` (PRISMA 2020 layout, Page et al., BMJ 2021;372:n71, citation
+  from memory, not re-checked online) and `"factorial"`. Random testing
+  found one bug: a pool could join a box with a box below it when an
+  earlier pool had joined streams; the check now follows the drawn lines.
+  Its regression test was confirmed to fail with the old check, which
+  accepted the bad pool.
+- Part B (second commit on `m4`): data mode (`data =`, `count =`, `by =`,
+  `where =`, formula `reasons`, automatic counts for apply/outcome/pool),
+  `flow_data()`, `flow_from_data()` (rebuilds the lab design's first five
+  rows of boxes and counts from a 100-row data frame), `flow_edit()` with
+  `n_edited` in `flow_nodes()` and typed counts listed in the description,
+  `labels` mapping readable names and planned groups, example
+  `"trial_data"` (412 invented participants, fixed seed, caller's random
+  state restored).
+- Checked: 627 tests pass; `devtools::check()` 0/0/0; 315 typed designs
+  (lab, trial and survey examples, irregular and trial designs, 300 random
+  designs)
+  give identical objects, descriptions and layouts to `main`; random stress
+  test `dev/stress4.R` (seed 20261123): 400 designs x 2 connectors, 0
+  overlaps and 0 lines through boxes; it produced 234 multi-start designs,
+  259 one-stream steps, 119 pool boxes (81 across streams); line-on-line
+  crossings in 22 of 800 layouts (also 4 of 630 on `main`). Pictures
+  viewed: review, factorial, trial_data, lab, trial, survey, and six
+  awkward stream designs.
+- Open: independent review; user approval of the review, factorial and
+  trial_data pictures; whether pools should reorder streams to avoid line
+  crossings.
+
+### 2026-11-23 — Milestone 4: review of the data mode, fixes
+- Independent review (same model family) found three ways to get wrong
+  numbers without an error, all fixed: `flow_edit()` applied values in the
+  order of the boxes in the diagram, not the order given (swapped labels
+  and counts); a factor in one data frame and text in another were combined
+  as the factor's integer codes (bogus labels "1", "2"); values of a `by`
+  column that print alike (0.3 and 0.1 + 0.2) made two boxes with the same
+  label, counting rows twice. `by` now also stops with an internal error if
+  its boxes ever hold a different number of rows than the box above.
+- Also from the review: a warning when `count =` values sit in two boxes
+  made from one box; `flow_edit(n = NA)` clears a count; typed reason counts
+  under a computed exclusion box are listed as typed in the description;
+  `flow_data()` returns a list whenever there are several data frames;
+  clearer errors for a condition written without `~`, for reasons mixing
+  formulas and numbers, and for empty text values in a `by` column; a box
+  with no rows stays an end box instead of stopping `by` (so
+  `flow_from_data()` copes with planned groups); summary `{k}` counts
+  planned labels; the raw newline in the data sentence's pattern replaced
+  by `
+`.
+- New `tests/testthat/test-data-random.R`: 60 random data flows (one or two
+  data frames, factor and text) checking that boxes made by `by` hold
+  exactly the rows of the box above, that box rows = continuing rows +
+  excluded rows, and that every drawn count equals its rows. The review's
+  `dev/rv4_rand.R` (300 flows): 893 steps, 0 problems.
+- Checked: the new tests fail 25 times on the reviewed commit (at least
+  once for every finding; the random test did not fail there) and pass
+  now: 3423 expectations pass, 0 fail. 315 typed designs still identical
+  to `main` (one false alarm on the way: evaluating `reasons` earlier
+  changed the order in which the random test script drew its random
+  numbers, so it built different designs; the original order is kept).
+
+### 2026-11-23 — Milestone 4: each line drawn once
+- Where connectors ran along the same line (an arrow and the stub down to
+  an exclusion box beside it, a pool line), they were drawn on top of each
+  other, which looked thicker in some PNGs (seen in the review and
+  trial_data pictures). The layout now merges them: segments with an
+  arrowhead are kept whole, other horizontal and vertical segments keep only
+  the parts not already drawn (`merge_segments()` in `R/layout.R`).
+- Checked: on 315 typed designs x 2 connector styles, boxes, exclusion
+  boxes, brackets, row labels, sizes, objects and descriptions are
+  identical to `main`; segments equal `main`'s after the merge (214 of 630
+  layouts changed, 7,488 segments down to 7,157), and the stretch of line
+  covered on every line, every arrowhead and every slanted line is
+  unchanged (`dev/m4_cover.R`: 0 differences). New tests: a unit test of
+  the merge and a check that no stretch of line is drawn twice in the
+  examples and awkward designs.
+- Picture snapshots of the trial, survey, review, factorial and trial_data
+  diagrams changed: each new SVG only drops duplicate line elements
+  (2 to 6 per picture, nothing added or moved); reviewed and accepted. The
+  lab snapshot is unchanged (it had no doubled lines). PNGs of all six
+  examples re-rendered and viewed: the thicker line under "Exercise
+  programme" in trial_data is gone.
+- Also re-run after both review commits: `dev/stress4.R` 400 designs x 2
+  connector styles, 0 overlaps and 0 lines through boxes; line-on-line
+  crossings 34 in the same 22 layouts (36 before: two crossings were
+  counted twice through duplicate segments); `dev/rv4_rand.R` 893 steps, 0
+  problems; 3519 test expectations pass.
+
+### 2026-11-23 — Milestone 4 approved and merged
+- User approved the review, factorial and trial_data pictures. Re-checked
+  before merging: all tests pass on `m4` (9c5730a); review and trial_data
+  PNGs viewed after the line fix.
+- Merged into `main`. Open: CI on the 5 platforms for this merge; a
+  cross-family review before the first release; PRISMA 2020 citation not
+  yet checked online.
