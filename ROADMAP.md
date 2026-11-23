@@ -18,7 +18,7 @@ milestone step; the progress log at the bottom is append-only.
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
-| 5 | Machine-learning designs | ⬜ | — |
+| 5 | Machine-learning designs, including time series | ⏳ in progress on branch `m5` | — |
 | 6 | Reporting-guideline templates | ⬜ | — |
 | 7 | Examples from recent papers | ⬜ | — |
 | 8 | Documentation and website | ⬜ | — |
@@ -157,7 +157,7 @@ typed flows unchanged.
 `"trial_data"`. Independent review passed after fixes; pictures approved by
 the user on 2026-11-23; merged into `main`.
 
-### Milestone 5 — Machine-learning designs ⬜
+### Milestone 5 — Machine-learning designs, including time series ⏳
 
 **Delivers:** dataset splits (train / validation / test) including grouped
 splits (all records of a patient or site on one side) and time-ordered
@@ -165,14 +165,22 @@ splits (older data for training, newer for testing); external validation on
 a second dataset; participant flow for prediction-model studies following
 TRIPOD+AI item 20a (numbers and outcome events per analysis); a new grid
 drawing for cross-validation folds (rows = folds, blocks = train / test),
-which is a second diagram type next to the flow diagram.
+which is a second diagram type next to the flow diagram. Added by the user
+(2026-11-23): time-series designs in the grid, namely expanding-window and
+rolling-window evaluation (initial training window, forecast horizon, step
+between forecast origins, gap between training and test) and blocked k-fold
+for time-ordered data. Principle: DataFlow documents a split the user
+already made; it never splits data at random or fits models. Anything drawn
+from data stays editable by hand, with hand-typed counts marked as typed.
 
 **Done when:** a model-development flow with a grouped split and external
-validation, and a 5-fold cross-validation grid, render cleanly and the user
-approves.
+validation, a 5-fold cross-validation grid and a time-series evaluation grid
+render cleanly and the user approves.
 
 **Checks:** the description says which data were used for what and that test
-data were kept apart; fold grids are tested as data like the flow layout.
+data were kept apart; fold grids are tested as data like the flow layout
+(blocks add up to the data, test windows never overlap training, gaps sit
+between them, time order kept).
 
 ### Milestone 6 — Reporting-guideline templates ⬜
 
