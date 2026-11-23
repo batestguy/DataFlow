@@ -20,6 +20,15 @@
 #'   each, then eligible women interviewed, with non-response shown beside
 #'   the flow. Clusters are drawn as summary boxes. Region names and all
 #'   numbers are invented for illustration.
+#' * `"review"`: a made-up systematic review laid out like the PRISMA 2020
+#'   flow diagram for new reviews that searched databases, registers and
+#'   other sources: two starting streams, each with its own screening and
+#'   exclusion boxes, joined in "Studies included in review". All numbers are
+#'   invented for illustration.
+#' * `"factorial"`: a made-up 2 x 2 factorial trial (drug or placebo, crossed
+#'   with diet A or B, drawn as nested splits), an outcome box per cell, then
+#'   the cells pooled over diet for an analysis per drug group. All numbers
+#'   are invented for illustration.
 #'
 #' @param name Which example.
 #' @return A `dataflow` object.
@@ -28,7 +37,10 @@
 #' flow_example("lab")
 #' flow_example("trial")
 #' flow_example("survey")
-flow_example <- function(name = c("lab", "trial", "survey")) {
+#' flow_example("review")
+#' flow_example("factorial")
+flow_example <- function(name = c("lab", "trial", "survey", "review",
+                                  "factorial")) {
   name <- match.arg(name)
   x <- switch(name,
     lab = flow_start("Cultures", n = 100) |>
@@ -79,7 +91,39 @@ flow_example <- function(name = c("lab", "trial", "survey")) {
       flow_exclude("Women not interviewed", n = 307,
                    reasons = c("Not at home" = 168, "Refused" = 89,
                                "Incapacitated" = 50)) |>
-      flow_outcome("Analysis", "Women interviewed", n = 7904)
+      flow_outcome("Analysis", "Women interviewed", n = 7904),
+    review = flow_start(c("Records identified from\ndatabases and registers",
+                          "Records identified from\nother sources"),
+                        n = c(1954, 77),
+                        note = c("Databases (n = 1,842), registers (n = 112)",
+                                 "Websites (n = 46), citation searching (n = 31)"),
+                        stage = "Identification") |>
+      flow_exclude("Records removed before screening", n = 452,
+                   reasons = c("Duplicate records" = 398,
+                               "Marked ineligible by automation tools" = 54),
+                   from = 1) |>
+      flow_apply("Screening", "Records screened", n = 1502, from = 1) |>
+      flow_exclude("Records excluded", n = 1310, from = "Records screened") |>
+      flow_apply("Retrieval", "Reports sought for retrieval",
+                 n = c(192, 77), row_label = "") |>
+      flow_exclude("Reports not retrieved", n = c(7, 5)) |>
+      flow_apply("Eligibility", "Reports assessed for eligibility",
+                 n = c(185, 72), row_label = "") |>
+      flow_exclude("Reports excluded", n = c(148, 66),
+                   reasons = list(c("Wrong population" = 61,
+                                    "Wrong intervention" = 47,
+                                    "Wrong outcome" = 40),
+                                  c("Wrong population" = 30,
+                                    "No outcome data" = 36))) |>
+      flow_pool("Included", "Studies included in review", n = 43,
+                note = "Reports of included studies (n = 49)"),
+    factorial = flow_start("Randomised", n = 200, stage = "Enrolment") |>
+      flow_assign("Drug", c("Drug", "Placebo"), n = 100) |>
+      flow_assign("Diet", c("Diet A", "Diet B"), n = 50) |>
+      flow_exclude("Lost", n = c(2, 3, 1, 4), stage = "Follow-up") |>
+      flow_outcome("Outcome", "Analysed", n = c(48, 47, 49, 46)) |>
+      flow_pool("Pooled analysis", "Pooled over diet", n = c(95, 95),
+                over = "Drug")
   )
   attr(x, "source") <- switch(name,
     lab = paste(
@@ -98,6 +142,19 @@ flow_example <- function(name = c("lab", "trial", "survey")) {
       "areas with probability proportional to size, then a fixed number of",
       "households per area). Region names and numbers are made up for",
       "illustration and do not describe a real survey."
+    ),
+    review = paste(
+      "Invented systematic review following the layout of the PRISMA 2020",
+      "flow diagram for new systematic reviews which included searches of",
+      "databases, registers and other sources (Page et al., BMJ",
+      "2021;372:n71, doi:10.1136/bmj.n71). Numbers are made up for",
+      "illustration and do not describe a real review."
+    ),
+    factorial = paste(
+      "Invented 2 x 2 factorial trial (drug or placebo, crossed with diet A",
+      "or B), drawn as nested assignments with an outcome per cell and the",
+      "cells pooled over diet for an analysis per drug group. Numbers are",
+      "made up for illustration and do not describe a real study."
     )
   )
   x

@@ -13,7 +13,8 @@ validate_dataflow(x)
 \code{x}, invisibly. Signals an error describing the first problem found.
 }
 \description{
-Checks structure only: every stage has a known type, every box after the
-first is reached by an arrow or bracket, every edge points at real boxes,
-and pools have at least two sources. Counts are never checked.
+Checks structure only: every stage has a known type, there is at least
+one top box and every top box is on the first stage, every other box is
+reached by an arrow, bracket or pool line, every edge points at real
+boxes, and pools have at least two sources. Counts are never checked.
 }

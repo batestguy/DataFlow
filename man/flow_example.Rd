@@ -4,7 +4,7 @@
 \alias{flow_example}
 \title{Example study designs}
 \usage{
-flow_example(name = c("lab", "trial", "survey"))
+flow_example(name = c("lab", "trial", "survey", "review", "factorial"))
 }
 \arguments{
 \item{name}{Which example.}
@@ -33,10 +33,21 @@ within urban and rural strata of three regions, households sampled in
 each, then eligible women interviewed, with non-response shown beside
 the flow. Clusters are drawn as summary boxes. Region names and all
 numbers are invented for illustration.
+\item \code{"review"}: a made-up systematic review laid out like the PRISMA 2020
+flow diagram for new reviews that searched databases, registers and
+other sources: two starting streams, each with its own screening and
+exclusion boxes, joined in "Studies included in review". All numbers are
+invented for illustration.
+\item \code{"factorial"}: a made-up 2 x 2 factorial trial (drug or placebo, crossed
+with diet A or B, drawn as nested splits), an outcome box per cell, then
+the cells pooled over diet for an analysis per drug group. All numbers
+are invented for illustration.
 }
 }
 \examples{
 flow_example("lab")
 flow_example("trial")
 flow_example("survey")
+flow_example("review")
+flow_example("factorial")
 }

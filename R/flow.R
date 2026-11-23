@@ -10,14 +10,17 @@
 #     id, stage, label, n (character, drawn exactly as given), note,
 #     anchor (the node whose layout block this node belongs to: its parent for
 #     single-parent nodes, the lowest common ancestor of its sources for
-#     brackets and pools).
-# * edges: from, to, kind ("arrow" or "bracket").
+#     brackets and pools). NA for the top boxes (all on the first stage), and
+#     for a pool whose sources come from different starting streams.
+# * edges: from, to, kind ("arrow", "bracket" or "pool").
 # * side: exclusion side boxes. Each sits on its own "exclude" stage row,
 #     to the right of the line leaving its parent box. Side boxes never
 #     change `leaves`: the flow continues below the parent.
 #     id, stage, parent, label, n, note.
 # * reasons: reasons listed in a side box, in order. side, label, n.
 # * leaves: ids of the nodes the next verb attaches to by default.
+# * data (only when counts come from data, see R/data.R): the data frames,
+#     stored once, and `rows`: per box, the row numbers behind it.
 
 stage_types <- c(
   "start", "select", "cluster", "split", "assign",
@@ -48,9 +51,10 @@ empty_side <- function() {
 
 #' Check that an object is a valid dataflow
 #'
-#' Checks structure only: every stage has a known type, every box after the
-#' first is reached by an arrow or bracket, every edge points at real boxes,
-#' and pools have at least two sources. Counts are never checked.
+#' Checks structure only: every stage has a known type, there is at least
+#' one top box and every top box is on the first stage, every other box is
+#' reached by an arrow, bracket or pool line, every edge points at real
+#' boxes, and pools have at least two sources. Counts are never checked.
 #'
 #' @param x A `dataflow` object.
 #' @return `x`, invisibly. Signals an error describing the first problem found.
@@ -80,10 +84,14 @@ validate_dataflow <- function(x) {
     stop("Some arrows point to or from a box that does not exist.",
          call. = FALSE)
   }
-  if (sum(is.na(nd$anchor)) != 1) {
-    stop("A dataflow must have exactly one top box.", call. = FALSE)
-  }
   root <- nd$id[nd$stage == st$id[1]]
+  if (length(root) == 0) {
+    stop("A dataflow must have at least one top box.", call. = FALSE)
+  }
+  if (any(!is.na(nd$anchor[nd$id %in% root])) || any(ed$to %in% root)) {
+    stop("Top boxes (the boxes of the first stage) cannot have a box above ",
+         "them.", call. = FALSE)
+  }
   orphans <- setdiff(nd$id, c(root, ed$to))
   if (length(orphans) > 0) {
     stop("Boxes with no incoming arrow: ",
@@ -96,6 +104,14 @@ validate_dataflow <- function(x) {
       stop("A pool needs at least two sources (box \"",
            nd$label[nd$id == id], "\").", call. = FALSE)
     }
+  }
+  # off the first row, only a box joined from several starting streams has
+  # no box above it in the layout tree
+  floating <- nd$id[is.na(nd$anchor) & !nd$id %in% root]
+  lone <- floating[vapply(floating, function(id) sum(ed$to == id) < 2, NA)]
+  if (length(lone) > 0) {
+    stop("Every top box must be on the first stage; \"",
+         nd$label[nd$id == lone[1]], "\" is not.", call. = FALSE)
   }
   sd <- x$side
   if (!is.null(sd) && nrow(sd) > 0) {
@@ -197,4 +213,18 @@ lowest_common_ancestor <- function(x, ids) {
   common <- Reduce(intersect, paths)
   # paths are nearest-first, so the first common element is the lowest
   common[1]
+}
+
+# Every box upstream of a node, following the drawn lines (all sources of
+# brackets and pools, not only the layout tree, which stops at a pool that
+# joins streams).
+node_upstream <- function(x, id) {
+  out <- integer()
+  todo <- id
+  while (length(todo) > 0) {
+    src <- setdiff(x$edges$from[x$edges$to %in% todo], out)
+    out <- c(out, src)
+    todo <- src
+  }
+  out
 }

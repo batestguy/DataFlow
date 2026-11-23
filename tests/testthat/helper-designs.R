@@ -112,3 +112,45 @@ trial_designs <- function() {
       flow_split("Next", c("Ccc", "A"))
   )
 }
+
+# Several starting streams and pools in awkward places (milestone 4).
+stream_designs <- function() {
+  list(
+    review = flow_example("review"),
+    factorial = flow_example("factorial"),
+    # the right stream waits three rows (one an exclusion row of the left
+    # stream), then splits: its lines run through rows with no box of its own
+    wait_then_split = flow_start(c("Left", "Right")) |>
+      flow_split("S1", c("a", "b", "c"), from = "Left") |>
+      flow_exclude("Lost to follow-up", n = 3, from = "b",
+                   reasons = c("A fairly long reason" = 3)) |>
+      flow_apply("S2", "Next", from = "b") |>
+      flow_split("S3", c("Wide box one", "Wide box two"), from = "Right"),
+    # a wide left stream and a narrow right one joined in a pool several
+    # rows below the right stream's last box
+    pool_far_below = flow_start(c("Wide starting box here", "R")) |>
+      flow_split("S1", c("x", "y"), from = 1) |>
+      flow_exclude("Excluded", n = 1, from = "y") |>
+      flow_apply("S2", "z", from = "y") |>
+      flow_pool("Joined", "All", from = c("z", "R")),
+    # three streams, the middle one skipped, the outer two pooled: the pool
+    # lines pass under the middle stream's box
+    three_streams = flow_start(c("One", "Two", "Three")) |>
+      flow_apply("S1", "next", from = c("One", "Three")) |>
+      flow_exclude("Out", n = 2, from = "next") |>
+      flow_pool("Joined", "Pooled", from = "next"),
+    # pools inside one stream with groups =, then a split below
+    groups_pool = flow_start("All") |>
+      flow_split("Arm", c("A", "B", "C", "D")) |>
+      flow_exclude("Lost", n = 1, from = c("B", "C")) |>
+      flow_pool("Pairs", c("A + B", "C + D"),
+                groups = list(c("A", "B"), c("C", "D"))) |>
+      flow_split("Next", c("p", "q"), from = "A + B"),
+    # a pool whose source on a higher row drops past another stream's
+    # exclusion box
+    pool_uneven_rows = flow_start(c("First", "Second")) |>
+      flow_split("S1", c("u", "v"), from = "Second") |>
+      flow_exclude("Lost to follow-up", n = 4, from = "v") |>
+      flow_pool("Joined", "All together", from = c("First", "u", "v"))
+  )
+}

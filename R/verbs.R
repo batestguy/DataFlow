@@ -154,23 +154,43 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 
 #' Start a flow diagram
 #'
-#' Creates the top box of the diagram.
+#' Creates the top box of the diagram, or several top boxes side by side.
 #'
-#' @param label Text for the top box, e.g. `"Cultures"`.
-#' @param n Optional count, drawn exactly as given (a number or text).
-#' @param note Optional extra line drawn in smaller italic text in the box.
+#' Several labels make several starting streams, for example the two columns
+#' of a PRISMA 2020 flow diagram (databases and registers; other sources).
+#' Every top box is an end box, so the next verb attaches to all of them;
+#' use `from =` to continue one stream only, while the other waits and
+#' continues on a later row. [flow_pool()] joins streams.
+#'
+#' @param label Text for the top box, e.g. `"Cultures"`, or a character
+#'   vector for several top boxes side by side.
+#' @param n Optional count, drawn exactly as given (a number or text): one
+#'   value, or one per label.
+#' @param note Optional extra line drawn in smaller italic text in the box:
+#'   one value, or one per label.
 #' @param stage Optional row label for the top row. By default the top row
 #'   has no label.
 #' @return A `dataflow` object.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100)
+#'
+#' # two starting streams, continued one at a time
+#' flow_start(c("Cases", "Controls"), n = c(120, 240)) |>
+#'   flow_exclude("Excluded", n = 8, from = "Cases") |>
+#'   flow_pool("Analysis", "Analysed together", n = 352)
 flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
-  check_string(label, "label")
+  if (!is.character(label) || length(label) == 0 || anyNA(label) ||
+      any(label == "")) {
+    stop("`label` must be text and not empty.", call. = FALSE)
+  }
   if (!is.null(stage)) check_string(stage, "stage")
-  if (length(n) > 1 || length(note) > 1) {
+  k <- length(label)
+  if (k == 1 && (length(n) > 1 || length(note) > 1)) {
     stop("The top box takes a single `n` and `note`.", call. = FALSE)
   }
+  n_vals <- recycle_values(format_n(n), k, "n")
+  note_vals <- recycle_values(format_note(note), k, "note")
   x <- new_dataflow(
     stages = data.frame(id = integer(), name = character(),
                         row_label = character(), type = character(),
@@ -184,8 +204,9 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL) {
     side = empty_side(),
     leaves = integer()
   )
-  s <- add_stage(x, stage %||% label, stage %||% "", "start", "all")
-  a <- add_nodes(s$x, s$id, label, format_n(n), format_note(note), NA)
+  name <- stage %||% (if (k == 1) label else "Start")
+  s <- add_stage(x, name, stage %||% "", "start", "all")
+  a <- add_nodes(s$x, s$id, label, n_vals, note_vals, rep(NA, k))
   x <- a$x
   x$leaves <- a$ids
   validate_dataflow(x)
@@ -344,33 +365,27 @@ per_box_values <- function(values, fmt, per_target, arg, per) {
 }
 
 # Shared engine for verbs that add one box per group of current boxes.
-# Groups of one are joined by an arrow; larger groups by a bracket.
+# Groups of one are joined by an arrow; larger groups by a bracket, or by
+# converging pool lines with `join = "pool"`. `groups` (a list of box ids)
+# gives the groups directly instead of `from`/`over`.
 attach_per_group <- function(x, stage, label, n, note, over, from, type,
                              display, row_label = stage,
-                             method = NA_character_) {
-  targets <- resolve_targets(x, from)
-  if (is.null(over)) {
+                             method = NA_character_, groups = NULL,
+                             join = "bracket") {
+  if (!is.null(groups)) {
+    targets <- unlist(groups)
+  } else {
+    targets <- resolve_targets(x, from)
+  }
+  if (!is.null(groups)) {
+    # given directly
+  } else if (is.null(over)) {
     groups <- as.list(targets)
   } else {
-    check_string(over, "over")
-    over_id <- x$stages$id[x$stages$name == over]
-    if (length(over_id) == 0) {
-      stop("`over` must name an earlier stage; there is no stage \"", over,
-           "\".", call. = FALSE)
-    }
-    key <- vapply(targets, function(t) {
-      chain <- c(t, node_ancestors(x, t))
-      hit <- chain[x$nodes$stage[match(chain, x$nodes$id)] == over_id]
-      if (length(hit) == 0) NA_integer_ else hit[1]
-    }, integer(1))
-    if (anyNA(key)) {
-      stop("Some boxes do not sit under the stage \"", over, "\".",
-           call. = FALSE)
-    }
-    groups <- unname(split(targets, factor(key, levels = unique(key))))
+    groups <- group_over(x, targets, over)
   }
   for (g in groups) {
-    nested <- vapply(g, function(m) any(g %in% node_ancestors(x, m)), NA)
+    nested <- vapply(g, function(m) any(g %in% node_upstream(x, m)), NA)
     if (any(nested)) {
       stop("A group cannot contain a box together with a box below it. ",
            "Choose boxes on the same branch level with `from`.", call. = FALSE)
@@ -392,7 +407,7 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
   a <- add_nodes(s$x, s$id, labels, n_vals, note_vals, anchors)
   x <- a$x
   for (i in seq_len(k)) {
-    kind <- if (length(groups[[i]]) == 1) "arrow" else "bracket"
+    kind <- if (length(groups[[i]]) == 1) "arrow" else join
     x <- add_edges(x, groups[[i]], rep(a$ids[i], length(groups[[i]])), kind)
   }
   # each group's boxes are replaced by the one new box, at the first position
@@ -404,6 +419,26 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
   }
   x$leaves <- replace_leaves(x$leaves, targets, new_by_target)
   validate_dataflow(x)
+}
+
+# Group boxes by the box they sit under in the stage named `over`.
+group_over <- function(x, targets, over) {
+  check_string(over, "over")
+  over_id <- x$stages$id[x$stages$name == over]
+  if (length(over_id) == 0) {
+    stop("`over` must name an earlier stage; there is no stage \"", over,
+         "\".", call. = FALSE)
+  }
+  key <- vapply(targets, function(t) {
+    chain <- c(t, node_ancestors(x, t))
+    hit <- chain[x$nodes$stage[match(chain, x$nodes$id)] == over_id]
+    if (length(hit) == 0) NA_integer_ else hit[1]
+  }, integer(1))
+  if (anyNA(key)) {
+    stop("Some boxes do not sit under the stage \"", over, "\".",
+         call. = FALSE)
+  }
+  unname(split(targets, factor(key, levels = unique(key))))
 }
 
 #' Apply something to every current box, or to groups of them

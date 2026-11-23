@@ -20,7 +20,8 @@ attaches it to the plot as alt text automatically.
 }
 \details{
 Boxes that share a label in the same row are told apart by the box they
-sit under, e.g. "Batch 1 under Type A".
+sit under, e.g. "Batch 1 under Type A". Several top boxes are described
+as "2 boxes side by side"; pools as "X and Y are combined into Z".
 }
 \examples{
 flow_start("Cultures", n = 100) |>

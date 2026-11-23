@@ -7,11 +7,14 @@
 flow_start(label, n = NULL, note = NULL, stage = NULL)
 }
 \arguments{
-\item{label}{Text for the top box, e.g. \code{"Cultures"}.}
+\item{label}{Text for the top box, e.g. \code{"Cultures"}, or a character
+vector for several top boxes side by side.}
 
-\item{n}{Optional count, drawn exactly as given (a number or text).}
+\item{n}{Optional count, drawn exactly as given (a number or text): one
+value, or one per label.}
 
-\item{note}{Optional extra line drawn in smaller italic text in the box.}
+\item{note}{Optional extra line drawn in smaller italic text in the box:
+one value, or one per label.}
 
 \item{stage}{Optional row label for the top row. By default the top row
 has no label.}
@@ -20,8 +23,20 @@ has no label.}
 A \code{dataflow} object.
 }
 \description{
-Creates the top box of the diagram.
+Creates the top box of the diagram, or several top boxes side by side.
+}
+\details{
+Several labels make several starting streams, for example the two columns
+of a PRISMA 2020 flow diagram (databases and registers; other sources).
+Every top box is an end box, so the next verb attaches to all of them;
+use \verb{from =} to continue one stream only, while the other waits and
+continues on a later row. \code{\link[=flow_pool]{flow_pool()}} joins streams.
 }
 \examples{
 flow_start("Cultures", n = 100)
+
+# two starting streams, continued one at a time
+flow_start(c("Cases", "Controls"), n = c(120, 240)) |>
+  flow_exclude("Excluded", n = 8, from = "Cases") |>
+  flow_pool("Analysis", "Analysed together", n = 352)
 }

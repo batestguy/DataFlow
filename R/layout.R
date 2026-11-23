@@ -7,8 +7,10 @@
 #' exported so layouts can be inspected and tested as data.
 #'
 #' Boxes are sized from their text. Each box is centred over the boxes that
-#' follow it; a box joined by a bracket is centred under the boxes it joins.
-#' Rows sit at fixed heights, one row per stage.
+#' follow it; a box joined by a bracket is centred under the boxes it joins,
+#' and a pooled box under the centres of its sources. Several starting
+#' streams sit side by side, `group_gap` apart. Rows sit at fixed heights, one
+#' row per stage.
 #'
 #' @param x A `dataflow` object.
 #' @param count_format How a box's label and count are combined. `{label}`
@@ -18,7 +20,8 @@
 #' @param hgap,vgap Horizontal gap between boxes and vertical gap between
 #'   rows, in inches.
 #' @param group_gap Horizontal gap between neighbouring groups (boxes that
-#'   have boxes below them), in inches, so groups read as separate.
+#'   have boxes below them) and between starting streams, in inches, so
+#'   groups read as separate.
 #' @param pad_x,pad_y Space between text and box edge, in inches.
 #' @param min_width Narrowest box, in inches.
 #' @param row_label_width Row labels longer than this many characters are
@@ -235,6 +238,29 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     any(cl < ar + hgap & cr > al - hgap)
   }
 
+  # Place a box joined from several sources (bracket or pool), centred
+  # under them, once the sources have positions in `pos`.
+  place_joined <- function(m, pos, acc) {
+    src <- as.character(ed$from[ed$to == m])
+    if (ed$kind[match(m, ed$to)] == "pool") {
+      # pool lines leave the sources' centres
+      left <- min(pos[src])
+      right <- max(pos[src])
+    } else {
+      # same span rule as the drawn bracket: outer edges of the lowest
+      # sources, centres of any higher ones
+      low <- row_of[src] == max(row_of[src])
+      if (!is.null(bracket_trunk[[as.character(m)]])) low[] <- FALSE
+      left <- min(c(pos[src[low]] - width_of[src[low]] / 2, pos[src[!low]]))
+      right <- max(c(pos[src[low]] + width_of[src[low]] / 2, pos[src[!low]]))
+    }
+    sub <- layout_subtree(m)
+    off <- (left + right) / 2
+    if (overlaps(acc, sub$cont, off)) off <- shift_to_clear(acc, sub$cont)
+    list(pos = c(pos, sub$pos + off),
+         acc = merge_contour(acc, shift_cont(sub$cont, off)))
+  }
+
   layout_subtree <- function(v) {
     key <- as.character(v)
     kids <- kids_of[[key]]
@@ -258,18 +284,9 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       0
     }
     for (m in multi_kids) {
-      src <- as.character(ed$from[ed$to == m])
-      # same span rule as the drawn bracket: outer edges of the lowest
-      # sources, centres of any higher ones
-      low <- row_of[src] == max(row_of[src])
-      if (!is.null(bracket_trunk[[as.character(m)]])) low[] <- FALSE
-      left <- min(c(pos[src[low]] - width_of[src[low]] / 2, pos[src[!low]]))
-      right <- max(c(pos[src[low]] + width_of[src[low]] / 2, pos[src[!low]]))
-      sub <- layout_subtree(m)
-      off <- (left + right) / 2
-      if (overlaps(acc, sub$cont, off)) off <- shift_to_clear(acc, sub$cont)
-      pos <- c(pos, sub$pos + off)
-      acc <- merge_contour(acc, shift_cont(sub$cont, off))
+      placed <- place_joined(m, pos, acc)
+      pos <- placed$pos
+      acc <- placed$acc
     }
     pos[key] <- vx
     si <- side_of[[key]]
@@ -291,7 +308,12 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     list(pos = pos - vx,
          cont = shift_cont(acc, -vx))
   }
-  roots <- nd$id[is.na(nd$anchor)]
+  # Top boxes (one per starting stream) side by side, `group_gap` apart.
+  # A pool joining several streams has no common ancestor: it is placed
+  # after them, centred under its sources, as if the streams hung off one
+  # invisible root.
+  roots <- nd$id[is.na(nd$anchor) & row == 1]
+  floating <- nd$id[is.na(nd$anchor) & row != 1]
   pos <- numeric()
   acc <- data.frame(row = integer(), l = numeric(), r = numeric())
   for (rt in roots) {
@@ -299,6 +321,11 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     off <- shift_to_clear(acc, sub$cont, group_gap)
     pos <- c(pos, sub$pos + off)
     acc <- merge_contour(acc, shift_cont(sub$cont, off))
+  }
+  for (m in floating) {
+    placed <- place_joined(m, pos, acc)
+    pos <- placed$pos
+    acc <- placed$acc
   }
   xpos <- unname(pos[as.character(nd$id)])
   xpos <- xpos - min(xpos - w / 2)
@@ -410,6 +437,21 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       add_seg(xm, yk, mb$x, yk, FALSE, "bracket")
       add_seg(mb$x, yk, mb$x, mb$ymax, TRUE, "bracket")
     }
+  }
+  # pools: converging lines, one down from each source's centre to a shared
+  # horizontal line (below any exclusion rows under the sources), then one
+  # arrow into the top of the pooled box
+  for (m in unique(ed$to[ed$kind == "pool"])) {
+    sb <- b(ed$from[ed$to == m])
+    mb <- b(m)
+    trunk_row <- bracket_trunk[[as.character(m)]]
+    yb <- if (is.null(trunk_row)) min(sb$ymin) - vgap / 2 else
+      row_bottom[trunk_row] - vgap / 2
+    for (i in seq_len(nrow(sb))) {
+      add_seg(sb$x[i], sb$ymin[i], sb$x[i], yb, FALSE, "pool")
+    }
+    add_seg(min(c(sb$x, mb$x)), yb, max(c(sb$x, mb$x)), yb, FALSE, "pool")
+    add_seg(mb$x, yb, mb$x, mb$ymax, TRUE, "pool")
   }
   # exclusion boxes: the parent's line continues down to the box's middle
   # (if nothing else draws it), then an arrow runs right into the box
