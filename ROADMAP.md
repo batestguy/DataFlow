@@ -566,6 +566,7 @@ what is still open.
 - User approved the review, factorial and trial_data pictures. Re-checked
   before merging: all tests pass on `m4` (9c5730a); review and trial_data
   PNGs viewed after the line fix.
-- Merged into `main`. Open: CI on the 5 platforms for this merge; a
+- Merged into `main` (`3636687`); CI run 45102882569 green on all 5
+  platforms. Open: a
   cross-family review before the first release; PRISMA 2020 citation not
   yet checked online.
