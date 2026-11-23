@@ -23,7 +23,8 @@ with that label. With \code{excluded = TRUE}, exclusion boxes instead (ids
 from \code{.flow$side$id}).}
 
 \item{label, n, note}{New text, count or note: one value for all chosen
-boxes, or one per box. \code{NULL} leaves it unchanged; \code{NA} clears a count or
+boxes, or one per box, in the order of \code{box}. When a label in \code{box}
+matches several boxes, give one value only (or use ids). \code{NULL} leaves it unchanged; \code{NA} clears a count or
 note. Counts are drawn as given, like typed counts.}
 
 \item{stage, row_label}{To change a row label instead: the stage name and

@@ -16,9 +16,11 @@ exactly one box.}
 \code{x$side$id}, or its label) instead of a flow box.}
 }
 \value{
-A data frame: the rows of the original data frame. For a box
-pooled across several data frames, a named list with one data frame per
-source.
+If the flow was started from one data frame, a data frame: the
+rows of it behind the box. If it was started from several (one per
+starting stream), always a list named by the data frames, with one data
+frame per source (empty for sources with no rows in the box), whichever
+box is asked for.
 }
 \description{
 For flows started with \code{flow_start(data = ...)}: returns the rows of the

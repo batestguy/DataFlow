@@ -88,12 +88,17 @@ flow_describe(d)             # ends "Counts were computed from the data
   makes one box per value present. `labels` can fix the order, give
   readable names (`c("Ex. 1" = "exp1")`) and add planned groups with no
   rows yet (count 0); a value in the data that `labels` leaves out is an
-  error, so nothing is dropped silently.
+  error, so nothing is dropped silently. A group with no rows gets no boxes
+  below it unless you give `labels` for the next level too.
 - `where = ~ condition` selects rows (`flow_select()`) or excludes them
   (`flow_exclude()`). Formula `reasons` in `flow_exclude()` count each row
   under the first reason it matches.
 - `count = "patient_id"` in `flow_start()` counts distinct patients rather
-  than rows.
+  than rows. If one patient has rows in two boxes made from the same box,
+  their counts add up to more than the box above, and DataFlow warns.
+- `flow_data()` returns a data frame when the flow started from one data
+  frame, and always a named list (one data frame per source) when it
+  started from several.
 - `flow_from_data(data, c("site", "ward"))` draws the whole nested
   structure of a data frame, one row of boxes per column.
 - `flow_edit()` changes any box's text, count or note, or a row label,

@@ -71,6 +71,7 @@ flow_select <- function(.flow, stage, label, n = NULL, note = NULL,
                         where = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
+  where <- tryCatch(where, error = function(e) bad_condition("where", e))
   attach_per_group(.flow, stage, label, n, note, NULL, from, "select", "all",
                    pick_row_label(row_label, stage),
                    method = check_method(method), where = where)

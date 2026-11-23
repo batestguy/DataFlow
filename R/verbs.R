@@ -182,7 +182,11 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   an error.
 #' @param count With `data`: `NULL` (the default) counts rows; a column name
 #'   counts the distinct non-missing values of that column instead (e.g.
-#'   patients, when there is one row per visit).
+#'   patients, when there is one row per visit). Rows with a missing value
+#'   in that column are not counted. If one value has rows in two boxes made
+#'   from the same box (e.g. a patient with visits in two arms, or with some
+#'   visits excluded and others not), the counts of those boxes add up to
+#'   more than the box above; DataFlow warns when this happens.
 #' @return A `dataflow` object.
 #' @export
 #' @examples
@@ -289,10 +293,16 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #'   and must include every value present, so nothing is dropped silently.
 #'   It may name values to draw other text, e.g.
 #'   `c("Ex. 1" = "exp1", "Ex. 2" = "exp2")`, and may include planned values
-#'   with no rows yet (drawn with a count of 0). Missing values in the
-#'   column are an error: remove those rows
+#'   with no rows yet (drawn with a count of 0). Values that print the same
+#'   (e.g. `0.3` and `0.1 + 0.2`) form one box. A box with no rows (such as
+#'   a planned group) is split only if `labels` are given (each new box then
+#'   has a count of 0); without `labels` it gets no boxes below and stays an
+#'   end box. Missing or empty (`""`) values in the column are an error:
+#'   remove or recode those rows
 #'   first with [flow_exclude()]. With `display = "summary"`, `{k}` is the
-#'   number of distinct values and the count is that of the box being split.
+#'   number of values drawn (the `labels`, planned ones included, if given;
+#'   otherwise the distinct values present) and the count is that of the box
+#'   being split.
 #'   Without `by`, new boxes have no rows behind them, so automatic counts
 #'   below them stay blank.
 #' @return The updated `dataflow`.
@@ -320,9 +330,11 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
   child_rows <- NULL
   if (!is.null(by)) {
     sp <- split_by(.flow, targets, by, labels, display, n)
-    labels <- sp$labels
-    n <- sp$n
-    child_rows <- unlist(sp$rows, recursive = FALSE)
+    # boxes with no rows (and no labels) are not split; they stay end boxes
+    targets <- targets[sp$keep]
+    labels <- sp$labels[sp$keep]
+    n <- if (display == "summary") sp$n else sp$n[sp$keep]
+    child_rows <- unlist(sp$rows[sp$keep], recursive = FALSE)
   } else if (is.null(labels)) {
     stop("Give the `labels` of the new boxes (or, for a flow with data, ",
          "`by =` a column).", call. = FALSE)
@@ -406,7 +418,9 @@ split_by <- function(x, targets, by, labels, display, n) {
     }
   }
   rows <- rows_of_targets(x, targets, "`by`")
-  out <- list(labels = list(), n = list(), rows = list())
+  m <- length(targets)
+  out <- list(labels = vector("list", m), n = vector("list", m),
+              rows = vector("list", m), keep = rep(TRUE, m))
   for (i in seq_along(targets)) {
     r <- rows[[i]]
     v <- data_values(x, r, by)
@@ -417,10 +431,19 @@ split_by <- function(x, targets, by, labels, display, n) {
            "\". Remove them from the flow first, e.g. with ",
            "flow_exclude(where = ~ is.na(", by, ")).", call. = FALSE)
     }
+    # groups are the values as text: values that print alike (0.3 and
+    # 0.1 + 0.2) are one group, so no row is counted twice
+    vc <- as.character(v)
+    if (any(vc == "")) {
+      stop("Column \"", by, "\" has ", sum(vc == ""), " empty value",
+           if (sum(vc == "") != 1) "s", " (\"\") in the rows of box \"", box,
+           "\". Recode them, or remove them from the flow first.",
+           call. = FALSE)
+    }
     present <- if (is.factor(v)) {
-      levels(v)[levels(v) %in% as.character(v)]
+      levels(v)[levels(v) %in% vc]
     } else {
-      as.character(sort(unique(v)))
+      unique(as.character(sort(v)))
     }
     if (!is.null(labels)) {
       missing <- setdiff(present, vals)
@@ -431,22 +454,36 @@ split_by <- function(x, targets, by, labels, display, n) {
              call. = FALSE)
       }
     }
-    if (length(present) == 0 && (is.null(labels) || display == "summary")) {
-      stop("Box \"", box, "\" has no rows left to split by \"", by, "\".",
-           call. = FALSE)
+    if (length(r) == 0 && is.null(labels)) {
+      # a box with no rows (e.g. a planned group): nothing to split by, so
+      # it gets no boxes below and stays an end box. Give `labels` to draw
+      # planned boxes under it too.
+      out$keep[i] <- FALSE
+      next
     }
+    lv <- vals %||% present
+    sub <- lapply(lv, function(l) r[vc == l])
+    if (sum(lengths(sub)) != length(r)) {
+      stop("Internal error: the boxes made by `by = \"", by, "\"` under \"",
+           box, "\" hold ", sum(lengths(sub)), " rows, not ", length(r),
+           ". Please report this.", call. = FALSE)
+    }
+    warn_shared_ids(x, sub, paste0("the boxes made by `by = \"", by,
+                                   "\"` under \"", box, "\""))
     if (display == "summary") {
-      out$labels[[i]] <- length(present)
+      # {k}: the values drawn, planned ones included
+      out$labels[[i]] <- length(lv)
       out$n[[i]] <- count_rows(x, r)
       out$rows[[i]] <- list(r)
     } else {
-      lv <- vals %||% present
-      vc <- as.character(v)
-      sub <- lapply(lv, function(l) r[vc == l])
       out$labels[[i]] <- disp %||% lv
       out$n[[i]] <- vapply(sub, function(z) count_rows(x, z), numeric(1))
       out$rows[[i]] <- sub
     }
+  }
+  if (!any(out$keep)) {
+    stop("No box being split has rows left to split by \"", by, "\".",
+         call. = FALSE)
   }
   if (display == "summary") out$n <- unlist(out$n)
   out

@@ -110,8 +110,20 @@ flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
     stop("`label` must be text and not empty.", call. = FALSE)
   }
   labels <- recycle_values(label, k, "label")
-  formula_reasons <- is.list(reasons) && length(reasons) > 0 &&
-    all(vapply(reasons, function(r) inherits(r, "formula"), NA))
+  # evaluated here, in the order the arguments were always used
+  reasons <- tryCatch(reasons, error = function(e) bad_condition("reasons", e))
+  where <- tryCatch(where, error = function(e) bad_condition("where", e))
+  is_formula <- if (is.list(reasons)) {
+    vapply(reasons, function(r) inherits(r, "formula"), NA)
+  } else {
+    FALSE
+  }
+  if (any(is_formula) && !all(is_formula)) {
+    stop("`reasons` mixes formulas with other values. Give every reason as ",
+         "a formula (counts computed from data), or every reason as typed ",
+         "text or counts.", call. = FALSE)
+  }
+  formula_reasons <- length(reasons) > 0 && all(is_formula)
   computed <- NULL
   if (formula_reasons || !is.null(where)) {
     computed <- exclude_from_data(.flow, targets, n, reasons, where,
@@ -172,6 +184,9 @@ flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
       } else {
         out <- computed$rows[[i]]
         x$data$rows$side[as.character(ids[i])] <- list(out)
+        if (formula_reasons) {
+          x$data$computed_reasons <- c(x$data$computed_reasons, ids[i])
+        }
         x$data$rows$left[key] <- list(setdiff(x$data$rows$left[[key]], out))
       }
     }
@@ -219,6 +234,9 @@ exclude_from_data <- function(x, targets, n, reasons, where,
     } else {
       gone <- r[eval_condition(x, r, where, "where")]
     }
+    warn_shared_ids(x, list(gone, setdiff(r, gone)), paste0(
+      "the rows excluded under \"",
+      x$nodes$label[x$nodes$id == targets[i]], "\" and those that continue"))
     out$n[i] <- count_rows(x, gone)
     out$rows[[i]] <- gone
   }

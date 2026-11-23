@@ -62,19 +62,26 @@ data_names <- function(expr, data) {
 # Which source each global row number belongs to.
 row_source <- function(x, ids) findInterval(ids, x$data$offsets + 1L)
 
-# Values of `col` for global rows `ids`, in that order.
+# Values of `col` for global rows `ids`, in that order. Rows are kept in
+# ascending order, so the parts from each source follow one another. When
+# the parts come from several data frames and are not all factors, factors
+# are turned into text first (c() of a factor and text would give the
+# factor's integer codes).
 data_values <- function(x, ids, col) {
   src <- row_source(x, ids)
-  out <- NULL
+  parts <- list()
   for (k in unique(src)) {
     d <- x$data$sources[[k]]
     if (!col %in% names(d)) {
       stop("Column \"", col, "\" is not in the data frame `",
            x$data$names[k], "`.", call. = FALSE)
     }
-    v <- d[[col]][ids[src == k] - x$data$offsets[k]]
-    out <- if (is.null(out)) v else c(out, v)
+    parts[[length(parts) + 1]] <- d[[col]][ids[src == k] - x$data$offsets[k]]
   }
+  if (length(parts) > 1 && !all(vapply(parts, is.factor, NA))) {
+    parts <- lapply(parts, function(p) if (is.factor(p)) as.character(p) else p)
+  }
+  out <- if (length(parts) == 0) NULL else do.call(c, parts)
   if (is.null(out)) {
     # no rows: an empty vector of the column's type
     d <- x$data$sources[[1]]
@@ -89,8 +96,8 @@ data_values <- function(x, ids, col) {
 
 check_condition <- function(f, arg) {
   if (!inherits(f, "formula") || length(f) != 2) {
-    stop("`", arg, "` must be a one-sided formula, e.g. ~ age < 18.",
-         call. = FALSE)
+    stop("`", arg, "` must be a one-sided formula, e.g. ~ age < 18 ",
+         "(note the ~).", call. = FALSE)
   }
 }
 
@@ -177,9 +184,11 @@ need_data <- function(x, arg) {
 #'   exactly one box.
 #' @param excluded If `TRUE`, `box` names an exclusion box (an id from
 #'   `x$side$id`, or its label) instead of a flow box.
-#' @return A data frame: the rows of the original data frame. For a box
-#'   pooled across several data frames, a named list with one data frame per
-#'   source.
+#' @return If the flow was started from one data frame, a data frame: the
+#'   rows of it behind the box. If it was started from several (one per
+#'   starting stream), always a list named by the data frames, with one data
+#'   frame per source (empty for sources with no rows in the box), whichever
+#'   box is asked for.
 #' @export
 #' @examples
 #' d <- flow_example("trial_data")
@@ -222,14 +231,11 @@ flow_data <- function(x, box, excluded = FALSE) {
          call. = FALSE)
   }
   src <- row_source(x, rows)
-  parts <- lapply(unique(src), function(k) {
+  parts <- lapply(seq_along(x$data$sources), function(k) {
     x$data$sources[[k]][rows[src == k] - x$data$offsets[k], , drop = FALSE]
   })
   if (length(parts) == 1) return(parts[[1]])
-  if (length(parts) == 0) {
-    return(x$data$sources[[1]][0, , drop = FALSE])
-  }
-  stats::setNames(parts, x$data$names[unique(src)])
+  stats::setNames(parts, x$data$names)
 }
 
 # "Counts were computed from the data frame `trial_data` (412 rows)."
@@ -239,8 +245,7 @@ describe_data <- function(x) {
   each <- paste0("`", dd$names, "` (", format_n(sizes),
                  ifelse(sizes == 1, " row)", " rows)"))
   tc <- typed_counts(x)
-  flat <- function(s) gsub("[[:space:]]*
-[[:space:]]*", " ", s)
+  flat <- function(s) gsub("[[:space:]]*\n[[:space:]]*", " ", s)
   paste0("Counts were computed from the data frame",
          if (length(each) > 1) "s", " ", and_list(each),
          if (!is.null(dd$count)) paste0(", as numbers of distinct values of `",
@@ -314,4 +319,37 @@ flow_from_data <- function(data, levels, label = "All", count = NULL,
                     by = levels[i], row_label = row_labels[i])
   }
   x
+}
+
+# With `count =` a column, the same value (e.g. a patient id) can sit in
+# several boxes made from one box (sibling boxes, or an exclusion box and the
+# rows that continue). Their counts then add up to more than the box above.
+# Warn, so the arithmetic is not silently off.
+warn_shared_ids <- function(x, sets, what) {
+  col <- x$data$count
+  if (is.null(col) || length(sets) < 2) return(invisible())
+  vals <- lapply(sets, function(r) {
+    v <- data_values(x, r, col)
+    unique(as.character(v[!is.na(v)]))
+  })
+  all_v <- unlist(vals)
+  shared <- unique(all_v[duplicated(all_v)])
+  if (length(shared) > 0) {
+    warning("With count = \"", col, "\", ", length(shared), " value",
+            if (length(shared) != 1) "s", " of \"", col, "\" (e.g. ",
+            shared[1], ") ", if (length(shared) != 1) "are" else "is",
+            " in more than one of ", what, ", so their counts add up to ",
+            "more than the box above.", call. = FALSE)
+  }
+  invisible()
+}
+
+# A `where` or `reasons` argument that could not be evaluated: usually a
+# condition written without the ~.
+bad_condition <- function(arg, e) {
+  stop("`", arg, "` must be ",
+       if (arg == "reasons") "a named list of one-sided formulas, e.g. list(\"Under 18\" = ~ age < 18)"
+       else "a one-sided formula, e.g. ~ age < 18",
+       " (note the ~). As written it could not be evaluated: ",
+       conditionMessage(e), call. = FALSE)
 }

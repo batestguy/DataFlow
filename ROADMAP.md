@@ -248,7 +248,12 @@ since the data may not reflect the whole design.
   A typed exclusion in data mode also blanks the counts below it.
 - In data mode, formula reasons count a row under the first reason it
   matches; with `count =` a column, reason counts need not add up to the
-  box count (a person can have rows under two reasons).
+  box count (a person can have rows under two reasons), and boxes made from
+  one box can share a person, so their counts add up to more than the box
+  above (a warning says so).
+- In data mode, a box with no rows (a planned group) gets no boxes below it
+  unless `labels` are given for the next level. Values of a `by` column
+  that print alike (0.3 and 0.1 + 0.2) are one group.
 - `flow_edit()` changes text and counts only; boxes and branches cannot be
   removed or moved after they are built (use `from =` and the verbs).
 - Box sizes are measured with the PDF device's standard font metrics. Other
@@ -497,3 +502,36 @@ what is still open.
 - Open: independent review; user approval of the review, factorial and
   trial_data pictures; whether pools should reorder streams to avoid line
   crossings.
+
+### 2026-11-23 — Milestone 4: review of the data mode, fixes
+- Independent review (same model family) found three ways to get wrong
+  numbers without an error, all fixed: `flow_edit()` applied values in the
+  order of the boxes in the diagram, not the order given (swapped labels
+  and counts); a factor in one data frame and text in another were combined
+  as the factor's integer codes (bogus labels "1", "2"); values of a `by`
+  column that print alike (0.3 and 0.1 + 0.2) made two boxes with the same
+  label, counting rows twice. `by` now also stops with an internal error if
+  its boxes ever hold a different number of rows than the box above.
+- Also from the review: a warning when `count =` values sit in two boxes
+  made from one box; `flow_edit(n = NA)` clears a count; typed reason counts
+  under a computed exclusion box are listed as typed in the description;
+  `flow_data()` returns a list whenever there are several data frames;
+  clearer errors for a condition written without `~`, for reasons mixing
+  formulas and numbers, and for empty text values in a `by` column; a box
+  with no rows stays an end box instead of stopping `by` (so
+  `flow_from_data()` copes with planned groups); summary `{k}` counts
+  planned labels; the raw newline in the data sentence's pattern replaced
+  by `
+`.
+- New `tests/testthat/test-data-random.R`: 60 random data flows (one or two
+  data frames, factor and text) checking that boxes made by `by` hold
+  exactly the rows of the box above, that box rows = continuing rows +
+  excluded rows, and that every drawn count equals its rows. The review's
+  `dev/rv4_rand.R` (300 flows): 893 steps, 0 problems.
+- Checked: the new tests fail 25 times on the reviewed commit (at least
+  once for every finding; the random test did not fail there) and pass
+  now: 3423 expectations pass, 0 fail. 315 typed designs still identical
+  to `main` (one false alarm on the way: evaluating `reasons` earlier
+  changed the order in which the random test script drew its random
+  numbers, so it built different designs; the original order is kept).
+

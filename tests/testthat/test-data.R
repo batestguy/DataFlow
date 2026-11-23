@@ -374,3 +374,127 @@ test_that("flow_from_data rebuilds the lab design's nested structure", {
                "named by columns")
   expect_error(flow_from_data(1:3, "a"), "must be a data frame")
 })
+
+# Review fixes (2026-11-23) ---------------------------------------------------
+
+test_that("flow_edit keeps the order given in `box` (review B1)", {
+  d <- flow_start("All", n = 10) |> flow_split("Arm", c("a", "b"), n = 5) |>
+    flow_edit(c("b", "a"), n = c(2, 3), label = c("B2", "A3"))
+  expect_equal(d$nodes$label[2:3], c("A3", "B2"))
+  expect_equal(d$nodes$n[2:3], c("3", "2"))
+  ids <- flow_start("All", n = 10) |> flow_split("Arm", c("a", "b")) |>
+    flow_edit(c(3, 2), label = c("second", "first"))
+  expect_equal(ids$nodes$label[2:3], c("first", "second"))
+  # a label matching several boxes cannot take one value per box
+  rep2 <- flow_start("All") |> flow_split("Arm", c("A", "B")) |>
+    flow_split("Sub", c("x", "y"))
+  expect_error(flow_edit(rep2, "x", n = c(1, 2)), "matches 2 boxes")
+  expect_equal(flow_edit(rep2, "x", n = 7)$nodes$n[c(4, 6)], c("7", "7"))
+})
+
+test_that("flow_edit(n = NA) clears a count (review S2)", {
+  d <- flow_start("All", n = 10) |> flow_edit(1, n = NA)
+  expect_true(is.na(d$nodes$n[1]))
+})
+
+test_that("a factor in one data frame and text in another (review B2)", {
+  a <- data.frame(id = 1:4, g = factor(c("p", "q", "q", "r")))
+  b <- data.frame(id = 5:8, g = c("p", "p", "q", "s"),
+                  stringsAsFactors = FALSE)
+  d <- flow_start(c("A", "B"), data = list(a, b)) |>
+    flow_pool("P", "All") |> flow_split("G", by = "g")
+  g <- d$nodes[d$nodes$stage == 3, ]
+  expect_equal(g$label, c("p", "q", "r", "s"))
+  expect_equal(g$n, c("3", "3", "1", "1"))
+  # counting a column that is a factor in one source, text in the other
+  c1 <- data.frame(pid = factor(c("x", "y", "y")))
+  c2 <- data.frame(pid = c("y", "z"), stringsAsFactors = FALSE)
+  p <- flow_start(c("A", "B"), data = list(c1, c2), count = "pid") |>
+    flow_pool("P", "All")
+  expect_equal(p$nodes$n, c("2", "2", "3"))
+})
+
+test_that("values that print alike are one box, never counted twice (B3)", {
+  fl <- data.frame(x = c(0.3, 0.1 + 0.2, 0.3, 0.5))
+  d <- flow_start("All", data = fl) |> flow_split("X", by = "x")
+  expect_equal(d$nodes$label[2:3], c("0.3", "0.5"))
+  expect_equal(d$nodes$n[2:3], c("3", "1"))
+})
+
+test_that("count = id warns when an id sits in two boxes (review S1)", {
+  v <- data.frame(id = c(1, 1, 2, 3), age = c(10, 30, 40, 50),
+                  arm = c("a", "b", "a", "b"))
+  expect_warning(flow_start("All", data = v, count = "id") |>
+                   flow_exclude("Young", where = ~ age < 18),
+                 "1 value of \"id\" (e.g. 1) is in more than one",
+                 fixed = TRUE)
+  expect_warning(flow_start("All", data = v, count = "id") |>
+                   flow_split("Arm", by = "arm"), "more than one of the boxes")
+  expect_silent(flow_start("All", data = v) |> flow_split("Arm", by = "arm"))
+})
+
+test_that("typed reason counts under a computed box are listed (review S3)", {
+  d <- flow_start("All", data = people) |>
+    flow_exclude("E", where = ~ age < 18, reasons = c("Too young" = 2))
+  expect_match(flow_describe(d), "except 1 typed by hand: Too young in E (n = 2).",
+               fixed = TRUE)
+  f <- flow_start("All", data = people) |>
+    flow_exclude("E", reasons = list("Too young" = ~ age < 18))
+  expect_false(grepl("typed by hand", flow_describe(f)))
+})
+
+test_that("flow_data with several data frames always gives a list (S4)", {
+  a <- data.frame(v = c("x", "y"))
+  b <- data.frame(v = c("y", "y", "z"))
+  d <- flow_start(c("A", "B"), data = list(a, b)) |>
+    flow_pool("P", "All") |> flow_split("V", by = "v")
+  for (box in d$nodes$id) {
+    out <- flow_data(d, box)
+    expect_named(out, c("a", "b"))
+    expect_true(all(vapply(out, is.data.frame, NA)))
+  }
+  expect_equal(nrow(flow_data(d, "x")$b), 0)
+  expect_equal(nrow(flow_data(d, "z")$b), 1)
+})
+
+test_that("clear errors for conditions without ~ and mixed reasons (S5)", {
+  base <- flow_start("All", data = people)
+  expect_error(flow_select(base, "S", "s", where = age > 3), "note the ~")
+  expect_error(flow_exclude(base, "E", where = age > 3), "note the ~")
+  expect_error(flow_exclude(base, "E", reasons = list(a = age < 18)),
+               "named list of one-sided formulas")
+  expect_error(flow_exclude(base, "E", reasons = list(a = ~ age < 18, b = 3)),
+               "mixes formulas")
+  e <- data.frame(r = c("a", "", "b"))
+  expect_error(flow_start("All", data = e) |> flow_split("R", by = "r"),
+               "1 empty value")
+})
+
+test_that("planned groups with no rows stay end boxes unless labelled (S6)", {
+  cu <- data.frame(experiment = rep(c("exp1", "exp2"), each = 4),
+                   batch = rep(c("b1", "b2"), 4))
+  d <- flow_from_data(cu, c("experiment", "batch"), labels = list(
+    experiment = c("Ex. 1" = "exp1", "Ex. 2" = "exp2", "Ex. 3" = "exp3")))
+  planned <- d$nodes$id[d$nodes$label == "Ex. 3"]
+  expect_equal(d$nodes$n[d$nodes$id == planned], "0")
+  expect_false(planned %in% d$edges$from)
+  expect_true(planned %in% d$leaves)
+  # with labels for the next level too, the planned group gets planned boxes
+  l <- flow_from_data(cu, c("experiment", "batch"), labels = list(
+    experiment = c("Ex. 1" = "exp1", "Ex. 2" = "exp2", "Ex. 3" = "exp3"),
+    batch = c("b1", "b2")))
+  under <- l$edges$to[l$edges$from == l$nodes$id[l$nodes$label == "Ex. 3"]]
+  expect_equal(l$nodes$n[match(under, l$nodes$id)], c("0", "0"))
+  # nothing to split at all is still an error
+  expect_error(flow_start("All", data = cu[0, ]) |>
+                 flow_split("E", by = "experiment"), "No box being split")
+})
+
+test_that("summary {k} counts planned labels too (review S7)", {
+  r <- data.frame(r = c("a", "a", "b", "c"))
+  d <- flow_start("All", data = r) |>
+    flow_cluster("Region", by = "r", labels = c("a", "b", "c", "d"))
+  expect_equal(d$nodes$label[2], "4 clusters selected")
+  e <- flow_start("All", data = r) |> flow_cluster("Region", by = "r")
+  expect_equal(e$nodes$label[2], "3 clusters selected")
+})

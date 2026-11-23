@@ -39,7 +39,11 @@ an error.}
 
 \item{count}{With \code{data}: \code{NULL} (the default) counts rows; a column name
 counts the distinct non-missing values of that column instead (e.g.
-patients, when there is one row per visit).}
+patients, when there is one row per visit). Rows with a missing value
+in that column are not counted. If one value has rows in two boxes made
+from the same box (e.g. a patient with visits in two arms, or with some
+visits excluded and others not), the counts of those boxes add up to
+more than the box above; DataFlow warns when this happens.}
 }
 \value{
 A \code{dataflow} object.

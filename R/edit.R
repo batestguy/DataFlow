@@ -20,7 +20,8 @@
 #'   with that label. With `excluded = TRUE`, exclusion boxes instead (ids
 #'   from `.flow$side$id`).
 #' @param label,n,note New text, count or note: one value for all chosen
-#'   boxes, or one per box. `NULL` leaves it unchanged; `NA` clears a count or
+#'   boxes, or one per box, in the order of `box`. When a label in `box`
+#'   matches several boxes, give one value only (or use ids). `NULL` leaves it unchanged; `NA` clears a count or
 #'   note. Counts are drawn as given, like typed counts.
 #' @param stage,row_label To change a row label instead: the stage name and
 #'   its new row label (`""` hides it).
@@ -73,7 +74,16 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
       stop("No ", if (isTRUE(excluded)) "exclusion ", "box labelled ",
            paste0("\"", bad, "\"", collapse = ", "), ".", call. = FALSE)
     }
-    tab$id[tab$label %in% box]
+    hits <- lapply(box, function(b) tab$id[tab$label == b])
+    many <- box[lengths(hits) > 1]
+    per_box <- function(v) !is.null(v) && length(v) > 1
+    if (length(many) > 0 && (per_box(label) || per_box(n) || per_box(note))) {
+      stop("The label \"", many[1], "\" matches ", max(lengths(hits)),
+           " boxes, so one value per box is ambiguous. Give box ids ",
+           "(see flow_nodes()) to set different values.", call. = FALSE)
+    }
+    # in the order given in `box`
+    unique(unlist(hits))
   } else {
     stop("`box` must be box ids (numbers) or labels (text).", call. = FALSE)
   }
@@ -86,6 +96,8 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     tab$label[rows] <- recycle_values(label, k, "label")
   }
   if (!is.null(n)) {
+    # NA clears a count; a logical NA is not a number or text
+    if (is.logical(n) && all(is.na(n))) n <- as.character(n)
     tab$n[rows] <- recycle_values(format_n(n), k, "n")
     rec <- data.frame(what = what, id = ids, stringsAsFactors = FALSE)
     .flow$edited <- unique(rbind(.flow$edited, rec))
@@ -108,7 +120,7 @@ edited_ids <- function(x, what) {
 
 # Counts drawn in a flow with data that were not computed from it: edited by
 # hand, or typed for a box (with or without rows) where the typed value
-# differs from, or replaces, the count of its rows.
+# differs from, or replaces, the count of its rows; and typed reason counts.
 typed_counts <- function(x) {
   one <- function(tab, what, rows_of) {
     ed <- edited_ids(x, what)
@@ -120,7 +132,21 @@ typed_counts <- function(x) {
     }, NA)
     tab[keep, c("id", "label", "n")]
   }
+  # reasons with typed counts (not computed from formulas), e.g. typed
+  # reasons listed in an exclusion box computed with `where`
+  rs <- x$reasons %||% empty_reasons()
+  rs <- rs[!is.na(rs$n) & !rs$side %in% x$data$computed_reasons, ]
+  sd <- x$side %||% empty_side()
+  reasons <- data.frame(
+    id = rs$side,
+    label = if (nrow(rs) > 0) {
+      paste0(rs$label, " in ", sd$label[match(rs$side, sd$id)])
+    } else {
+      character()
+    },
+    n = rs$n, stringsAsFactors = FALSE
+  )
   rbind(one(x$nodes, "nodes", function(id) box_rows(x, id)),
-        one(x$side %||% empty_side(), "side",
-            function(id) x$data$rows$side[[as.character(id)]]))
+        one(sd, "side", function(id) x$data$rows$side[[as.character(id)]]),
+        reasons)
 }
