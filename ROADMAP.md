@@ -17,7 +17,7 @@ milestone step; the progress log at the bottom is append-only.
 | 1 | Lab design | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
-| 4 | Factorial design, pooling, several starting streams; counts from data | 🟡 built on branch `m4`, awaiting review and approval | — |
+| 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs | ⬜ | — |
 | 6 | Reporting-guideline templates | ⬜ | — |
 | 7 | Examples from recent papers | ⬜ | — |
@@ -126,7 +126,7 @@ style of a Demographic and Health Survey. Natural size 7.50 x 10.24 in at
 9 pt; scaled to a 6.5 in text width the text is about 7.8 pt. Reviewed;
 picture approved by the user on 2026-11-22; merged into `main`.
 
-### Milestone 4 — Factorial design, pooling, several starting streams; counts from data 🟡
+### Milestone 4 — Factorial design, pooling, several starting streams; counts from data ✅
 
 **Delivers:** crossing splits (every level of one factor under every level
 of another); `flow_pool` (several sources merging into one box with
@@ -152,10 +152,10 @@ exclusion boxes without overlap; no crossings; random stress test extended.
 Data mode: counts equal the rows (or distinct values) of the right subsets;
 typed flows unchanged.
 
-**Status:** built on branch `m4` (2026-11-23), two commits, not pushed or
-merged. Examples `flow_example("review")` (PRISMA 2020 style),
-`"factorial"` and `"trial_data"`. Awaiting independent review and the
-user's approval of the pictures.
+**Status:** built on branch `m4` (2026-11-23). Examples
+`flow_example("review")` (PRISMA 2020 style), `"factorial"` and
+`"trial_data"`. Independent review passed after fixes; pictures approved by
+the user on 2026-11-23; merged into `main`.
 
 ### Milestone 5 — Machine-learning designs ⬜
 
@@ -562,3 +562,10 @@ what is still open.
   counted twice through duplicate segments); `dev/rv4_rand.R` 893 steps, 0
   problems; 3519 test expectations pass.
 
+### 2026-11-23 — Milestone 4 approved and merged
+- User approved the review, factorial and trial_data pictures. Re-checked
+  before merging: all tests pass on `m4` (9c5730a); review and trial_data
+  PNGs viewed after the line fix.
+- Merged into `main`. Open: CI on the 5 platforms for this merge; a
+  cross-family review before the first release; PRISMA 2020 citation not
+  yet checked online.
