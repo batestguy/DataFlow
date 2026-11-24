@@ -248,12 +248,16 @@ flat_note <- function(s) gsub("[[:space:]]*\n[[:space:]]*", ", ", s)
 describe_partition <- function(p) {
   if (is.null(p)) return("")
   unchecked <- if (isTRUE(p$checked)) "" else " (not checked against data)"
+  na <- p$na_group %||% 0
   paste0(
     if (!is.null(p$group)) paste0("; all records of each ", p$group,
-                                  " are in one set", unchecked),
+                                  " are in one set", unchecked,
+                                  if (na > 0) paste0(
+                                    " (", na, " row", if (na != 1) "s",
+                                    " with missing ", p$group,
+                                    " not checked)")),
     if (!is.null(p$time)) paste0("; the sets follow each other in time by ",
-                                 p$time, ", older data first (older data ",
-                                 "for training, newer for testing)",
-                                 unchecked)
+                                 p$time, " (older data for training, newer ",
+                                 "for testing)", unchecked)
   )
 }

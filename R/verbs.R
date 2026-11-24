@@ -185,8 +185,13 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   (TRIPOD+AI item 20a). With `data`, a one-sided formula saying which
 #'   rows had the event, e.g. `~ died == 1`: every box with rows behind it
 #'   then shows its number of events (counted like `n`, so in `count` units
-#'   if `count` is given). Without `data`, typed numbers: one value, or one
-#'   per label. Exclusion boxes do not show events.
+#'   if `count` is given). Rows where the formula gives `NA` (a missing
+#'   outcome) count in `n` but neither as events nor as rows without the
+#'   event; a warning and the description say how many. Without `data`,
+#'   typed numbers: one value, or one per label. Exclusion boxes do not show
+#'   events. `count_format = "{label}: n = {n}; {events} with and
+#'   {non_events} without the outcome"` shows both numbers, as TRIPOD+AI
+#'   item 20a asks.
 #' @param count With `data`: `NULL` (the default) counts rows; a column name
 #'   counts the distinct non-missing values of that column instead (e.g.
 #'   patients, when there is one row per visit). Rows with a missing value
@@ -221,6 +226,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
     stop("The top box takes a single `n` and `note`.", call. = FALSE)
   }
   store <- NULL
+  events <- tryCatch(events, error = function(e) bad_condition("events", e))
   if (!is.null(data)) {
     if (!is.null(n)) {
       stop("Give `n` or `data`, not both: with data, counts are computed.",
@@ -272,6 +278,15 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
   }
   if (!is.null(events) && !inherits(events, "formula")) {
     x <- set_events(x, a$ids, events)
+  }
+  if (!is.null(x$data$events)) {
+    x$data$events_na <- count_missing_outcome(x)
+    if (x$data$events_na > 0) {
+      warning(x$data$events_na, " row", if (x$data$events_na != 1) "s have"
+              else " has", " a missing outcome (`events` gives NA): ",
+              "counted in n, but neither as events nor as rows without ",
+              "the event.", call. = FALSE)
+    }
   }
   validate_dataflow(x)
 }

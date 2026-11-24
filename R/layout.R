@@ -78,8 +78,9 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       gsub("{n}", nd$n[i], out, fixed = TRUE)
     }, character(1))
   )
-  if (!is.null(x$events) || grepl("{events}", count_format, fixed = TRUE)) {
-    text <- box_text_events(nd, x$events, count_format)
+  if (!is.null(x$events) || grepl("{events}", count_format, fixed = TRUE) ||
+      grepl("{non_events}", count_format, fixed = TRUE)) {
+    text <- box_text_events(nd, x$events, count_format, x$non_events)
   }
   has_note <- !is.na(nd$note)
   note_size <- base_size * 0.85
@@ -620,10 +621,18 @@ merge_segments <- function(sg, eps = 1e-9) {
 # Box text when some boxes have outcome events: "(n = 412; events = 37)" with
 # the default format, "(events = 37)" for a box without a count, or the
 # events placed at `{events}` in a format that has it.
-box_text_events <- function(nd, events, count_format) {
+box_text_events <- function(nd, events, count_format, non_events = NULL) {
   ev <- if (is.null(events)) rep(NA_character_, nrow(nd)) else
     unname(events[as.character(nd$id)])
-  own <- grepl("{events}", count_format, fixed = TRUE)
+  # rows without the event: computed from data, or n - events when typed
+  num <- function(v) suppressWarnings(as.numeric(gsub(",", "", v)))
+  ne <- if (is.null(non_events)) rep(NA_character_, nrow(nd)) else
+    unname(non_events[as.character(nd$id)])
+  typed_ne <- num(nd$n) - num(ev)
+  ne <- ifelse(is.na(ne) & !is.na(typed_ne) & is.na(non_events_known(
+    non_events, nd$id)), format_n(typed_ne), ne)
+  own <- grepl("{events}", count_format, fixed = TRUE) ||
+    grepl("{non_events}", count_format, fixed = TRUE)
   vapply(seq_len(nrow(nd)), function(i) {
     n <- nd$n[i]
     e <- ev[i]
@@ -636,6 +645,15 @@ box_text_events <- function(nd, events, count_format) {
     }
     out <- gsub("{label}", nd$label[i], fmt, fixed = TRUE)
     out <- gsub("{n}", if (is.na(n)) "" else n, out, fixed = TRUE)
+    out <- gsub("{non_events}", if (is.na(ne[i])) "" else ne[i], out,
+                fixed = TRUE)
     gsub("{events}", if (is.na(e)) "" else e, out, fixed = TRUE)
   }, character(1))
+}
+
+# Whether rows without the event were computed from data for each box
+# (NA = not known from data).
+non_events_known <- function(non_events, ids) {
+  if (is.null(non_events)) return(rep(NA, length(ids)))
+  ifelse(as.character(ids) %in% names(non_events), TRUE, NA)
 }

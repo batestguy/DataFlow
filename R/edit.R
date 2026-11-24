@@ -122,6 +122,11 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     }
     vals <- recycle_values(format_n(events), k, "events")
     .flow$events[as.character(ids)] <- vals
+    # rows without the event are no longer known for an edited box
+    if (!is.null(.flow$non_events)) {
+      .flow$non_events[as.character(ids)] <- NA_character_
+    }
+    warn_events(.flow, ids)
     rec <- data.frame(what = "events", id = ids, stringsAsFactors = FALSE)
     .flow$edited <- unique(rbind(.flow$edited, rec))
   }
@@ -178,7 +183,7 @@ typed_counts <- function(x) {
     if (id %in% c(x$events_typed, edited_ids(x, "events"))) return(TRUE)
     r <- box_rows(x, id)
     is.null(r) || is.null(x$data$events) ||
-      !identical(unname(ev[i]), format_n(count_events(x, r)))
+      !identical(unname(ev[i]), format_n(count_events(x, r)[["events"]]))
   }, NA)
   events <- data.frame(
     id = ev_ids[ev_typed],

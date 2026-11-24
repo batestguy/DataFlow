@@ -104,7 +104,7 @@ check_condition <- function(f, arg) {
 # TRUE/FALSE per global row in `ids`: the condition evaluated in the data,
 # with the formula's environment as enclosure. Missing results count as FALSE
 # (the row does not match), as in subset().
-eval_condition <- function(x, ids, f, arg) {
+eval_condition <- function(x, ids, f, arg, keep_na = FALSE) {
   check_condition(f, arg)
   src <- row_source(x, ids)
   out <- logical(length(ids))
@@ -121,7 +121,7 @@ eval_condition <- function(x, ids, f, arg) {
            "each row.", call. = FALSE)
     }
     v <- rep_len(v, nrow(d))
-    out[sel] <- !is.na(v) & v
+    out[sel] <- if (keep_na) v else !is.na(v) & v
   }
   out
 }
@@ -146,7 +146,9 @@ set_rows <- function(x, ids, rows) {
     x$data$rows$left[key] <- list(rows[[i]])
     # outcome events among the rows, when flow_start(events =) was given
     if (!is.null(x$data$events) && !is.null(rows[[i]])) {
-      x$events[key] <- format_n(count_events(x, rows[[i]]))
+      ev <- count_events(x, rows[[i]])
+      x$events[key] <- format_n(ev[["events"]])
+      x$non_events[key] <- format_n(ev[["non_events"]])
     }
   }
   x
@@ -252,6 +254,14 @@ describe_data <- function(x) {
                  ifelse(sizes == 1, " row)", " rows)"))
   tc <- typed_counts(x)
   flat <- function(s) gsub("[[:space:]]*\n[[:space:]]*", " ", s)
+  na_out <- dd$events_na %||% 0
+  na_text <- if (na_out > 0) {
+    paste0(" ", na_out, " row", if (na_out != 1) "s have" else " has",
+           " a missing outcome: counted in n, but neither as events nor as ",
+           "rows without the event.")
+  } else {
+    ""
+  }
   paste0("Counts were computed from the data frame",
          if (length(each) > 1) "s", " ", and_list(each),
          if (!is.null(dd$count)) paste0(", as numbers of distinct values of `",
@@ -260,7 +270,7 @@ describe_data <- function(x) {
                                   and_list(paste0(flat(tc$label), " (",
                                                   tc$what, " = ", tc$n,
                                                   ")"))),
-         ".")
+         ".", na_text)
 }
 
 #' Draw the nested structure of a data frame
@@ -351,11 +361,12 @@ warn_shared_ids <- function(x, sets, what) {
   invisible()
 }
 
-# A `where` or `reasons` argument that could not be evaluated: usually a
-# condition written without the ~.
+# A `where`, `reasons` or `events` argument that could not be evaluated:
+# usually a condition written without the ~.
 bad_condition <- function(arg, e) {
   stop("`", arg, "` must be ",
        if (arg == "reasons") "a named list of one-sided formulas, e.g. list(\"Under 18\" = ~ age < 18)"
+       else if (arg == "events") "a one-sided formula, e.g. ~ died == 1, or typed numbers"
        else "a one-sided formula, e.g. ~ age < 18",
        " (note the ~). As written it could not be evaluated: ",
        conditionMessage(e), call. = FALSE)
