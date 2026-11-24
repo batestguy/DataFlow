@@ -705,3 +705,8 @@ what is still open.
 - User approved the ml, cv, forecast, own-assignment and 10-fold pictures;
   `m5` merged into `main`. Open: CI result (recorded in the next entry); a
   cross-family review before the first release.
+
+### 2026-11-24 — CI green for milestone 5
+- Merge `0dc147a` pushed to `main`; CI run 45323962438 green on all 5
+  platforms. Open: a cross-family review before the first release. Next:
+  milestone 6.
