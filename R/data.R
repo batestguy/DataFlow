@@ -104,7 +104,7 @@ check_condition <- function(f, arg) {
 # TRUE/FALSE per global row in `ids`: the condition evaluated in the data,
 # with the formula's environment as enclosure. Missing results count as FALSE
 # (the row does not match), as in subset().
-eval_condition <- function(x, ids, f, arg) {
+eval_condition <- function(x, ids, f, arg, keep_na = FALSE) {
   check_condition(f, arg)
   src <- row_source(x, ids)
   out <- logical(length(ids))
@@ -121,7 +121,7 @@ eval_condition <- function(x, ids, f, arg) {
            "each row.", call. = FALSE)
     }
     v <- rep_len(v, nrow(d))
-    out[sel] <- !is.na(v) & v
+    out[sel] <- if (keep_na) v else !is.na(v) & v
   }
   out
 }
@@ -144,6 +144,12 @@ set_rows <- function(x, ids, rows) {
     key <- as.character(ids[i])
     x$data$rows$box[key] <- list(rows[[i]])
     x$data$rows$left[key] <- list(rows[[i]])
+    # outcome events among the rows, when flow_start(events =) was given
+    if (!is.null(x$data$events) && !is.null(rows[[i]])) {
+      ev <- count_events(x, rows[[i]])
+      x$events[key] <- format_n(ev[["events"]])
+      x$non_events[key] <- format_n(ev[["non_events"]])
+    }
   }
   x
 }
@@ -179,7 +185,8 @@ need_data <- function(x, arg) {
 #' box hanging off it); for an exclusion box (`excluded = TRUE`), the rows it
 #' removed from the flow.
 #'
-#' @param x A `dataflow` with data.
+#' @param x A `dataflow` with data, or a fold grid from [flow_folds()] made
+#'   from data (then `box` is a block id, see `x$blocks`).
 #' @param box A box id or label (see [flow_nodes()]). A label must match
 #'   exactly one box.
 #' @param excluded If `TRUE`, `box` names an exclusion box (an id from
@@ -195,6 +202,7 @@ need_data <- function(x, arg) {
 #' head(flow_data(d, "Randomised"))
 #' nrow(flow_data(d, "Excluded", excluded = TRUE))
 flow_data <- function(x, box, excluded = FALSE) {
+  if (inherits(x, "dataflow_grid")) return(grid_data(x, box))
   check_flow(x)
   if (!has_data(x)) {
     stop("This flow has no data; counts were typed. Start a flow with ",
@@ -246,14 +254,32 @@ describe_data <- function(x) {
                  ifelse(sizes == 1, " row)", " rows)"))
   tc <- typed_counts(x)
   flat <- function(s) gsub("[[:space:]]*\n[[:space:]]*", " ", s)
+  na_out <- dd$events_na %||% 0
+  left <- if (na_out > 0) missing_outcome_left(x) else 0
+  all_known <- !any(vapply(x$leaves, function(id) is.null(left_rows(x, id)),
+                           NA))
+  na_text <- if (na_out > 0) {
+    paste0(" ", na_out, " row", if (na_out != 1) "s have" else " has",
+           " a missing outcome: counted in n, but neither as events nor as ",
+           "rows without the event",
+           if (left > 0) {
+             paste0("; ", left, " of them ", if (left != 1) "are" else "is",
+                    " left in the end boxes")
+           } else if (all_known) {
+             "; none of them is left in the end boxes"
+           }, ".")
+  } else {
+    ""
+  }
   paste0("Counts were computed from the data frame",
          if (length(each) > 1) "s", " ", and_list(each),
          if (!is.null(dd$count)) paste0(", as numbers of distinct values of `",
                                         dd$count, "`"),
          if (nrow(tc) > 0) paste0(", except ", nrow(tc), " typed by hand: ",
-                                  and_list(paste0(flat(tc$label), " (n = ",
-                                                  tc$n, ")"))),
-         ".")
+                                  and_list(paste0(flat(tc$label), " (",
+                                                  tc$what, " = ", tc$n,
+                                                  ")"))),
+         ".", na_text)
 }
 
 #' Draw the nested structure of a data frame
@@ -344,11 +370,12 @@ warn_shared_ids <- function(x, sets, what) {
   invisible()
 }
 
-# A `where` or `reasons` argument that could not be evaluated: usually a
-# condition written without the ~.
+# A `where`, `reasons` or `events` argument that could not be evaluated:
+# usually a condition written without the ~.
 bad_condition <- function(arg, e) {
   stop("`", arg, "` must be ",
        if (arg == "reasons") "a named list of one-sided formulas, e.g. list(\"Under 18\" = ~ age < 18)"
+       else if (arg == "events") "a one-sided formula, e.g. ~ died == 1, or typed numbers"
        else "a one-sided formula, e.g. ~ age < 18",
        " (note the ~). As written it could not be evaluated: ",
        conditionMessage(e), call. = FALSE)

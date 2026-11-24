@@ -10,7 +10,8 @@ flow_start(
   note = NULL,
   stage = NULL,
   data = NULL,
-  count = NULL
+  count = NULL,
+  events = NULL
 )
 }
 \arguments{
@@ -44,6 +45,20 @@ in that column are not counted. If one value has rows in two boxes made
 from the same box (e.g. a patient with visits in two arms, or with some
 visits excluded and others not), the counts of those boxes add up to
 more than the box above; DataFlow warns when this happens.}
+
+\item{events}{Outcome events, shown with the count of each box as
+"(n = 412; events = 37)", as asked for prediction-model studies
+(TRIPOD+AI item 20a). With \code{data}, a one-sided formula saying which
+rows had the event, e.g. \code{~ died == 1}: every box with rows behind it
+then shows its number of events (counted like \code{n}, so in \code{count} units
+if \code{count} is given). Rows where the formula gives \code{NA} (a missing
+outcome) count in \code{n} but neither as events nor as rows without the
+event; the description says how many, and drawing the diagram warns
+when some are left in its end boxes (exclude them, e.g. with
+\code{~ is.na(died)}). Without \code{data}, typed numbers: one value, or one per
+label. Exclusion boxes do not show events. \code{count_format = "{label}: n = {n}; {events} with and {non_events} without the outcome"} shows both numbers, as TRIPOD+AI
+item 20a asks (typed: \code{n} minus events; with \code{count}, a unit with rows
+of both kinds is counted in both).}
 }
 \value{
 A \code{dataflow} object.

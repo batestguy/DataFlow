@@ -14,7 +14,10 @@
 #'
 #' @param x A `dataflow` object.
 #' @param count_format How a box's label and count are combined. `{label}`
-#'   and `{n}` are replaced; used only for boxes that have a count.
+#'   and `{n}` are replaced; used only for boxes that have a count. Outcome
+#'   events (see [flow_start()]) are added to the count as
+#'   "(n = 412; events = 37)", or placed where `{events}` appears if the
+#'   format has it.
 #' @param base_size Font size of box text, in points.
 #' @param family Font family (`""` is the device default sans-serif).
 #' @param hgap,vgap Horizontal gap between boxes and vertical gap between
@@ -75,6 +78,10 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       gsub("{n}", nd$n[i], out, fixed = TRUE)
     }, character(1))
   )
+  if (!is.null(x$events) || grepl("{events}", count_format, fixed = TRUE) ||
+      grepl("{non_events}", count_format, fixed = TRUE)) {
+    text <- box_text_events(nd, x$events, count_format, x$non_events)
+  }
   has_note <- !is.na(nd$note)
   note_size <- base_size * 0.85
   rl <- st$row_label
@@ -611,3 +618,42 @@ merge_segments <- function(sg, eps = 1e-9) {
   out
 }
 
+# Box text when some boxes have outcome events: "(n = 412; events = 37)" with
+# the default format, "(events = 37)" for a box without a count, or the
+# events placed at `{events}` in a format that has it.
+box_text_events <- function(nd, events, count_format, non_events = NULL) {
+  ev <- if (is.null(events)) rep(NA_character_, nrow(nd)) else
+    unname(events[as.character(nd$id)])
+  # rows without the event: computed from data, or n - events when typed
+  num <- function(v) suppressWarnings(as.numeric(gsub(",", "", v)))
+  ne <- if (is.null(non_events)) rep(NA_character_, nrow(nd)) else
+    unname(non_events[as.character(nd$id)])
+  typed_ne <- num(nd$n) - num(ev)
+  ne <- ifelse(is.na(ne) & !is.na(typed_ne) & is.na(non_events_known(
+    non_events, nd$id)), format_n(typed_ne), ne)
+  own <- grepl("{events}", count_format, fixed = TRUE) ||
+    grepl("{non_events}", count_format, fixed = TRUE)
+  vapply(seq_len(nrow(nd)), function(i) {
+    n <- nd$n[i]
+    e <- ev[i]
+    if (is.na(n) && (is.na(e) || own)) return(nd$label[i])
+    fmt <- count_format
+    if (!own && !is.na(e)) {
+      if (is.na(n)) return(paste0(nd$label[i], "
+(events = ", e, ")"))
+      n <- paste0(n, "; events = ", e)
+    }
+    out <- gsub("{label}", nd$label[i], fmt, fixed = TRUE)
+    out <- gsub("{n}", if (is.na(n)) "" else n, out, fixed = TRUE)
+    out <- gsub("{non_events}", if (is.na(ne[i])) "" else ne[i], out,
+                fixed = TRUE)
+    gsub("{events}", if (is.na(e)) "" else e, out, fixed = TRUE)
+  }, character(1))
+}
+
+# Whether rows without the event were computed from data for each box
+# (NA = not known from data).
+non_events_known <- function(non_events, ids) {
+  if (is.null(non_events)) return(rep(NA, length(ids)))
+  ifelse(as.character(ids) %in% names(non_events), TRUE, NA)
+}

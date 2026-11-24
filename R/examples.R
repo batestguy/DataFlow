@@ -29,14 +29,29 @@
 #'   with diet A or B, drawn as nested splits), an outcome box per cell, then
 #'   the cells pooled over diet for an analysis per drug group. All numbers
 #'   are invented for illustration.
+#' * `"cv"`: a fold grid (see [flow_folds()]) for 5-fold cross-validation
+#'   grouped by patient, with counts computed from an invented data frame
+#'   whose `fold` column assigns whole patients to folds.
+#' * `"forecast"`: a fold grid for time-series evaluation with an expanding
+#'   window and a one-month gap, from invented monthly data for three
+#'   stores (2016 to 2023).
 #' * `"trial_data"`: the same kind of CONSORT-style trial as `"trial"`, but
 #'   every count is computed from a small invented data frame of 412
 #'   participants (built inside the function with a fixed seed), using
 #'   formula `reasons`, `by =` and `where =`. Use [flow_data()] on it to see
 #'   the rows behind any box.
+#' * `"ml"`: a made-up development and validation flow for a clinical
+#'   prediction model, in the spirit of TRIPOD+AI item 20a (numbers and
+#'   outcome events in each analysis). Admissions from two hospitals form the
+#'   development data, with exclusions and a split into training and test
+#'   sets that keeps all admissions of a patient in one set; a third
+#'   hospital is a separate stream for external validation. Every count and
+#'   event is computed from invented data frames built inside the function
+#'   with a fixed seed.
 #'
 #' @param name Which example.
-#' @return A `dataflow` object.
+#' @return A `dataflow` object; for `"cv"` and `"forecast"`, a
+#'   `dataflow_grid`.
 #' @export
 #' @examples
 #' flow_example("lab")
@@ -45,8 +60,12 @@
 #' flow_example("review")
 #' flow_example("factorial")
 #' flow_example("trial_data")
+#' flow_example("ml")
+#' flow_example("cv")
+#' flow_example("forecast")
 flow_example <- function(name = c("lab", "trial", "survey", "review",
-                                  "factorial", "trial_data")) {
+                                  "factorial", "trial_data", "ml", "cv",
+                                  "forecast")) {
   name <- match.arg(name)
   x <- switch(name,
     lab = flow_start("Cultures", n = 100) |>
@@ -130,6 +149,40 @@ flow_example <- function(name = c("lab", "trial", "survey", "review",
       flow_outcome("Outcome", "Analysed", n = c(48, 47, 49, 46)) |>
       flow_pool("Pooled analysis", "Pooled over diet", n = c(95, 95),
                 over = "Drug"),
+    cv = {
+      cv_data <- example_cv_data()
+      flow_folds(cv_data, fold = "fold", group = "patient_id")
+    },
+    forecast = {
+      sales <- example_forecast_data()
+      flow_folds(sales, type = "expanding", time = "month", initial = 60,
+                 assess = 6, skip = 5, gap = 1, time_unit = "months")
+    },
+    ml = {
+      ml <- example_ml_data()
+      development <- ml$development
+      validation <- ml$validation
+      flow_start(c("Development data:
+admissions to hospitals A and B",
+                   "External validation data:
+admissions to hospital C"),
+                 data = list(development, validation),
+                 events = ~ died_30d == 1, stage = "Source") |>
+        flow_split("Hospital", by = "hospital", from = 1,
+                   labels = c("Hospital A" = "A", "Hospital B" = "B")) |>
+        flow_pool("Pooled", "Development data",
+                  from = c("Hospital A", "Hospital B"), row_label = "") |>
+        flow_exclude("Excluded", stage = "Eligibility",
+                     reasons = list("Under 18" = ~ age < 18,
+                                    "Outcome missing" =
+                                      ~ is.na(died_30d))) |>
+        flow_partition(labels = c("Training set" = "train",
+                                  "Test set" = "test"),
+                       by = "set", group = "patient_id",
+                       from = "Development data") |>
+        flow_outcome("Analysis", c("Model development", "Internal test",
+                                   "External validation"))
+    },
     trial_data = {
       trial_data <- example_trial_data()
       flow_start("Assessed for eligibility", data = trial_data,
@@ -175,6 +228,26 @@ flow_example <- function(name = c("lab", "trial", "survey", "review",
       "databases, registers and other sources (Page et al., BMJ",
       "2021;372:n71, doi:10.1136/bmj.n71). Numbers are made up for",
       "illustration and do not describe a real review."
+    ),
+    cv = paste(
+      "Invented grouped 5-fold cross-validation: 300 made-up patients with",
+      "one to three records each, assigned to folds by patient inside",
+      "flow_example() with set.seed(20261125). The data do not describe a",
+      "real study."
+    ),
+    forecast = paste(
+      "Invented monthly sales of three stores, January 2016 to December",
+      "2023, evaluated with an expanding window (five years of training,",
+      "six-month forecast horizon, one-month gap, origins six months",
+      "apart), in the rolling-origin vocabulary of the rsample package.",
+      "Numbers are made up and built inside flow_example()."
+    ),
+    ml = paste(
+      "Invented clinical prediction model study in the spirit of TRIPOD+AI",
+      "(Collins et al., BMJ 2024;385:e078378, doi:10.1136/bmj-2023-078378),",
+      "item 20a: numbers and outcome events per analysis. Admissions and",
+      "outcomes are made up, built inside flow_example() with",
+      "set.seed(20261124); they do not describe a real study."
     ),
     trial_data = paste(
       "Invented two-arm trial in the layout of the CONSORT 2025 flow diagram",
@@ -226,3 +299,68 @@ example_trial_data <- function() {
     status = status, outcome_score = score, stringsAsFactors = FALSE
   )
 }
+
+# Run `code` with a fixed seed, restoring the caller's random number state.
+with_example_seed <- function(seed, code) {
+  genv <- globalenv()
+  had_seed <- exists(".Random.seed", envir = genv, inherits = FALSE)
+  if (had_seed) old <- get(".Random.seed", envir = genv, inherits = FALSE)
+  on.exit(if (had_seed) assign(".Random.seed", old, envir = genv) else
+    rm(".Random.seed", envir = genv))
+  set.seed(seed)
+  force(code)
+}
+
+# Invented admissions for flow_example("ml"): development data from two
+# hospitals (patients may have several admissions; the `set` column assigns
+# whole patients to training or test) and external validation data from a
+# third hospital.
+example_ml_data <- function() {
+  with_example_seed(20261124, {
+    admissions <- function(n_pat, hospital, prefix) {
+      visits <- sample(1:3, n_pat, replace = TRUE, prob = c(0.6, 0.3, 0.1))
+      pid <- rep(sprintf("%s%04d", prefix, seq_len(n_pat)), visits)
+      n <- length(pid)
+      age <- rep(sample(15:95, n_pat, replace = TRUE), visits)
+      risk <- stats::plogis(-3.2 + 0.035 * (age - 60))
+      died <- stats::rbinom(n, 1, risk)
+      died[sample(n, round(0.03 * n))] <- NA
+      data.frame(patient_id = pid, hospital = hospital, age = age,
+                 died_30d = died, stringsAsFactors = FALSE)
+    }
+    development <- rbind(admissions(420, "A", "A"),
+                         admissions(310, "B", "B"))
+    pats <- unique(development$patient_id)
+    test_pats <- sample(pats, round(0.25 * length(pats)))
+    development$set <- ifelse(development$patient_id %in% test_pats,
+                              "test", "train")
+    validation <- admissions(260, "C", "C")
+    list(development = development, validation = validation)
+  })
+}
+
+# Invented records for flow_example("cv"): 300 patients with 1 to 3
+# records, whole patients assigned to 5 folds.
+example_cv_data <- function() {
+  with_example_seed(20261125, {
+    visits <- sample(1:3, 300, replace = TRUE)
+    pid <- rep(sprintf("P%03d", 1:300), visits)
+    fold_of <- sample(rep(1:5, length.out = 300))
+    data.frame(patient_id = pid, fold = rep(fold_of, visits),
+               stringsAsFactors = FALSE)
+  })
+}
+
+# Invented monthly sales for flow_example("forecast"): three stores,
+# January 2016 to December 2023.
+example_forecast_data <- function() {
+  with_example_seed(20261126, {
+    month <- seq(as.Date("2016-01-01"), as.Date("2023-12-01"), by = "month")
+    d <- expand.grid(month = month, store = c("North", "Central", "South"),
+                     stringsAsFactors = FALSE)
+    d$sales <- round(100 + 10 * sin(as.numeric(format(d$month, "%m")) / 2) +
+                       stats::rnorm(nrow(d), 0, 5))
+    d
+  })
+}
+

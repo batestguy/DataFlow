@@ -14,7 +14,8 @@ flow_split(
   from = NULL,
   row_label = NULL,
   summary = "{k} {stage}",
-  by = NULL
+  by = NULL,
+  events = NULL
 )
 }
 \arguments{
@@ -69,6 +70,11 @@ otherwise the distinct values present) and the count is that of the box
 being split.
 Without \code{by}, new boxes have no rows behind them, so automatic counts
 below them stay blank.}
+
+\item{events}{Optional typed numbers of outcome events per new box,
+recycled like \code{n}, drawn as "(n = 412; events = 37)". In a flow started
+with \code{flow_start(events = ~ ...)} they are computed from the data
+instead; typed values win and are marked as typed.}
 }
 \value{
 The updated \code{dataflow}.

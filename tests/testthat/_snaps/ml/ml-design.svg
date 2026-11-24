@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='svglite' data-engine-version='2.0' width='720.00pt' height='576.00pt' viewBox='0 0 720.00 576.00'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA='>
+    <rect x='0.00' y='0.00' width='720.00' height='576.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+</g>
+<defs>
+  <clipPath id='cpMC4wMHw3MjAuMDB8OS4zNHw1NjYuNjY='>
+    <rect x='0.00' y='9.34' width='720.00' height='557.33' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8OS4zNHw1NjYuNjY=)'>
+<rect x='0.00' y='9.34' width='720.00' height='557.33' style='stroke-width: 0.00; stroke: none; fill: #FFFFFF;' />
+</g>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+<rect x='0.00' y='23.50' width='720.00' height='543.17' style='stroke-width: 0.00; stroke: none; fill: #FFFFFF;' />
+<line x1='249.57' y1='92.55' x2='249.57' y2='115.74' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='172.46' y1='115.74' x2='326.67' y2='115.74' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='249.57' y1='271.89' x2='249.57' y2='400.21' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='164.98' y1='400.21' x2='334.15' y2='400.21' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='172.46' y1='182.22' x2='172.46' y2='205.41' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='326.67' y1='182.22' x2='326.67' y2='205.41' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='172.46' y1='205.41' x2='326.67' y2='205.41' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='172.46' y1='115.74' x2='172.46' y2='138.93' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='170.71,134.59 172.46,138.93 174.22,134.59 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='326.67' y1='115.74' x2='326.67' y2='138.93' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='324.91,134.59 326.67,138.93 328.42,134.59 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='164.98' y1='400.21' x2='164.98' y2='423.40' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='163.23,419.06 164.98,423.40 166.73,419.06 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='334.15' y1='400.21' x2='334.15' y2='423.40' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='332.40,419.06 334.15,423.40 335.91,419.06 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='164.98' y1='466.69' x2='164.98' y2='513.07' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='163.23,508.73 164.98,513.07 166.73,508.73 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='334.15' y1='466.69' x2='334.15' y2='513.07' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='332.40,508.73 334.15,513.07 335.91,508.73 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='503.33' y1='92.55' x2='503.33' y2='513.07' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='501.57,508.73 503.33,513.07 505.08,508.73 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='249.57' y1='205.41' x2='249.57' y2='228.60' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='247.81,224.26 249.57,228.60 251.32,224.26 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='249.57' y1='347.64' x2='280.49' y2='347.64' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='276.15,349.40 280.49,347.64 276.15,345.89 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='503.33' y1='347.64' x2='534.25' y2='347.64' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='529.91,349.40 534.25,347.64 529.91,345.89 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<rect x='150.02' y='33.80' width='199.09' height='58.75' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='425.27' y='33.80' width='156.11' height='58.75' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='101.55' y='138.93' width='141.83' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='255.75' y='138.93' width='141.83' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='173.28' y='228.60' width='152.58' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='94.06' y='423.40' width='141.83' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='266.82' y='423.40' width='134.67' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='94.06' y='513.07' width='141.83' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #EDEDED;' />
+<rect x='266.82' y='513.07' width='134.67' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #EDEDED;' />
+<rect x='432.41' y='513.07' width='141.83' height='43.29' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #EDEDED;' />
+<text x='249.57' y='53.31' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='75.56px' lengthAdjust='spacingAndGlyphs'>Development data:</text>
+<text x='249.57' y='66.27' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='127.59px' lengthAdjust='spacingAndGlyphs'>admissions to hospitals A and B</text>
+<text x='249.57' y='79.23' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='95.58px' lengthAdjust='spacingAndGlyphs'>(n = 1,085; events = 49)</text>
+<text x='503.33' y='53.31' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='96.07px' lengthAdjust='spacingAndGlyphs'>External validation data:</text>
+<text x='503.33' y='66.27' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='97.56px' lengthAdjust='spacingAndGlyphs'>admissions to hospital C</text>
+<text x='503.33' y='79.23' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='88.07px' lengthAdjust='spacingAndGlyphs'>(n = 374; events = 18)</text>
+<text x='172.46' y='157.19' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='41.02px' lengthAdjust='spacingAndGlyphs'>Hospital A</text>
+<text x='172.46' y='170.15' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='88.07px' lengthAdjust='spacingAndGlyphs'>(n = 611; events = 29)</text>
+<text x='326.67' y='157.19' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='41.02px' lengthAdjust='spacingAndGlyphs'>Hospital B</text>
+<text x='326.67' y='170.15' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='88.07px' lengthAdjust='spacingAndGlyphs'>(n = 474; events = 20)</text>
+<text x='249.57' y='246.86' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='73.06px' lengthAdjust='spacingAndGlyphs'>Development data</text>
+<text x='249.57' y='259.82' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='95.58px' lengthAdjust='spacingAndGlyphs'>(n = 1,085; events = 49)</text>
+<text x='164.98' y='441.66' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='47.02px' lengthAdjust='spacingAndGlyphs'>Training set</text>
+<text x='164.98' y='454.62' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='88.07px' lengthAdjust='spacingAndGlyphs'>(n = 763; events = 38)</text>
+<text x='334.15' y='441.66' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='32.02px' lengthAdjust='spacingAndGlyphs'>Test set</text>
+<text x='334.15' y='454.62' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='83.07px' lengthAdjust='spacingAndGlyphs'>(n = 251; events = 9)</text>
+<text x='164.98' y='531.33' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='78.56px' lengthAdjust='spacingAndGlyphs'>Model development</text>
+<text x='164.98' y='544.29' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='88.07px' lengthAdjust='spacingAndGlyphs'>(n = 763; events = 38)</text>
+<text x='334.15' y='531.33' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='47.03px' lengthAdjust='spacingAndGlyphs'>Internal test</text>
+<text x='334.15' y='544.29' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='83.07px' lengthAdjust='spacingAndGlyphs'>(n = 251; events = 9)</text>
+<text x='503.33' y='531.33' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='73.55px' lengthAdjust='spacingAndGlyphs'>External validation</text>
+<text x='503.33' y='544.29' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='88.07px' lengthAdjust='spacingAndGlyphs'>(n = 348; events = 18)</text>
+<rect x='280.49' y='318.27' width='175.45' height='58.75' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='534.25' y='318.27' width='175.45' height='58.75' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<text x='288.73' y='337.78' style='font-size: 9.00px; font-family: sans;' textLength='70.80px' lengthAdjust='spacingAndGlyphs'>Excluded (n = 71)</text>
+<text x='288.73' y='350.74' style='font-size: 9.00px; font-family: sans;' textLength='76.30px' lengthAdjust='spacingAndGlyphs'>- Under 18 (n = 44)</text>
+<text x='288.73' y='363.70' style='font-size: 9.00px; font-family: sans;' textLength='108.81px' lengthAdjust='spacingAndGlyphs'>- Outcome missing (n = 27)</text>
+<text x='542.49' y='337.78' style='font-size: 9.00px; font-family: sans;' textLength='70.80px' lengthAdjust='spacingAndGlyphs'>Excluded (n = 26)</text>
+<text x='542.49' y='350.74' style='font-size: 9.00px; font-family: sans;' textLength='76.30px' lengthAdjust='spacingAndGlyphs'>- Under 18 (n = 15)</text>
+<text x='542.49' y='363.70' style='font-size: 9.00px; font-family: sans;' textLength='108.81px' lengthAdjust='spacingAndGlyphs'>- Outcome missing (n = 11)</text>
+<text x='10.31' y='66.27' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='28.52px' lengthAdjust='spacingAndGlyphs'>Source</text>
+<text x='10.31' y='163.67' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='32.52px' lengthAdjust='spacingAndGlyphs'>Hospital</text>
+<text x='10.31' y='350.74' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='35.01px' lengthAdjust='spacingAndGlyphs'>Eligibility</text>
+<text x='10.31' y='448.14' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='37.52px' lengthAdjust='spacingAndGlyphs'>Data split</text>
+<text x='10.31' y='537.81' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='33.52px' lengthAdjust='spacingAndGlyphs'>Analysis</text>
+<text x='0.00' y='21.25' style='font-size: 10.80px; font-family: sans;' textLength='46.23px' lengthAdjust='spacingAndGlyphs'>ml design</text>
+</g>
+</svg>

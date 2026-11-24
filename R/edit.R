@@ -11,6 +11,10 @@
 #' it among the counts typed rather than computed. Editing never changes the
 #' rows of data behind a box, so [flow_data()] still returns them.
 #'
+#' For a fold grid from [flow_folds()], `box` gives block ids (see
+#' `x$blocks`), and `label` and `n` change the text and count of those
+#' blocks; edited counts are marked as typed.
+#'
 #' `flow_edit()` changes text only. It cannot remove boxes or branches, or
 #' move them: change the structure with the verbs and their `from =`
 #' argument instead.
@@ -19,6 +23,8 @@
 #' @param box Box ids or labels (see [flow_nodes()]). A label edits every box
 #'   with that label. With `excluded = TRUE`, exclusion boxes instead (ids
 #'   from `.flow$side$id`).
+#' @param events New number of outcome events (see [flow_start()]), marked
+#'   as typed like an edited count. Not for exclusion boxes.
 #' @param label,n,note New text, count or note: one value for all chosen
 #'   boxes, or one per box, in the order of `box`. When a label in `box`
 #'   matches several boxes, give one value only (or use ids). `NULL` leaves it unchanged; `NA` clears a count or
@@ -36,7 +42,11 @@
 #'   flow_edit(stage = "Arm", row_label = "Allocation") |>
 #'   flow_nodes()
 flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
-                      stage = NULL, row_label = NULL, excluded = FALSE) {
+                      stage = NULL, row_label = NULL, excluded = FALSE,
+                      events = NULL) {
+  if (inherits(.flow, "dataflow_grid")) {
+    return(grid_edit(.flow, box, label, n))
+  }
   check_flow(.flow)
   if (!is.null(stage) || !is.null(row_label)) {
     if (!is.null(box)) {
@@ -77,7 +87,8 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     hits <- lapply(box, function(b) tab$id[tab$label == b])
     many <- box[lengths(hits) > 1]
     per_box <- function(v) !is.null(v) && length(v) > 1
-    if (length(many) > 0 && (per_box(label) || per_box(n) || per_box(note))) {
+    if (length(many) > 0 && (per_box(label) || per_box(n) || per_box(note) ||
+                             per_box(events))) {
       stop("The label \"", many[1], "\" matches ", max(lengths(hits)),
            " boxes, so one value per box is ambiguous. Give box ids ",
            "(see flow_nodes()) to set different values.", call. = FALSE)
@@ -99,7 +110,28 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     # NA clears a count; a logical NA is not a number or text
     if (is.logical(n) && all(is.na(n))) n <- as.character(n)
     tab$n[rows] <- recycle_values(format_n(n), k, "n")
+    # the computed rows without the event do not go with a typed n
+    if (!isTRUE(excluded) && !is.null(.flow$non_events)) {
+      .flow$non_events[as.character(ids)] <- NA_character_
+    }
     rec <- data.frame(what = what, id = ids, stringsAsFactors = FALSE)
+    .flow$edited <- unique(rbind(.flow$edited, rec))
+  }
+  if (!is.null(events)) {
+    if (isTRUE(excluded)) {
+      stop("Exclusion boxes do not show events.", call. = FALSE)
+    }
+    if (is.logical(events) && all(is.na(events))) {
+      events <- as.character(events)
+    }
+    vals <- recycle_values(format_n(events), k, "events")
+    .flow$events[as.character(ids)] <- vals
+    # rows without the event are no longer known for an edited box
+    if (!is.null(.flow$non_events)) {
+      .flow$non_events[as.character(ids)] <- NA_character_
+    }
+    warn_events(.flow, ids)
+    rec <- data.frame(what = "events", id = ids, stringsAsFactors = FALSE)
     .flow$edited <- unique(rbind(.flow$edited, rec))
   }
   if (!is.null(note)) {
@@ -146,7 +178,27 @@ typed_counts <- function(x) {
     },
     n = rs$n, stringsAsFactors = FALSE
   )
-  rbind(one(x$nodes, "nodes", function(id) box_rows(x, id)),
-        one(sd, "side", function(id) x$data$rows$side[[as.character(id)]]),
-        reasons)
+  # events typed when the flow was built, or edited, or not matching rows
+  ev <- x$events %||% character()
+  ev_ids <- as.integer(names(ev))
+  ev_typed <- vapply(seq_along(ev), function(i) {
+    if (is.na(ev[i])) return(FALSE)
+    id <- ev_ids[i]
+    if (id %in% c(x$events_typed, edited_ids(x, "events"))) return(TRUE)
+    r <- box_rows(x, id)
+    is.null(r) || is.null(x$data$events) ||
+      !identical(unname(ev[i]), format_n(count_events(x, r)[["events"]]))
+  }, NA)
+  events <- data.frame(
+    id = ev_ids[ev_typed],
+    label = x$nodes$label[match(ev_ids[ev_typed], x$nodes$id)],
+    n = unname(ev[ev_typed]), stringsAsFactors = FALSE
+  )
+  out <- rbind(one(x$nodes, "nodes", function(id) box_rows(x, id)),
+               one(sd, "side",
+                   function(id) x$data$rows$side[[as.character(id)]]),
+               reasons)
+  out$what <- rep("n", nrow(out))
+  events$what <- rep("events", nrow(events))
+  rbind(out, events)
 }

@@ -29,6 +29,13 @@ autoplot.dataflow <- function(object, ..., fill = "white", colour = "black",
                               outcome_fill = "#EDEDED", linewidth = 0.4,
                               row_labels = TRUE) {
   lay <- flow_layout(object, ...)
+  left_na <- missing_outcome_left(object)
+  if (left_na > 0) {
+    warning(left_na, " row", if (left_na != 1) "s" else "", " in the end ",
+            "boxes ", if (left_na != 1) "have" else "has", " a missing ",
+            "outcome (`events` gives NA): counted in n, but neither as ",
+            "events nor as rows without the event.", call. = FALSE)
+  }
   bx <- lay$boxes
   bx$fill <- ifelse(bx$type == "outcome", outcome_fill, fill)
   sg <- lay$segments
@@ -153,14 +160,16 @@ theme_dataflow <- function(base_size = 9, base_family = "") {
 #' A thin wrapper on [ggplot2::ggsave()] that uses the diagram's natural size
 #' unless you give one.
 #'
-#' @param x A `dataflow` object or a plot made by [autoplot.dataflow()].
+#' @param x A `dataflow` object, a fold grid from [flow_folds()], or a plot
+#'   made from either.
 #' @param filename File to write; the extension picks the format.
 #' @param width,height Size in inches. Defaults to the natural size.
 #' @param dpi Resolution for bitmap formats.
 #' @param bg Background colour.
 #' @param device Optional device passed to [ggplot2::ggsave()]; by default
 #'   it is chosen from the file extension.
-#' @param ... Passed to [autoplot.dataflow()] when `x` is a dataflow,
+#' @param ... Passed to [autoplot.dataflow()] (or
+#'   [autoplot.dataflow_grid()]) when `x` is a dataflow (or fold grid),
 #'   otherwise to [ggplot2::ggsave()].
 #' @return `filename`, invisibly.
 #' @export
@@ -174,11 +183,15 @@ flow_save <- function(x, filename, width = NULL, height = NULL, dpi = 300,
   if (inherits(x, "dataflow")) {
     p <- autoplot.dataflow(x, ...)
     dots <- list()
+  } else if (inherits(x, "dataflow_grid")) {
+    p <- autoplot.dataflow_grid(x, ...)
+    dots <- list()
   } else if (inherits(x, "ggplot")) {
     p <- x
     dots <- list(...)
   } else {
-    stop("`x` must be a dataflow or a plot made from one.", call. = FALSE)
+    stop("`x` must be a dataflow, a fold grid, or a plot made from one.",
+         call. = FALSE)
   }
   size <- attr(p, "dataflow_size")
   width <- width %||% size[["width"]]

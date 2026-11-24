@@ -12,7 +12,7 @@
 #' flow with data, a last sentence names the data frame(s) the counts were
 #' computed from.
 #'
-#' @param x A `dataflow` object.
+#' @param x A `dataflow` object, or a fold grid from [flow_folds()].
 #' @return A single string (class `dataflow_description`). Printing it wraps
 #'   the text to the console width.
 #' @export
@@ -21,6 +21,7 @@
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_describe()
 flow_describe <- function(x) {
+  if (inherits(x, "dataflow_grid")) return(describe_grid(x))
   validate_dataflow(x)
   st <- x$stages
   nd <- x$nodes
@@ -30,7 +31,9 @@ flow_describe <- function(x) {
   say <- function(id) {
     i <- match(id, nd$id)
     out <- flat(nd$label[i])
+    ev <- if (is.null(x$events)) NA else x$events[as.character(id)]
     extra <- c(if (!is.na(nd$n[i])) paste0("n = ", nd$n[i]),
+               if (!is.na(ev)) paste0("events = ", ev),
                if (!is.na(nd$note[i])) flat_note(nd$note[i]))
     if (length(extra)) paste0(out, " (", paste(extra, collapse = "; "), ")")
     else out
@@ -68,6 +71,10 @@ flow_describe <- function(x) {
       verb <- if (type == "split") "split into" else
         assign_verb(st$method[s])
       body <- describe_split(ids, srcs, say, name, whole_row, verb)
+    } else if (type == "partition") {
+      body <- paste0(describe_split(ids, srcs, say, name, whole_row,
+                                    "partitioned into"),
+                     describe_partition(x$partition[[as.character(st$id[s])]]))
     } else if (type %in% c("cluster", "select")) {
       # "Clusters, selected by <method>: 40 EAs selected from Urban; ..."
       if (!is.na(st$method[s])) {
@@ -234,3 +241,23 @@ and_list <- function(x) {
 # Notes may span several lines; in a sentence the lines are joined with ", "
 # (the "; " separator is kept for between the count and the note).
 flat_note <- function(s) gsub("[[:space:]]*\n[[:space:]]*", ", ", s)
+
+# "; all records of each patient_id are in one set; the sets follow each
+# other in time by date (older data for training, newer for testing)",
+# with "(not checked against data)" when they were only typed.
+describe_partition <- function(p) {
+  if (is.null(p)) return("")
+  unchecked <- if (isTRUE(p$checked)) "" else " (not checked against data)"
+  na <- p$na_group %||% 0
+  paste0(
+    if (!is.null(p$group)) paste0("; all records of each ", p$group,
+                                  " are in one set", unchecked,
+                                  if (na > 0) paste0(
+                                    " (", na, " row", if (na != 1) "s",
+                                    " with missing ", p$group,
+                                    " not checked)")),
+    if (!is.null(p$time)) paste0("; the sets follow each other in time by ",
+                                 p$time, " (older data for training, newer ",
+                                 "for testing)", unchecked)
+  )
+}
