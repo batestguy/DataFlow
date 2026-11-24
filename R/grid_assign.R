@@ -5,7 +5,7 @@
 # made, so the group and time checks are real checks of it.
 
 grid_from_assignments <- function(data, dname, split, role, roles, time,
-                                  group, settings) {
+                                  group, settings, all_times = NULL) {
   for (col in c(split, role, time, group)) {
     check_string(col, "column")
     if (!col %in% names(data)) {
@@ -38,6 +38,8 @@ grid_from_assignments <- function(data, dname, split, role, roles, time,
          "Training, Validation, Test or Gap.", call. = FALSE)
   }
   split_ids <- if (is.factor(sp)) levels(sp)[levels(sp) %in% as.character(sp)]
+    else if (is.character(sp) && !any(is.na(suppressWarnings(as.numeric(sp)))))
+      unique(sp[order(as.numeric(sp))])
     else unique(as.character(sort(sp)))
   spc <- as.character(sp)
 
@@ -88,6 +90,29 @@ grid_from_assignments <- function(data, dname, split, role, roles, time,
       }
     }
     times <- sort(unique(tv))
+    if (is.null(all_times)) {
+      settings$jumps <- boundary_jumps(tv, mapped, spc, split_ids, times)
+      if (length(settings$jumps) > 0) {
+        warning("In split", if (length(settings$jumps) != 1) "s", " ",
+                and_list(settings$jumps), " there is time between training ",
+                "and testing that no split uses, so no gap can be drawn ",
+                "there. If the original data have time values there, give ",
+                "`all_times`, e.g. unique(visits$", time, ").",
+                call. = FALSE)
+      }
+    } else {
+      check_time_values(all_times, "all_times")
+      if (anyNA(all_times) || inherits(all_times, "Date") !=
+            inherits(tv, "Date") || inherits(all_times, "POSIXt") !=
+            inherits(tv, "POSIXt") || !all(tv %in% all_times)) {
+        stop("`all_times` must hold the same kind of values as column \"",
+             time, "\", without missing values, and every value of that ",
+             "column.", call. = FALSE)
+      }
+      times <- sort(unique(all_times))
+    }
+  } else if (!is.null(all_times)) {
+    stop("`all_times` needs `time`.", call. = FALSE)
   }
 
   # blocks --------------------------------------------------------------------
@@ -115,12 +140,15 @@ grid_from_assignments <- function(data, dname, split, role, roles, time,
         at[p] <- r
       }
       at[is.na(at)] <- "Not used"
-      # unused time between training and test is the gap
-      tr_end <- suppressWarnings(max(which(at == "Training")))
-      te_start <- suppressWarnings(min(which(at %in% c("Validation", "Test"))))
-      if (is.finite(tr_end) && is.finite(te_start) && te_start > tr_end + 1) {
-        mid <- (tr_end + 1):(te_start - 1)
-        at[mid][at[mid] == "Not used"] <- "Gap"
+      # unused time between training, validation and test is a gap
+      present <- order_roles[order_roles %in% at]
+      for (a in seq_along(present)[-1]) {
+        end1 <- max(which(at == present[a - 1]))
+        start2 <- min(which(at == present[a]))
+        if (start2 > end1 + 1) {
+          mid <- (end1 + 1):(start2 - 1)
+          at[mid][at[mid] == "Not used"] <- "Gap"
+        }
       }
       runs <- rle(at)
       ends <- cumsum(runs$lengths)
@@ -147,8 +175,12 @@ grid_from_assignments <- function(data, dname, split, role, roles, time,
     axis <- "rows"
   }
   b <- do.call(rbind, out)
+  n <- format_n(lengths(rows))
+  # the rows left out of a split are not in the data: their number is not
+  # known, so no count is shown (never 0)
+  n[lengths(rows) == 0] <- NA_character_
   blocks <- data.frame(id = seq_len(nrow(b)), b,
-                       n = format_n(lengths(rows)), label = NA_character_,
+                       n = n, label = NA_character_,
                        stringsAsFactors = FALSE)
   attr(blocks, "rows") <- rows
   settings$group_checked <- !is.null(group)
@@ -158,6 +190,30 @@ grid_from_assignments <- function(data, dname, split, role, roles, time,
   settings$role_col <- role
   g <- new_grid("assigned", axis, blocks, settings, as.integer(P),
                 times = times, data = list(name = dname, df = data))
-  g$splits$label <- paste("Split", split_ids)
+  g$splits$label <- if (all(grepl("^[0-9]+$", split_ids))) {
+    paste("Split", split_ids)
+  } else {
+    split_ids
+  }
   g
+}
+
+# Splits in which a role starts right after the previous one on the axis
+# (no time value of any split between them) although the step between them
+# is longer than usual: time that no split uses may be missing there.
+boundary_jumps <- function(tv, mapped, spc, split_ids, times) {
+  if (length(times) < 3) return(character())
+  steps <- diff(as.numeric(times))
+  usual <- stats::median(steps)
+  order_roles <- c("Training", "Validation", "Test")
+  hit <- vapply(split_ids, function(s) {
+    in_s <- spc == s
+    present <- order_roles[order_roles %in% mapped[in_s]]
+    any(vapply(seq_along(present)[-1], function(a) {
+      i <- match(max(tv[in_s & mapped == present[a - 1]]), times)
+      j <- match(min(tv[in_s & mapped == present[a]]), times)
+      any(steps[i:(j - 1)] > 1.5 * usual)
+    }, NA))
+  }, NA)
+  split_ids[hit]
 }

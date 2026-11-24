@@ -6,8 +6,10 @@
 # position (fold number, or time period), and a count. Like the flow
 # diagram, it documents a split the user made; it never makes one.
 #
-# * type: "kfold", "blocked", "expanding" or "rolling".
-# * axis: "folds" (columns = folds) or "time" (positions = time periods).
+# * type: "kfold", "blocked", "expanding", "rolling" or "assigned" (the
+#   user's own assignments, R/grid_assign.R).
+# * axis: "folds" (columns = folds), "time" (positions = time periods) or
+#   "rows" (assignments without a time column).
 # * splits: id, label ("Split 1").
 # * blocks: id, split, role, start, end, n (text), label (text drawn, NA
 #   for the role name), plus rows behind each block in data mode.
@@ -98,9 +100,12 @@ whole_number <- function(v, arg, min = 0) {
 #' mapped. Then the checks are real: with `group`, no group may have two
 #' roles within a split; with `time`, in every split all training rows come
 #' before all validation and test rows. With `time`, the grid is drawn on a
-#' time axis (time values with no rows in a split are shown as not used,
-#' or as a gap between training and test); without it, each bar is as long
-#' as the split's number of rows.
+#' time axis: time values a split does not use are shown as not used, or as
+#' a gap between training and validation or test, without a count (the rows
+#' left out are not in `data`). A time value that is in no split at all
+#' cannot be seen in `data`; give `all_times`, all time values of the
+#' original data, so that it is drawn too. Without `time`, each bar is as
+#' long as the split's number of rows.
 #'
 #' Every block carries its role as text (abbreviated, or explained in a
 #' legend when it does not fit), so the grid can be read without colour.
@@ -117,6 +122,9 @@ whole_number <- function(v, arg, min = 0) {
 #' @param roles With `split` and `role`: named vector mapping role names
 #'   (`Training`, `Validation`, `Test`, `Gap`) to values of `role`. By
 #'   default the values must be those names.
+#' @param all_times With `split`, `role` and `time`: all time values of the
+#'   original data, e.g. `unique(visits$date)`. Needed to draw a gap made of
+#'   time values that no split uses; a warning says when one may be missing.
 #' @param n Typed mode: for `"kfold"`, rows per fold (one value, or one per
 #'   fold); for time types, the number of time periods.
 #' @param fold Data mode, `"kfold"`: column with the fold each row is in.
@@ -156,7 +164,7 @@ flow_folds <- function(data = NULL, type = c("kfold", "expanding",
                        n_splits = NULL, time_unit = "periods",
                        labels = NULL, validation = FALSE, method = NULL,
                        group = NULL, split = NULL, role = NULL,
-                       roles = NULL) {
+                       roles = NULL, all_times = NULL) {
   type <- match.arg(type)
   check_string(time_unit, "time_unit")
   if (!is.null(method)) check_string(method, "method")
@@ -180,8 +188,18 @@ flow_folds <- function(data = NULL, type = c("kfold", "expanding",
       stop("Your own assignments need `data`, `split` and `role` together.",
            call. = FALSE)
     }
+    if (!is.null(c(k, n, fold, initial, assess, n_splits)) ||
+        !identical(as.numeric(skip), 0) || !identical(as.numeric(gap), 0) ||
+        isTRUE(validation)) {
+      stop("With `split` and `role` the grid comes from your own ",
+           "assignments; leave out `k`, `n`, `fold`, `initial`, `assess`, ",
+           "`skip`, `gap`, `n_splits` and `validation`.", call. = FALSE)
+    }
     return(grid_from_assignments(data, dname, split, role, roles, time,
-                                 group, settings))
+                                 group, settings, all_times))
+  }
+  if (!is.null(roles) || !is.null(all_times)) {
+    stop("`roles` and `all_times` go with `split` and `role`.", call. = FALSE)
   }
   if (type == "kfold") {
     out <- if (is.null(data)) {
@@ -457,7 +475,8 @@ windows_to_blocks <- function(w, total) {
 print.dataflow_grid <- function(x, ...) {
   cat("<dataflow_grid> ", x$type, ": ", nrow(x$splits), " splits over ",
       x$n_pos, if (x$axis == "folds") " folds" else
-        paste0(" ", x$settings$time_unit), "\n", sep = "")
+        if (x$axis == "rows") " rows (longest split)" else
+          paste0(" ", x$settings$time_unit), "\n", sep = "")
   if (!is.null(x$data)) {
     cat("  counts from data: ", x$data$name, " (", nrow(x$data$df),
         " rows)\n", sep = "")

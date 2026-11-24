@@ -119,8 +119,8 @@ DataFlow documents the split you made; it never splits data at random or
 fits a model. `flow_partition()` draws the split into training, validation
 and test sets. From data, `by =` names the column holding each row's set;
 `group = "patient_id"` checks that no patient is in two sets, and
-`time = "date"` checks that the sets follow each other in time and adds
-each set's date range. Outcome events, asked for by TRIPOD+AI (item 20a),
+`time = "date"` (dates or numbers, not text) checks that the sets follow
+each other in time and adds each set's date range. Outcome events, asked for by TRIPOD+AI (item 20a),
 are shown with every count:
 
 ```r
@@ -153,14 +153,29 @@ flow_folds(sales, type = "rolling", time = "month", initial = 36,
 flow_folds(type = "blocked", n = 60, k = 5, gap = 2)
 ```
 
-Time-series designs use the rolling-origin vocabulary of the rsample
-package: `initial` training periods, `assess` periods in each test window,
-origins `skip + 1` periods apart, and a `gap` left out between training and
-test. Expanding windows grow, rolling windows move; blocked
-cross-validation cuts time into contiguous blocks. From data, each distinct
-time value is one period, counts are computed and training is checked to
-end before testing starts. Every block carries its role as text, or an
-abbreviation explained in a legend, so the grid does not rely on colour.
+Time-series designs have `initial` training periods, `assess` periods in
+each test window, origins `skip + 1` periods apart, and a `gap` left out
+between training and test. `initial`, `assess` and `skip` mean what they
+mean in rsample's `rolling_origin()`; `gap` is an embargo, like
+`assess_start = gap + 1` in its `sliding_*()` functions, not
+`rolling_origin(lag =)`. Expanding windows grow, rolling windows move;
+blocked cross-validation cuts time into contiguous blocks and also trains on
+later data, so it does not evaluate forecasting. From data, each distinct
+time value is one period and counts are computed. These grids draw the
+design your settings describe, so check them against your resampling code.
+
+Or draw the split you actually made, from a data frame with one row per
+record per split; then the group and time checks are real checks of it:
+
+```r
+flow_folds(assignments, split = "split", role = "role",
+           roles = c(Training = "analysis", Test = "assessment"),
+           time = "week", all_times = unique(sales$week))
+```
+
+Every block carries its role as text, or is explained in a legend, so the
+grid does not rely on colour. Blocks too thin to see are drawn wider than
+scale, and the legend says so.
 Plot, save and describe grids like flow diagrams; `flow_edit()` changes a
 block's text or count (marked as typed). See `flow_example("cv")` and
 `flow_example("forecast")`.

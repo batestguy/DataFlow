@@ -8,9 +8,10 @@ grid_layout(
   x,
   base_size = 9,
   family = "",
-  width = 5.5,
+  width = NULL,
   row_height = NULL,
-  row_gap = 0.1
+  row_gap = 0.1,
+  min_width = 0.12
 )
 }
 \arguments{
@@ -20,29 +21,41 @@ grid_layout(
 
 \item{family}{Font family (\code{""} is the device default sans-serif).}
 
-\item{width}{Width of the grid area (without row labels), in inches.}
+\item{width}{Width of the grid area (without row labels), in inches. By
+default 5.5, or wider when a cross-validation grid needs it.}
 
 \item{row_height}{Height of each row, in inches. By default taller when
 blocks show counts.}
 
 \item{row_gap}{Vertical gap between rows, in inches.}
+
+\item{min_width}{Narrowest drawn width of a block that holds a role other
+than not used, in inches.}
 }
 \value{
-A \code{dataflow_grid_layout}: data frames \code{blocks}, \code{row_labels},
-\code{headers}, \code{ticks}, \code{axis}, \code{legend}, plus \code{extent} and \code{size}
-(natural width and height in inches).
+A \code{dataflow_grid_layout}: data frames \code{blocks} (true positions
+\code{xmin}, \code{xmax}, and drawn positions \code{draw_xmin}, \code{draw_xmax}),
+\code{row_labels}, \code{row_counts}, \code{headers}, \code{ticks}, \code{axis}, \code{legend}, plus
+\code{extent} and \code{size} (natural width and height in inches).
 }
 \description{
 Turns a \code{dataflow_grid} (from \code{\link[=flow_folds]{flow_folds()}}) into coordinates, in
 inches: one rectangle per block, row labels, fold headers or a time axis,
-and a legend when some block is too narrow for its role name. Exported so
-grids can be inspected and tested as data.
+counts that do not fit their block, and a legend when some block is too
+narrow for its role name. Exported so grids can be inspected and tested
+as data.
 }
 \details{
-Each block shows its role (and count, when known) when the text fits, an
-abbreviation when only that fits, or nothing; the legend then explains
-the abbreviations, so the grid never relies on fill colour alone. Fills
-are greys that stay distinct in greyscale; gaps have a dashed border.
+Each block shows its role and count ("Test (n = 18)") when they fit, else
+its role, else a short form ("Unused"), else nothing; the legend then
+explains the short forms and blank blocks, so the grid never relies on
+fill colour alone. Counts that do not fit their block are written at the
+right end of the row, in the same "(n = 18)" form. A cross-validation grid
+is made wide enough for its fold sizes; with a narrower \code{width} they are
+left out, with a warning. Fills are greys that stay distinct in
+greyscale; gaps have a dashed border. A training, validation, test or gap
+block narrower than \code{min_width} is drawn \code{min_width} wide (wider than
+scale, taking the room from its wider neighbours), which the legend says.
 }
 \examples{
 lay <- grid_layout(flow_folds(k = 5, n = 82))

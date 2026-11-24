@@ -255,10 +255,19 @@ describe_data <- function(x) {
   tc <- typed_counts(x)
   flat <- function(s) gsub("[[:space:]]*\n[[:space:]]*", " ", s)
   na_out <- dd$events_na %||% 0
+  left <- if (na_out > 0) missing_outcome_left(x) else 0
+  all_known <- !any(vapply(x$leaves, function(id) is.null(left_rows(x, id)),
+                           NA))
   na_text <- if (na_out > 0) {
     paste0(" ", na_out, " row", if (na_out != 1) "s have" else " has",
            " a missing outcome: counted in n, but neither as events nor as ",
-           "rows without the event.")
+           "rows without the event",
+           if (left > 0) {
+             paste0("; ", left, " of them ", if (left != 1) "are" else "is",
+                    " left in the end boxes")
+           } else if (all_known) {
+             "; none of them is left in the end boxes"
+           }, ".")
   } else {
     ""
   }

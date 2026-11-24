@@ -110,6 +110,10 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     # NA clears a count; a logical NA is not a number or text
     if (is.logical(n) && all(is.na(n))) n <- as.character(n)
     tab$n[rows] <- recycle_values(format_n(n), k, "n")
+    # the computed rows without the event do not go with a typed n
+    if (!isTRUE(excluded) && !is.null(.flow$non_events)) {
+      .flow$non_events[as.character(ids)] <- NA_character_
+    }
     rec <- data.frame(what = what, id = ids, stringsAsFactors = FALSE)
     .flow$edited <- unique(rbind(.flow$edited, rec))
   }

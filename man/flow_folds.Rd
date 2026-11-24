@@ -20,15 +20,21 @@ flow_folds(
   labels = NULL,
   validation = FALSE,
   method = NULL,
-  group = NULL
+  group = NULL,
+  split = NULL,
+  role = NULL,
+  roles = NULL,
+  all_times = NULL
 )
 }
 \arguments{
 \item{data}{Optional data frame to compute the blocks from.}
 
-\item{type}{\code{"kfold"}, \code{"expanding"}, \code{"rolling"} or \code{"blocked"}.}
+\item{type}{\code{"kfold"}, \code{"expanding"}, \code{"rolling"} or \code{"blocked"}
+(ignored with \code{split}).}
 
-\item{k}{Number of folds or blocks (\code{"kfold"} without data, \code{"blocked"}).}
+\item{k}{Number of folds or blocks (\code{"kfold"} without data, \code{"blocked"}).
+With \code{data} and \code{fold}, it must agree with the data if given.}
 
 \item{n}{Typed mode: for \code{"kfold"}, rows per fold (one value, or one per
 fold); for time types, the number of time periods.}
@@ -58,8 +64,21 @@ e.g. \code{"months"}.}
 \item{method}{Optional text saying how folds were made (e.g.
 \code{"stratified by outcome"}), for the description only.}
 
-\item{group}{Optional column (data mode, checked) or text (typed, not
-checked) saying that all rows of each group are in one fold.}
+\item{group}{Optional column (with \code{fold}, or with \code{split} and \code{role}:
+checked) or text (otherwise; described as not checked) saying that all
+rows of each group stay together. Rows with a missing group value
+cannot be checked; a warning and the description say how many.}
+
+\item{split, role}{Your own assignments: columns of \code{data} giving the
+split and each record's role in it (see Details).}
+
+\item{roles}{With \code{split} and \code{role}: named vector mapping role names
+(\code{Training}, \code{Validation}, \code{Test}, \code{Gap}) to values of \code{role}. By
+default the values must be those names.}
+
+\item{all_times}{With \code{split}, \code{role} and \code{time}: all time values of the
+original data, e.g. \code{unique(visits$date)}. Needed to draw a gap made of
+time values that no split uses; a warning says when one may be missing.}
 }
 \value{
 A \code{dataflow_grid}. Draw it with \code{plot()} or \code{\link[=autoplot]{autoplot()}}, save it
@@ -78,7 +97,7 @@ is the test set and the other folds are used for training (with
 the column holding the fold each row is tested in; counts are computed
 and, with \code{group}, checked: no group (e.g. patient) may sit in two folds.
 
-\strong{Time series} (vocabulary as in the rsample package's rolling origin):
+\strong{Time series}:
 \itemize{
 \item \code{type = "expanding"}: training starts with the first \code{initial}
 periods and grows; \code{type = "rolling"}: training is a window of
@@ -88,13 +107,42 @@ left out between training and test (an embargo).
 \item Successive forecast origins are \code{skip + 1} periods apart.
 \item \code{type = "blocked"}: the periods are cut into \code{k} contiguous blocks;
 each block is the test set once, the others are used for training, and
-\code{gap} periods on each side of the test block are left out.
+\code{gap} periods on each side of the test block are left out. Note that
+blocked cross-validation trains on data after the test block too, so
+it is not an evaluation of forecasting.
 }
 
+How this compares with the rsample package: \code{initial}, \code{assess}, \code{skip}
+and \code{type = "expanding"} / \code{"rolling"} match \code{rolling_origin(initial, assess, skip, cumulative = TRUE / FALSE)}. DataFlow's \code{gap} is an embargo
+between training and test, comparable to the \verb{sliding_*()} functions'
+\code{assess_start = gap + 1}; it is not \code{rolling_origin(lag =)}, which makes
+the test window overlap training. \code{skip} follows \code{rolling_origin()}, not
+the \verb{sliding_*()} functions. rsample counts rows; DataFlow's data mode
+counts distinct time values, so with several rows per time value a
+period is a time value, not a row.
+
 Typed: \code{n} is the number of time periods (or give \code{n_splits}). From data:
-\code{time} names a date or time column; each distinct value is one period,
-windows are made in time order, counts are the rows in each window, and
-training is checked to end before testing starts.
+\code{time} names a date, date-time or number column; each distinct value is
+one period, and counts are the rows in each window. These settings
+describe a design: DataFlow draws the windows they define, it does not
+read your resampling code, so check the picture against it.
+
+\strong{Your own split assignments} (\verb{split =}, \verb{role =}): to document the
+split you actually made, pass a data frame with one row per record per
+split (for example the output of your resampling code reshaped to long
+form), with the split in column \code{split} and the record's role in column
+\code{role}. \code{roles} maps the values of \code{role} to \code{"Training"},
+\code{"Validation"}, \code{"Test"} and \code{"Gap"}, e.g.
+\code{c(Training = "analysis", Test = "assessment")}; every value must be
+mapped. Then the checks are real: with \code{group}, no group may have two
+roles within a split; with \code{time}, in every split all training rows come
+before all validation and test rows. With \code{time}, the grid is drawn on a
+time axis: time values a split does not use are shown as not used, or as
+a gap between training and validation or test, without a count (the rows
+left out are not in \code{data}). A time value that is in no split at all
+cannot be seen in \code{data}; give \code{all_times}, all time values of the
+original data, so that it is drawn too. Without \code{time}, each bar is as
+long as the split's number of rows.
 
 Every block carries its role as text (abbreviated, or explained in a
 legend when it does not fit), so the grid can be read without colour.

@@ -53,7 +53,7 @@ test_that("data partitions: counts, grouped check, time order and ranges", {
   leak$set[5] <- "test"
   expect_error(flow_start("Visits", data = leak) |>
                  flow_partition(by = "set", group = "pid"),
-               "1 value of \"pid\" (e.g. 3) is in more than one set under \"Visits\": test and train share 1",
+               "1 value of \"pid\" (e.g. 3) is in more than one set across the boxes of stage \"Data split\": test and train share 1",
                fixed = TRUE)
   # sets out of time order (labels give the order)
   expect_error(flow_start("Visits", data = visits) |>
@@ -124,7 +124,7 @@ test_that("events from data: every box with rows counts its events", {
     flow_split("S", c("x", "y"))
   expect_true(all(is.na(flow_nodes(t)$events[2:3])))
   # editing events marks them as typed; rows untouched
-  e <- flow_edit(d, "Analysed", events = 9)
+  expect_warning(e <- flow_edit(d, "Analysed", events = 9), "n = 5")
   expect_identical(e$data, d$data)
   expect_match(flow_describe(e), "typed by hand: Analysed (events = 9) and Analysed (events = 9)",
                fixed = TRUE)
@@ -180,4 +180,103 @@ test_that("the ml diagram looks right", {
   skip_on_cran()
   skip_on_ci()
   vdiffr::expect_doppelganger("ml design", autoplot(flow_example("ml")))
+})
+
+test_that("the group check runs across all boxes of the stage", {
+  # patient 1 is in Train under arm x and in Test under arm y
+  dd <- data.frame(arm = rep(c("x", "y"), each = 4),
+                   g = c(1, 1, 2, 2, 3, 3, 1, 1),
+                   s = c("a", "a", "b", "b", "a", "a", "b", "b"))
+  arms <- flow_start("D", data = dd) |> flow_split("Arm", by = "arm")
+  expect_error(flow_partition(arms, labels = c(Train = "a", Test = "b"),
+                              by = "s", group = "g"),
+               "1 value of \"g\" (e.g. 1) is in more than one set",
+               fixed = TRUE)
+  dd$g[7:8] <- 4
+  ok <- flow_start("D", data = dd) |> flow_split("Arm", by = "arm") |>
+    flow_partition(labels = c(Train = "a", Test = "b"), by = "s", group = "g")
+  expect_match(flow_describe(ok), "all records of each g are in one set",
+               fixed = TRUE)
+})
+
+test_that("the time check runs across all boxes and refuses text", {
+  dd <- data.frame(arm = rep(c("x", "y"), each = 2),
+                   t = c(1, 2, 3, 4), s = c("a", "b", "a", "b"))
+  # in order within each arm, but arm y trains on times after arm x's test
+  expect_error(flow_start("D", data = dd) |> flow_split("Arm", by = "arm") |>
+                 flow_partition(labels = c(Train = "a", Test = "b"),
+                                by = "s", time = "t"),
+               "Train runs to 3 but Test starts on 2", fixed = TRUE)
+  # as text "10" sorts before "9", so a wrong order would pass
+  tx <- data.frame(t = c("10", "10", "9", "9"), s = c("a", "a", "b", "b"))
+  part <- function(d) {
+    flow_start("D", data = d) |>
+      flow_partition(labels = c(Train = "a", Test = "b"), by = "s",
+                     time = "t")
+  }
+  expect_error(part(tx), "must hold dates, date-times or numbers")
+  expect_error(part(transform(tx, t = factor(t))), "it holds factor values")
+  expect_error(part(transform(tx, t = as.numeric(t))),
+               "Train runs to 10 but Test starts on 9", fixed = TRUE)
+  # years are not written with thousands separators
+  yr <- part(data.frame(t = c(2001, 2002), s = c("a", "b")))
+  expect_equal(yr$nodes$note[2:3], c("2001 to 2001", "2002 to 2002"))
+})
+
+test_that("missing groups are warned about and described", {
+  dd <- data.frame(g = c(NA, NA, 2, 3), s = c("a", "b", "a", "b"))
+  expect_warning(
+    p <- flow_start("D", data = dd) |>
+      flow_partition(by = "s", group = "g"),
+    "2 rows have a missing \"g\"; they cannot be checked", fixed = TRUE)
+  expect_match(flow_describe(p), "(2 rows with missing g not checked)",
+               fixed = TRUE)
+})
+
+test_that("missing outcomes are neither events nor non-events, and said so", {
+  # visits has one missing outcome, in the test set
+  d <- flow_start("Visits", data = visits, events = ~ died == 1) |>
+    flow_partition(labels = c("train", "test"), by = "set")
+  fmt <- "{label}: {n}, {events} with and {non_events} without"
+  expect_equal(flow_layout(d, count_format = fmt)$boxes$text,
+               c("Visits: 10, 3 with and 6 without",
+                 "train: 5, 1 with and 4 without",
+                 "test: 5, 2 with and 2 without"))
+  expect_match(flow_describe(d),
+               "1 row has a missing outcome: counted in n, but neither as events nor as rows without the event; 1 of them is left in the end boxes.",
+               fixed = TRUE)
+  expect_warning(autoplot(d), "1 row in the end boxes has a missing outcome",
+                 fixed = TRUE)
+  # excluded: no warning, and the description says none is left
+  ex <- flow_start("Visits", data = visits, events = ~ died == 1) |>
+    flow_exclude("Missing outcome", where = ~ is.na(died))
+  expect_no_warning(autoplot(ex))
+  expect_match(flow_describe(ex), "none of them is left in the end boxes",
+               fixed = TRUE)
+  # typed: n minus events
+  ty <- flow_start("P", n = 100, events = 8)
+  expect_equal(flow_layout(ty, count_format = fmt)$boxes$text,
+               "P: 100, 8 with and 92 without")
+  # an edited count too: the computed 4 would not go with a typed n
+  en <- flow_edit(d, "train", n = 3)
+  expect_equal(flow_layout(en, count_format = fmt)$boxes$text[2],
+               "train: 3, 1 with and  without")
+  expect_equal(flow_layout(flow_edit(d, "train", note = "x"),
+                           count_format = fmt)$boxes$text[2],
+               "train: 5, 1 with and 4 without")
+  # an edited number of events leaves the rows without it unknown
+  ed <- flow_edit(d, "train", events = 3)
+  expect_equal(flow_layout(ed, count_format = fmt)$boxes$text[2],
+               "train: 5, 3 with and  without")
+})
+
+test_that("typed events that cannot be right warn; a forgotten ~ is explained", {
+  expect_warning(flow_start("P", n = 10, events = 11),
+                 "has 11 events but n = 10", fixed = TRUE)
+  expect_warning(flow_start("P", n = 10, events = -1),
+                 "between 0 and n", fixed = TRUE)
+  expect_warning(flow_edit(flow_start("P", n = 10, events = 1), 1,
+                           events = 12), "12 events")
+  expect_error(flow_start("V", data = visits, events = no_such_col == 1),
+               "note the ~", fixed = TRUE)
 })

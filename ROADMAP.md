@@ -18,7 +18,7 @@ milestone step; the progress log at the bottom is append-only.
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
-| 5 | Machine-learning designs, including time series | 🟡 built on branch `m5`, awaiting review and approval | — |
+| 5 | Machine-learning designs, including time series | 🟡 built on branch `m5`, reviewed, awaiting approval | — |
 | 6 | Reporting-guideline templates | ⬜ | — |
 | 7 | Examples from recent papers | ⬜ | — |
 | 8 | Documentation and website | ⬜ | — |
@@ -185,7 +185,9 @@ between them, time order kept).
 **Status:** built on branch `m5` (2026-11-23): `flow_partition()`, outcome
 events, `flow_folds()` fold grids (k-fold, blocked, expanding and rolling
 windows) with `grid_layout()`, examples `"ml"`, `"cv"` and `"forecast"`.
-Awaiting independent review and the user's approval of the pictures.
+Reviewed independently twice; findings fixed 2026-11-24, including grids of
+the user's own split assignments. Awaiting the user's approval of the
+pictures.
 
 ### Milestone 6 — Reporting-guideline templates ⬜
 
@@ -285,11 +287,21 @@ since the data may not reflect the whole design.
   `by =`; typed `group` and `time` are described as not checked. With
   `time`, the sets must be given in time order (`labels`).
 - Fold grids draw time on a linear scale of periods (one period per
-  distinct time value in data mode, however far apart the values are).
-  Very narrow blocks (for example a one-month gap in eight years) show as a
-  thin sliver with a dashed edge; their role is then given only by the
-  legend and the description.
-- `flow_edit()` on a fold grid changes block text and counts only; the
+  distinct time value in data mode, however far apart the values are; the
+  description says when the spacing is not regular). Very narrow blocks are
+  drawn wider than scale, which the legend and the description say.
+- Expanding, rolling and blocked grids draw the design their settings
+  describe; they do not check the user's resampling code. Grids of the
+  user's own assignments (`split =`, `role =`) do check it, but time values
+  in no split are drawn only when `all_times` is given, and the warning
+  that some may be missing relies on a step longer than usual.
+- With `time`, own assignments must have training before validation before
+  test in every split, so blocked cross-validation assignments can only be
+  drawn without `time`.
+- The group check of `flow_partition()` covers the boxes of one call, not
+  sets made by separate calls on separate streams.
+- `flow_edit()` on a fold grid changes block text and counts only (a fold's
+  count changes in every split); the
   windows themselves are changed by calling `flow_folds()` again.
 - Descriptions of repeated box names in parallel streams can be long
   ("Reports assessed for eligibility under Reports sought for retrieval
@@ -644,3 +656,48 @@ what is still open.
 - Open: independent review; user approval of the ml, cv and forecast
   pictures.
 
+### 2026-11-24 — Milestone 5: review findings fixed
+- Independent review of `abd6248` confirmed the builder's numbers and found
+  two blocking faults and seven others; all fixed. The session that began
+  the fixes stopped part-way; its code was saved as `3725d08` (6 test
+  expectations failing there) and finished in this entry's commit.
+- Blocking: the grouped-split check now runs across all boxes of the stage
+  (a patient in training under one arm and test under another is an error);
+  time columns must be dates, date-times or numbers (text sorted "10"
+  before "9", so a wrong order could pass).
+- Missing group values warn and are described; missing outcomes are neither
+  events nor non-events, are described, and drawing warns when some are
+  left in the end boxes. `{non_events}` in `count_format` (TRIPOD+AI item
+  20a asks for both). Typed events outside 0 to n warn. `flow_folds(k =)`
+  must agree with the data; blocked grids without training data are
+  refused; wording on rsample vocabulary, on irregular times and on what is
+  checked corrected.
+- Own assignments: `flow_folds(split =, role =, roles =, all_times =)` draws
+  the split actually made; group and time checks are real checks of it.
+- Found while finishing, and fixed: a gap of time values that no split uses
+  vanished from own-assignment grids (now `all_times`, else a warning and a
+  sentence in the description); blocks with no rows in the data showed
+  "(n = 0)" (now no count); a widened gap could hide a thin test block
+  (`widen_blocks()` takes the room from wide neighbours, nothing is
+  covered); grids with 10 folds wrote all counts at the row end (grids are
+  now made wide enough, and a too narrow `width` warns); the ml example
+  warned about missing outcomes that it excludes further down.
+- Second independent review of the fixes: nothing blocking. Fixed from it:
+  rows without the event were still drawn after a hand-typed `n` (now
+  blank); "Checked" sentences when no split has two roles; equal fold sizes
+  described once; both ends of a time range written alike; split names that
+  are numbers stored as text keep number order. Left as they are: the
+  all-times warning also appears for weekday-only data over a weekend; one
+  very long hand-typed block label widens a whole fold grid.
+- Checked: 12,630 test expectations pass; `devtools::check()` 0/0/0;
+  test-grid.R and test-ml.R run against the old code (`abd6248`) fail as
+  they should; `dev/m5_reg.R` + `dev/m5_cmp.R` 323 designs, 0 differing
+  from `main`; `dev/m5_grid_rand.R` 494 grids, 0 problems;
+  `dev/rv4_rand.R` 893 steps, 0 problems; `dev/stress4.R` 400 designs x 2
+  connector styles, 0 bad layouts (the last two run before the second
+  review's small fixes, which do not touch the flow layout). Reviewer:
+  3000 random rows of thin blocks tile without overlap. Pictures viewed:
+  ml, cv, forecast, own assignments with and without time, 10 folds from
+  data, one-day test and gap over a year. The forecast snapshot was
+  replaced (intended change).
+- Open: user approval of the ml, cv and forecast pictures.

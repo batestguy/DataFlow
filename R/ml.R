@@ -29,6 +29,15 @@ count_missing_outcome <- function(x) {
                            keep_na = TRUE)))
 }
 
+# Rows with a missing outcome still in the flow: those left in the end boxes.
+# Boxes without data have no rows and add none.
+missing_outcome_left <- function(x) {
+  if (is.null(x$data$events)) return(0)
+  r <- unique(unlist(lapply(x$leaves, function(id) left_rows(x, id))))
+  if (length(r) == 0) return(0)
+  sum(is.na(eval_condition(x, r, x$data$events, "events", keep_na = TRUE)))
+}
+
 # Typed events for boxes `ids`: one value, or one per box.
 set_events <- function(x, ids, events, per = NULL, per_target = NULL) {
   vals <- if (!is.null(per_target)) {

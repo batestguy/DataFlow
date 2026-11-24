@@ -29,6 +29,13 @@ autoplot.dataflow <- function(object, ..., fill = "white", colour = "black",
                               outcome_fill = "#EDEDED", linewidth = 0.4,
                               row_labels = TRUE) {
   lay <- flow_layout(object, ...)
+  left_na <- missing_outcome_left(object)
+  if (left_na > 0) {
+    warning(left_na, " row", if (left_na != 1) "s" else "", " in the end ",
+            "boxes ", if (left_na != 1) "have" else "has", " a missing ",
+            "outcome (`events` gives NA): counted in n, but neither as ",
+            "events nor as rows without the event.", call. = FALSE)
+  }
   bx <- lay$boxes
   bx$fill <- ifelse(bx$type == "outcome", outcome_fill, fill)
   sg <- lay$segments

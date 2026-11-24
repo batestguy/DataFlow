@@ -51,8 +51,14 @@ more than the box above; DataFlow warns when this happens.}
 (TRIPOD+AI item 20a). With \code{data}, a one-sided formula saying which
 rows had the event, e.g. \code{~ died == 1}: every box with rows behind it
 then shows its number of events (counted like \code{n}, so in \code{count} units
-if \code{count} is given). Without \code{data}, typed numbers: one value, or one
-per label. Exclusion boxes do not show events.}
+if \code{count} is given). Rows where the formula gives \code{NA} (a missing
+outcome) count in \code{n} but neither as events nor as rows without the
+event; the description says how many, and drawing the diagram warns
+when some are left in its end boxes (exclude them, e.g. with
+\code{~ is.na(died)}). Without \code{data}, typed numbers: one value, or one per
+label. Exclusion boxes do not show events. \code{count_format = "{label}: n = {n}; {events} with and {non_events} without the outcome"} shows both numbers, as TRIPOD+AI
+item 20a asks (typed: \code{n} minus events; with \code{count}, a unit with rows
+of both kinds is counted in both).}
 }
 \value{
 A \code{dataflow} object.

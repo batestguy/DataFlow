@@ -21,19 +21,23 @@ grid_abbrev <- c(Training = "Train", Validation = "Valid.", Test = "Test",
 #' its role, else a short form ("Unused"), else nothing; the legend then
 #' explains the short forms and blank blocks, so the grid never relies on
 #' fill colour alone. Counts that do not fit their block are written at the
-#' right end of the row, in the same "(n = 18)" form. Fills are greys that
-#' stay distinct in greyscale; gaps have a dashed border, and a gap
-#' narrower than `min_gap` is drawn `min_gap` wide (wider than scale), which
-#' the legend says.
+#' right end of the row, in the same "(n = 18)" form. A cross-validation grid
+#' is made wide enough for its fold sizes; with a narrower `width` they are
+#' left out, with a warning. Fills are greys that stay distinct in
+#' greyscale; gaps have a dashed border. A training, validation, test or gap
+#' block narrower than `min_width` is drawn `min_width` wide (wider than
+#' scale, taking the room from its wider neighbours), which the legend says.
 #'
 #' @param x A `dataflow_grid`.
 #' @param base_size Font size, in points.
 #' @param family Font family (`""` is the device default sans-serif).
-#' @param width Width of the grid area (without row labels), in inches.
+#' @param width Width of the grid area (without row labels), in inches. By
+#'   default 5.5, or wider when a cross-validation grid needs it.
 #' @param row_height Height of each row, in inches. By default taller when
 #'   blocks show counts.
 #' @param row_gap Vertical gap between rows, in inches.
-#' @param min_gap Narrowest drawn width of a gap block, in inches.
+#' @param min_width Narrowest drawn width of a block that holds a role other
+#'   than not used, in inches.
 #' @return A `dataflow_grid_layout`: data frames `blocks` (true positions
 #'   `xmin`, `xmax`, and drawn positions `draw_xmin`, `draw_xmax`),
 #'   `row_labels`, `row_counts`, `headers`, `ticks`, `axis`, `legend`, plus
@@ -42,8 +46,8 @@ grid_abbrev <- c(Training = "Train", Validation = "Valid.", Test = "Test",
 #' @examples
 #' lay <- grid_layout(flow_folds(k = 5, n = 82))
 #' lay$blocks[1:5, c("split", "role", "xmin", "xmax", "text")]
-grid_layout <- function(x, base_size = 9, family = "", width = 5.5,
-                        row_height = NULL, row_gap = 0.1, min_gap = 0.12) {
+grid_layout <- function(x, base_size = 9, family = "", width = NULL,
+                        row_height = NULL, row_gap = 0.1, min_width = 0.12) {
   if (!inherits(x, "dataflow_grid")) {
     stop("`x` must be a fold grid made by flow_folds().", call. = FALSE)
   }
@@ -51,27 +55,8 @@ grid_layout <- function(x, base_size = 9, family = "", width = 5.5,
   rt <- x$settings$role_text
   line_in <- base_size * 1.2 / 72
   pad <- 0.04
-  has_n <- any(!is.na(bl$n))
-  rh <- row_height %||% (if (has_n) 2 * line_in + 2 * pad + 0.04 else
-    line_in + 2 * pad + 0.08)
   S <- nrow(x$splits)
   P <- max(1, x$n_pos)
-  header_h <- if (x$axis == "folds") line_in + 0.08 else 0
-
-  # --- blocks -------------------------------------------------------------
-  bl$xmin <- (bl$start - 1) / P * width
-  bl$xmax <- bl$end / P * width
-  row <- match(bl$split, x$splits$id)
-  bl$ymax <- -header_h - (row - 1) * (rh + row_gap)
-  bl$ymin <- bl$ymax - rh
-  bl$y <- (bl$ymin + bl$ymax) / 2
-  # narrow gaps are drawn wider than scale, centred on their true position
-  narrow <- bl$role == "Gap" & (bl$xmax - bl$xmin) < min_gap
-  mid <- (bl$xmin + bl$xmax) / 2
-  bl$draw_xmin <- ifelse(narrow, mid - min_gap / 2, bl$xmin)
-  bl$draw_xmax <- ifelse(narrow, mid + min_gap / 2, bl$xmax)
-  bl$widened <- narrow
-  bl$x <- mid
   role_name <- ifelse(is.na(bl$label), unname(rt[bl$role]), bl$label)
   full <- ifelse(is.na(bl$n), role_name,
                  paste0(role_name, "\n(n = ", bl$n, ")"))
@@ -81,8 +66,45 @@ grid_layout <- function(x, base_size = 9, family = "", width = 5.5,
     name = text_width(role_name, base_size, family, "plain"),
     short = text_width(short, base_size, family, "plain")
   ))
+
+  # --- fold grids: one column per fold, wide enough for the fold sizes ------
+  heads <- character()
+  bl$n_shown <- !is.na(bl$n)
+  if (x$axis == "folds") {
+    heads <- paste("Fold", x$fold_names)
+    head_w <- with_measure_device(text_width(heads, base_size, family,
+                                             "plain"))
+    col <- max(measured$full, head_w) + 2 * pad
+    if (is.null(width)) width <- max(5.5, P * (col + 0.02))
+    if (max(measured$full) + 2 * pad > width / P && any(bl$n_shown)) {
+      warning("The fold sizes do not fit in blocks ", signif(width / P, 2),
+              " inches wide and are left out of the picture (role names ",
+              "too, where they do not fit; the legend gives them); the ",
+              "description gives the sizes. Use `width = ",
+              ceiling(P * (col + 0.02) * 10) / 10, "` or more.",
+              call. = FALSE)
+      full <- role_name
+      measured$full <- measured$name
+      bl$n_shown <- FALSE
+    }
+  } else {
+    width <- width %||% 5.5
+  }
+  rh <- row_height %||% (if (any(bl$n_shown)) 2 * line_in + 2 * pad + 0.04 else
+    line_in + 2 * pad + 0.08)
+  header_h <- if (x$axis == "folds") line_in + 0.08 else 0
+
+  # --- blocks -------------------------------------------------------------
+  bl$xmin <- (bl$start - 1) / P * width
+  bl$xmax <- bl$end / P * width
+  row <- match(bl$split, x$splits$id)
+  bl$ymax <- -header_h - (row - 1) * (rh + row_gap)
+  bl$ymin <- bl$ymax - rh
+  bl$y <- (bl$ymin + bl$ymax) / 2
+  bl <- widen_blocks(bl, min_width)
+  bl$x <- (bl$draw_xmin + bl$draw_xmax) / 2
   room <- bl$draw_xmax - bl$draw_xmin - 2 * pad
-  tall <- ifelse(is.na(bl$n), 1, 2) * line_in + 2 * pad <= rh
+  tall <- ifelse(bl$n_shown, 2, 1) * line_in + 2 * pad <= rh
   cand <- cbind(full = measured$full <= room & tall,
                 name = measured$name <= room,
                 short = measured$short <= room & short != role_name)
@@ -102,7 +124,7 @@ grid_layout <- function(x, base_size = 9, family = "", width = 5.5,
   row_y <- -header_h - (seq_len(S) - 1) * (rh + row_gap) - rh / 2
   row_labels <- data.frame(label = rl_text, x = rl_x, y = row_y, w = rl_w,
                            stringsAsFactors = FALSE)
-  hidden <- !is.na(bl$n) & pick != "full"
+  hidden <- bl$n_shown & pick != "full"
   rc_text <- vapply(x$splits$id, function(s) {
     h <- bl[bl$split == s & hidden, ]
     if (nrow(h) == 0) return("")
@@ -119,7 +141,7 @@ grid_layout <- function(x, base_size = 9, family = "", width = 5.5,
     numeric()
   }
   headers <- if (x$axis == "folds") {
-    data.frame(label = paste("Fold", x$fold_names),
+    data.frame(label = heads,
                x = (seq_len(P) - 0.5) / P * width,
                y = -header_h / 2, stringsAsFactors = FALSE)
   } else {
@@ -148,7 +170,8 @@ grid_layout <- function(x, base_size = 9, family = "", width = 5.5,
                         stringsAsFactors = FALSE)
     axis <- rbind(data.frame(x = 0, y = ya, xend = width, yend = ya),
                   data.frame(x = tx, y = ya, xend = tx, yend = ya - 0.05))
-    axis_title <- data.frame(label = grid_axis_title(x), x = width / 2,
+    axis_title <- data.frame(label = grid_axis_title(x, ticks$label),
+                             x = width / 2,
                              y = ya - 0.05 - line_in * 1.6,
                              stringsAsFactors = FALSE)
     bottom <- axis_title$y - line_in / 2
@@ -205,12 +228,61 @@ grid_layout <- function(x, base_size = 9, family = "", width = 5.5,
 }
 
 # Axis title: "Time (months)" when typed; from data, the time unit if given
-# ("Month"), else the time column, capitalised.
-grid_axis_title <- function(x) {
+# ("Month"), else the time column, capitalised. When dates are drawn and no
+# tick shows a year ("Apr", "Jul"), the years are added: "Week (2022)".
+grid_axis_title <- function(x, tick_labels = character()) {
   unit <- x$settings$time_unit
   if (is.null(x$times)) return(paste0("Time (", unit, ")"))
   word <- if (unit != "periods") sub("s$", "", unit) else x$settings$time
-  paste0(toupper(substr(word, 1, 1)), substring(word, 2))
+  title <- paste0(toupper(substr(word, 1, 1)), substring(word, 2))
+  if (inherits(x$times, c("Date", "POSIXt")) &&
+      !any(grepl("[0-9]{4}", tick_labels))) {
+    yr <- unique(format(range(x$times), "%Y"))
+    title <- paste0(title, " (", paste(yr, collapse = " to "), ")")
+  }
+  title
+}
+
+# Blocks of a role narrower than `min_width` (inches) are drawn that wide.
+# The room comes from the wider blocks next to them, half from each side when
+# both can give it, and no block is ever covered or pushed below `min_width`;
+# so a thin gap and the thin test block after it both stay visible. True
+# positions stay in xmin/xmax, drawn ones are in draw_xmin/draw_xmax.
+widen_blocks <- function(bl, min_width) {
+  bl$draw_xmin <- bl$xmin
+  bl$draw_xmax <- bl$xmax
+  bl$widened <- FALSE
+  for (s in unique(bl$split)) {
+    i <- which(bl$split == s)
+    i <- i[order(bl$start[i])]
+    w <- bl$xmax[i] - bl$xmin[i]
+    thin <- bl$role[i] != "Not used" & w < min_width - 1e-9
+    if (!any(thin)) next
+    runs <- rle(thin)
+    ends <- cumsum(runs$lengths)
+    starts <- ends - runs$lengths + 1
+    for (r in which(runs$values)) {
+      k <- starts[r]:ends[r]
+      need <- sum(min_width - w[k])
+      spare <- function(j) {
+        if (j < 1 || j > length(w)) 0 else max(0, w[j] - min_width)
+      }
+      sl <- spare(starts[r] - 1)
+      sr <- spare(ends[r] + 1)
+      from_l <- min(sl, max(need / 2, need - sr))
+      from_r <- min(sr, need - from_l)
+      got <- from_l + from_r
+      if (got <= 0) next
+      w[k] <- w[k] + (min_width - w[k]) * got / need
+      if (from_l > 0) w[starts[r] - 1] <- w[starts[r] - 1] - from_l
+      if (from_r > 0) w[ends[r] + 1] <- w[ends[r] + 1] - from_r
+      bl$widened[i[k]] <- TRUE
+    }
+    edge <- bl$xmin[i[1]] + c(0, cumsum(w))
+    bl$draw_xmin[i] <- edge[-length(edge)]
+    bl$draw_xmax[i] <- edge[-1]
+  }
+  bl
 }
 
 #' @export
@@ -241,7 +313,7 @@ autoplot.dataflow_grid <- function(object, ..., colour = "black",
                                    linewidth = 0.4) {
   lay <- grid_layout(object, ...)
   bl <- lay$blocks
-  # gaps last, so a gap drawn wider than scale sits on top of its neighbours
+  # gaps last, so their dashed border is not hidden by a neighbour's edge
   bl <- bl[order(bl$role == "Gap"), ]
   ps <- lay$params
   ex <- lay$extent
@@ -338,8 +410,11 @@ describe_grid <- function(x) {
       " folds are used for ", tolower(rt[["Training"]]),
       "; each fold is the ", tolower(rt[["Test"]]), " set once."))
     if (!all(is.na(ns))) {
-      out <- c(out, paste0("The folds hold ",
-                           and_list(paste0("n = ", ns)), "."))
+      out <- c(out, if (length(unique(ns)) == 1) {
+        paste0("Each fold holds n = ", ns[1], ".")
+      } else {
+        paste0("The folds hold ", and_list(paste0("n = ", ns)), ".")
+      })
     }
   } else if (x$type == "assigned") {
     out <- c(out, paste0(
@@ -351,10 +426,11 @@ describe_grid <- function(x) {
       } else {
         ", each bar as long as the split's number of rows"
       }, "."))
-    if (isTRUE(st$time_checked)) {
-      out <- c(out, paste0("Checked: in every split, training rows come ",
-                           "before validation and test rows by ", st$time,
-                           "."))
+    # roles that share a split with another: only these were compared
+    ro <- roles_compared(bl)
+    if (isTRUE(st$time_checked) && length(ro) > 1) {
+      out <- c(out, paste0("Checked: in every split, rows are in time order ",
+                           "by ", st$time, ", ", and_then(ro), "."))
     }
   } else if (x$type == "blocked") {
     gap <- st$gap
@@ -391,14 +467,22 @@ describe_grid <- function(x) {
   if (x$type != "kfold" && !all(is.na(bl$n))) {
     out <- c(out, describe_split_counts(x))
   }
-  if (any(grid_layout_widened(x))) {
-    out <- c(out, "In the picture, gaps narrower than the drawing allows are drawn wider than scale.")
+  wide <- widened_roles(x)
+  if (length(wide) > 0) {
+    out <- c(out, paste0("At the default size, narrow ",
+                         and_list(tolower(rt[wide])),
+                         " blocks are drawn wider than scale."))
   }
   if (!is.null(x$times)) {
-    out <- c(out, paste0("Time runs from ", format_time(x$times[1]), " to ",
-                         format_time(x$times[length(x$times)]), " (",
+    ends <- format_time(x$times[c(1, length(x$times))])
+    out <- c(out, paste0("Time runs from ", ends[1], " to ", ends[2], " (",
                          length(x$times), " distinct values of ", st$time,
                          ")."))
+    if (length(st$jumps) > 0) {
+      out <- c(out, paste0("Time values that are in no split are not drawn, ",
+                           "so time left out between training and testing ",
+                           "may not show as a gap."))
+    }
     if (!regular_times(x$times)) {
       out <- c(out, paste0("Positions are the distinct values of ", st$time,
                            "; their spacing is not regular, so a period is ",
@@ -407,7 +491,10 @@ describe_grid <- function(x) {
   }
   if (!is.null(st$group)) {
     na <- st$na_group %||% 0
-    out <- c(out, if (isTRUE(st$group_checked)) {
+    out <- c(out, if (x$type == "assigned" && length(roles_compared(bl)) < 2) {
+      paste0("Records were grouped by ", st$group, " (no split has more than ",
+             "one role, so there was nothing to check).")
+    } else if (isTRUE(st$group_checked)) {
       paste0(if (x$type == "assigned") {
         paste0("Checked: within each split, all records of each ", st$group,
                " have one role")
@@ -438,9 +525,8 @@ describe_grid <- function(x) {
                              ")")))
     } else {
       paste0(", except ", nrow(ed), " typed by hand: ",
-             and_list(paste0(tolower(rt[ed$role]), " in split ",
-                             x$splits$label[match(ed$split, x$splits$id)],
-                             " (n = ", ed$n, ")")))
+             and_list(paste0(tolower(rt[ed$role]), " in ",
+                             split_name(x, ed$split), " (n = ", ed$n, ")")))
     }
     out <- c(out, paste0("Counts were computed from the data frame `",
                          x$data$name, "` (", format_n(nrow(x$data$df)),
@@ -451,19 +537,26 @@ describe_grid <- function(x) {
 
 # "Numbers per split: split 1: training (n = 180), gap (n = 3), test
 # (n = 18), not used (n = 87); ...". With more than 8 splits, the first two
-# and the last are listed and the rest summarised, to keep alt text short.
+# and the last are listed, to keep alt text short.
 describe_split_counts <- function(x) {
   bl <- x$blocks
   rt <- x$settings$role_text
   one <- function(s) {
-    b <- bl[bl$split == s & !is.na(bl$n), ]
+    b <- bl[bl$split == s, ]
     b <- b[order(b$start), ]
-    agg <- tapply(as.numeric(gsub(",", "", b$n)), factor(b$role,
-                  levels = grid_roles), sum)
-    agg <- agg[!is.na(agg)]
-    paste0(tolower(x$splits$label[x$splits$id == s]), ": ",
-           paste0(tolower(rt[names(agg)]), " (n = ", format_n(agg), ")",
-                  collapse = ", "))
+    parts <- vapply(unique(b$role), function(r) {
+      z <- b[b$role == r, ]
+      known <- z$n[!is.na(z$n)]
+      size <- if (length(known)) {
+        paste0("n = ", format_n(sum(as.numeric(gsub(",", "", known)))))
+      } else if (!is.null(x$times) && r == "Gap") {
+        # time no row of the split falls in: say how long it is
+        k <- sum(z$end - z$start + 1)
+        paste0(k, " value", if (k != 1) "s", " of ", x$settings$time)
+      }
+      if (is.null(size)) "" else paste0(tolower(rt[[r]]), " (", size, ")")
+    }, character(1))
+    paste0(split_name(x, s), ": ", paste(parts[parts != ""], collapse = ", "))
   }
   ids <- x$splits$id
   if (length(ids) <= 8) {
@@ -474,14 +567,32 @@ describe_split_counts <- function(x) {
   paste0("Numbers per split, for the first two and the last of ",
          length(ids), " splits: ",
          paste(vapply(shown, one, ""), collapse = "; "),
-         "; the splits between follow the same pattern.")
+         "; the picture shows the others.")
 }
 
-# Whether any gap block would be drawn wider than scale at the default
-# layout settings.
-grid_layout_widened <- function(x, width = 5.5, min_gap = 0.12) {
+# Training, Validation and Test roles that occur together with another of
+# them in some split, in that order.
+roles_compared <- function(bl) {
+  r <- c("Training", "Validation", "Test")
+  per <- lapply(split(bl$role, bl$split), intersect, r)
+  intersect(r, unlist(per[lengths(per) > 1]))
+}
+
+# "training, then validation, then test"
+and_then <- function(roles) paste(tolower(roles), collapse = ", then ")
+
+# "split 3" inside a sentence; the user's own split names are kept as given.
+split_name <- function(x, id) {
+  sub("^Split ", "split ", x$splits$label[match(id, x$splits$id)])
+}
+
+# Roles with a block drawn wider than scale at the default layout settings.
+widened_roles <- function(x) {
+  if (x$axis == "folds") return(character())
   b <- x$blocks
-  b$role == "Gap" & (b$end - b$start + 1) / max(1, x$n_pos) * width < min_gap
+  b$xmin <- (b$start - 1) / max(1, x$n_pos) * 5.5
+  b$xmax <- b$end / max(1, x$n_pos) * 5.5
+  grid_roles[grid_roles %in% b$role[widen_blocks(b, 0.12)$widened]]
 }
 
 # Regular spacing: equal steps, or (dates) one per month or per year on the
