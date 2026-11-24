@@ -18,7 +18,7 @@ milestone step; the progress log at the bottom is append-only.
 | 2 | Randomised trial with dropouts | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
-| 5 | Machine-learning designs, including time series | 🟡 built on branch `m5`, reviewed, awaiting approval | — |
+| 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Reporting-guideline templates | ⬜ | — |
 | 7 | Examples from recent papers | ⬜ | — |
 | 8 | Documentation and website | ⬜ | — |
@@ -157,7 +157,7 @@ typed flows unchanged.
 `"trial_data"`. Independent review passed after fixes; pictures approved by
 the user on 2026-11-23; merged into `main`.
 
-### Milestone 5 — Machine-learning designs, including time series 🟡
+### Milestone 5 — Machine-learning designs, including time series ✅
 
 **Delivers:** dataset splits (train / validation / test) including grouped
 splits (all records of a patient or site on one side) and time-ordered
@@ -186,8 +186,7 @@ between them, time order kept).
 events, `flow_folds()` fold grids (k-fold, blocked, expanding and rolling
 windows) with `grid_layout()`, examples `"ml"`, `"cv"` and `"forecast"`.
 Reviewed independently twice; findings fixed 2026-11-24, including grids of
-the user's own split assignments. Awaiting the user's approval of the
-pictures.
+the user's own split assignments. Approved by the user 2026-11-24.
 
 ### Milestone 6 — Reporting-guideline templates ⬜
 
@@ -701,3 +700,8 @@ what is still open.
   data, one-day test and gap over a year. The forecast snapshot was
   replaced (intended change).
 - Open: user approval of the ml, cv and forecast pictures.
+
+### 2026-11-24 — Milestone 5 approved
+- User approved the ml, cv, forecast, own-assignment and 10-fold pictures;
+  `m5` merged into `main`. Open: CI result (recorded in the next entry); a
+  cross-family review before the first release.
