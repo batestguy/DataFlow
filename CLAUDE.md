@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Package `DataFlow` (MIT), public at github.com/batestguy/DataFlow; CI (R CMD check, 5 platforms) runs on every push to `main`. Milestones 0 (scaffold), 1 (lab design), 2 (randomised trial: `flow_assign`, `flow_exclude`), 3 (survey: summary rows, `flow_cluster`, `flow_select`) 4 (several starting streams, `flow_pool`, counts from data, `flow_edit`) and 5 (machine-learning designs including time series: `flow_partition`, outcome events, fold grids with `flow_folds`) are done and approved by the user. Milestone 6 (reporting-guideline templates) is next. Principle: DataFlow documents splits the user made; it never splits data at random or fits models. The plan was revised on 2026-11-22 (milestones 4 to 9 plus a later time-based track). Phases, locked decisions, status, known limitations and the progress log are in `ROADMAP.md`; verbs are prefixed `flow_`. Session handover notes (transient, git-ignored) are in `CLAUDE.local.md`.
+Package `DataFlow` (MIT), public at github.com/batestguy/DataFlow; CI (R CMD check, 5 platforms) runs on every push to `main`. Milestones 0 (scaffold), 1 (lab design), 2 (randomised trial: `flow_assign`, `flow_exclude`), 3 (survey: summary rows, `flow_cluster`, `flow_select`) 4 (several starting streams, `flow_pool`, counts from data, `flow_edit`) and 5 (machine-learning designs including time series: `flow_partition`, outcome events, fold grids with `flow_folds`) are done and approved by the user. The goal (2026-11-24): everyone can describe how their data came to be, in any field. Milestone 6 (side-by-side test with other packages) is next; milestones 7 to 12 and the open decisions D1 to D3 are in `ROADMAP.md`, the evidence in `notes/` (tracked, not in the built package). Principle: DataFlow documents splits the user made; it never splits data at random or fits models. The plan was last revised on 2026-11-24 (milestones 6 to 13). Phases, locked decisions, status, known limitations and the progress log are in `ROADMAP.md`; verbs are prefixed `flow_`. Session handover notes (transient, git-ignored) are in `CLAUDE.local.md`.
 
 ## Pinned environment
 
@@ -51,7 +51,7 @@ Key layout features: row labels down the left margin; one-to-many splits with ar
 - `R/describe.R` — `flow_describe()`. Repeated box names are qualified by the parent's full name (`unique_names()`); cluster/select stages read "<stage>, selected by <method>: ... from <box>".
 - `R/examples.R` — `flow_example("lab")`, `"trial"` (invented CONSORT 2025-style trial), `"survey"` (invented DHS-style household survey), `"review"` (invented PRISMA 2020-style, two streams), `"factorial"` (invented 2 x 2 with pools), `"trial_data"` (counts from an invented data frame built with a fixed seed), `"ml"` (prediction-model development and external validation, events), `"cv"` and `"forecast"` (fold grids from invented data); invented data are built with `with_example_seed()`, which restores the caller's random state; each example records its source in `attr(, "source")`.
 
-Scope for MVP: vertical top-down flows and the bracket merge. Horizontal/crossing flows and CRAN submission come later.
+Scope for MVP: vertical top-down flows and the bracket merge. Scope rule: every addition must answer "how did the data come to be?" and be needed by at least two gallery workflows (ROADMAP, milestone 10).
 
 ## Commands
 
@@ -68,5 +68,6 @@ R 4.5.2 is on PATH as `Rscript`.
 - Layout bugs are visual. After changing layout or renderer code, render the reference diagram to PNG and look at it (Read the image) before claiming it works; tests on coordinates alone are not enough.
 - Test the layout as data (expected coordinates, no overlaps, bracket spans the right leaves) separately from rendering.
 - `ROADMAP.md` is the record of phases and progress. Update it at every milestone step: the status table, the milestone's status lines, and a new dated entry at the end of the progress log (what changed, how it was checked, commit, what is open). Never rewrite past log entries.
-- Scratch renders go in `dev/` (git-ignored).
+- Scratch renders go in `dev/` (git-ignored). Research notes and the scripts behind their numbers go in `notes/` (tracked).
+- Other packages are tried in a separate library (`dev/complib/`), never installed into the renv project library.
 - Picture snapshots: `tests/testthat/_snaps/render/*.svg` (vdiffr). After an intended visual change, review and accept with `testthat::snapshot_review()`.

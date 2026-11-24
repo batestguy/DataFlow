@@ -1,8 +1,10 @@
 # DataFlow roadmap
 
-DataFlow draws publication-quality study-design flow diagrams (sampling,
-clustering, selection, assignment, splits, exclusions, merges) from short,
-pipe-able R code. This file is the single record of the phases, what each one
+**Goal (user, 2026-11-24):** everyone can describe their data collection
+process with figures, from lab experiments to surveys, scraping, machine
+learning and testing. In one sentence: DataFlow shows how any dataset came to
+be. It draws publication-quality diagrams from short, pipe-able R code. This
+file is the single record of the phases, what each one
 delivers, how it is checked, and where it stands. It is updated at every
 milestone step; the progress log at the bottom is append-only.
 
@@ -19,15 +21,29 @@ milestone step; the progress log at the bottom is append-only.
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
-| 6 | Reporting-guideline templates | ⬜ | — |
-| 7 | Examples from recent papers | ⬜ | — |
-| 8 | Documentation and website | ⬜ | — |
-| 9 | CRAN submission | ⏸ separate decision, later | — |
-| T | Time-based designs (later track) | ⏸ after milestone 8 | — |
+| 6 | Side-by-side test with other packages | ⬜ next | — |
+| 7 | Describe any collection step | ⬜ | — |
+| 8 | Check and explain | ⬜ | — |
+| 9 | Time | ⬜ | — |
+| 10 | Gallery of 25 workflows | ⬜ | — |
+| 11 | No-code: spreadsheet, then web form | ⬜ | — |
+| 12 | Documentation, outside review, first release | ⬜ | — |
+| 13 | CRAN submission | ⏸ separate decision, later | — |
 
-Plan revised on 2026-11-22 after a survey of reporting guidelines, other R
-packages and machine-learning designs (see "Positioning" and the progress
-log). Milestones 4 to 9 replace the earlier 4 to 7.
+Plan revised on 2026-11-24 to follow the goal above; the evidence is in
+`notes/scope-research-2026-11-24.md`. Milestones 6 to 13 replace the earlier
+6 to 9 and track T (reporting-guideline templates dropped, paper examples
+became part of the gallery, time-based designs became milestone 9).
+
+**Three decisions to confirm with the user before milestone 6 starts** (the
+user asked for the plan to be documented on 2026-11-24 but did not answer them
+one by one):
+
+| # | Question | Recommended |
+|---|---|---|
+| D1 | May the package check whether typed numbers add up? This softens "typed counts are never checked". | Yes, as a separate `flow_check()` the user runs; it reports and never changes the picture |
+| D2 | Is the no-code route part of the project? | Yes; the user finds five testers who do not code |
+| D3 | Start with the side-by-side test? | Yes; small, and may save building what exists |
 
 ## Locked decisions
 
@@ -188,52 +204,153 @@ windows) with `grid_layout()`, examples `"ml"`, `"cv"` and `"forecast"`.
 Reviewed independently twice; findings fixed 2026-11-24, including grids of
 the user's own split assignments. Approved by the user 2026-11-24.
 
-### Milestone 6 — Reporting-guideline templates ⬜
+### Milestone 6 — Side-by-side test ⬜
 
-**Delivers:** one-call starting points that follow the official layouts:
-CONSORT 2025 (trial), PRISMA 2020 (systematic review), STARD 2015
-(diagnostic accuracy: index test, reference standard, true/false
-positives/negatives), STROBE-style cohort attrition, TRIPOD+AI. Each cites
-its guideline and is checked against the official template before it is
-built (not yet seen for STARD and TRIPOD+AI; STROBE flow-diagram wording
-not yet verified).
+**Delivers:** an honest written comparison, and a plan adjusted to it.
 
-**Done when:** each template renders, matches its guideline's boxes, and the
-user approves.
+**Steps:**
+1. Confirm D1 to D3 with the user.
+2. Install `selecta`, `flowchart`, `dtrackr`, `consort` and `TrialFlowR` into
+   a separate library in `dev/complib/` (git-ignored). Never into the renv
+   project library. Record the versions.
+3. Draw the same eight designs in each tool that claims to support them:
+   parallel trial, PRISMA review with two streams, factorial with
+   recombination, cluster household survey, nested lab design, grouped ML
+   split with external validation, scraping to a labelled set, two-annotator
+   labelling. Keep every script and picture.
+4. Score each on: can it say it truthfully; lines of code; counts from data;
+   catches a planted number that does not add up; editable after drawing;
+   restyleable; description for screen readers; output formats; readable at
+   page width.
+5. Settle the open questions in section 6 of the research note that a test can
+   settle (`triageR`, fold-grid packages).
+6. Write `notes/comparison-<date>.md`, rewrite "Positioning" below, show the
+   user.
 
-### Milestone 7 — Examples from recent papers ⬜
+**Done when:** the user has read the comparison and decided to keep, cut or
+change milestones 7 to 12. If another package already does most of milestone
+7, say so plainly and propose joining or building on it.
 
-**Delivers:** redrawn design charts from recent open-access papers, at least
-one per design family (experiment, trial, survey, machine learning,
-systematic review).
+### Milestone 7 — Describe any collection step ⬜
 
-**Process:** Claude proposes a shortlist with full citations; only the
-examples the user approves are redrawn. Each example records its source
-(citation and DOI) and what was simplified.
+**Delivers:** every step can say what went in and in what unit, what was done,
+who or what did it, when, and what came out or was lost. Built in this order,
+each with tests, a picture the user approves, and a description that reads
+correctly. Names below are proposals, settled in the design of each part.
 
-### Milestone 8 — Documentation and website ⬜
+| Part | What | Proposed form | Watch for |
+|---|---|---|---|
+| 7a Copies | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
+| 7b Units | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
+| 7c Step details | Tool or instrument, who, dates, method | `details =` with fixed fields after Datasheets and Croissant; drawn as a note or a numbered key; always in the description | Long text; layout height |
+| 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
+| 7e Linking | Two sources joined record by record | `flow_link()`: linked box plus unmatched from each side; from data by key | Read GUILD first; one-to-many links; matching errors are typed |
+| 7f Shared groups | One group in two analyses | lift "one pool per box per call" | The layout is a tree today: highest risk, do it on its own branch with the stress test extended first |
+| 7g Loops | Repeat until (label, check, improve; retries) | a back arrow in the side margin with its rule and number of rounds | Counts are never recomputed round a loop; description must not loop |
+| 7h Planned and actual | One diagram for protocol and report | `planned =`; "(planned 100; n = 92)" | Data mode fills the actual number |
 
-**Delivers:** full README, one vignette per design family, a pkgdown
-website, `R CMD check` with 0 errors/warnings/notes, CI green on all
-platforms, and a short honest comparison with other R packages.
+**Checks:** existing diagrams identical (`dev/m5_reg.R` and `dev/m5_cmp.R`, 323
+designs); stress test extended with copies, links, shared groups and loops
+(0 overlaps, 0 lines through boxes); data-mode numbers checked against base R;
+independent review.
 
-### Milestone 9 — CRAN submission ⏸
+**Done when:** all ten workflows in `notes/workflow-test.R` draw truthfully
+(time axes excepted, milestone 9), the script is rewritten to use the new
+steps, and the user approves the pictures.
 
-A separate decision, taken after milestone 8.
+### Milestone 8 — Check and explain ⬜
 
-### Later track T — Time-based designs ⏸
+**Delivers:**
+1. `flow_check()` (if D1 is yes): numbers that do not add up, reasons that do
+   not sum, splits larger than their parent (copies and changes of unit
+   excepted), missing units, dates or tools. It reports; it never edits or
+   blocks.
+2. A long description as a nested list (text, Markdown, HTML), beside the
+   short alt text, following the W3C complex-images tutorial; title and
+   description inside saved SVG files.
+3. Exports from the same object: a step table (CSV), methods text to edit, and
+   Croissant RAI fields (names verified first). Exports mark typed, computed
+   and missing values.
 
-Designs whose shape is a timeline rather than a flow: crossover trials
-(periods and washout), stepped-wedge cluster trials (staggered switch-over;
-CONSORT extension template), panel surveys with waves and attrition,
-platform trials (arms added and dropped). Needs a left-to-right time axis.
-Also: "cloning" in target trial emulation (the same people copied into every
-strategy), which needs its own wording.
+**Done when:** every mistake in a planted list is caught and none is invented
+on the correct examples; a person using a screen reader can say what happened
+in three diagrams (automatic checks alone do not count).
 
-**Out of scope:** causal diagrams (DAGs), already covered by the ggdag
-package.
+### Milestone 9 — Time ⬜
 
-## Positioning (2026-11-22, from documentation only; not tested side by side)
+**Delivers:** a third diagram type on a real time axis (calendar time, or time
+since entry): panel waves with refreshment and attrition, crossover periods
+and washout, stepped-wedge switch-over, platform trials, repeated scraping,
+sensors with outages, study windows around an index date (Schneeweiss
+framework). Axis to scale, breaks marked, every bar named by text.
+
+**Before building:** read Schneeweiss et al. 2019, the CONSORT stepped-wedge
+extension and the SPIRIT schedule figure; look at `swcrt` and `steppedwedge`.
+
+**Done when:** each design above draws on a correct axis checked as data, and
+the user approves.
+
+### Milestone 10 — Gallery of 25 workflows ⬜
+
+The acceptance test for the goal. Each has code, picture, description, source
+(invented, or citation and DOI), and a result: passes, or listed as
+unsupported with the reason. At least eight are redrawn from open-access
+papers the user approves from a shortlist.
+
+| Family | Workflows |
+|---|---|
+| Lab | reference culture design; samples to assay with replicates; omics batches |
+| Animal and field | animal study with cages; nested ecological sampling; split-plot field trial |
+| Trials | parallel; crossover; stepped-wedge |
+| Surveys | cluster household; panel with refreshment; mixed web and phone with dispositions |
+| Interviews and reviews | interviews and focus groups; sequential mixed methods; systematic review |
+| Web | scrape to labelled set; repeated scraping; API collection with limits |
+| Sensors and records | sensors with outages; two linked registers; cohort from health records |
+| Labelling, ML, testing | double labelling with adjudication loop; prediction model with external validation (checked against TRIPOD+AI); language-model evaluation (prompts, models, raters); software or A/B test |
+
+**Done when:** all 25 have a result and the user has seen each picture.
+
+### Milestone 11 — No-code ⬜ (needs D2)
+
+**Delivers:** first a spreadsheet template (one row per step) and a reader
+that turns it into a diagram, with error messages that name the row; then a
+web form that runs in the visitor's browser (Shinylive on GitHub Pages),
+showing the R code it used. Data stay on the visitor's computer. Keyboard and
+screen-reader use, zero axe violations on every view (WCAG 2.2 AA).
+
+**Done when:** five people who do not code each draw their own study unaided;
+what stopped them is written down and fixed or listed.
+
+### Milestone 12 — Documentation, outside review, first release ⬜
+
+**Delivers:** README, one vignette per family, a pkgdown website with the
+gallery, the comparison with other packages (pointing people to `selecta`,
+`consort`, `PRISMA2020` where they fit better), a published list of what is
+not supported, a cross-family review (OpenCode `ship-reviewer`), a tagged
+release.
+
+### Milestone 13 — CRAN submission ⏸
+
+A separate decision, taken after milestone 12.
+
+### Scope rules
+
+- Every addition must answer "how did the data come to be?" and be needed by
+  at least two gallery workflows.
+- Left out on purpose: ready-made guideline templates (they exist elsewhere),
+  causal diagrams (`ggdag`), free drawing, choosing a design or sample size,
+  making splits or fitting models.
+
+## Positioning (2026-11-22, corrected 2026-11-24; not tested side by side)
+
+**Correction (2026-11-24).** The 2026-11-22 note missed `selecta` (CRAN,
+0.6.1): piped code, typed or computed counts, several converging sources,
+split and recombine, factorial designs, arithmetic checking, and CONSORT,
+STROBE, STARD, PRISMA and MOOSE layouts. Several things listed below as
+DataFlow's own are therefore shared. A search of its source found no
+training/test splits, outcome events, fold grids or alternative text (see
+`notes/scope-research-2026-11-24.md`); milestone 6 tests this properly. The
+2026-11-22 note, kept for the record:
 
 Other R packages that draw study-flow charts: `consort`, `flowchart` (on
 CRAN since February 2024, pipe verbs `fc_filter`, `fc_split`, `fc_merge`,
@@ -710,3 +827,16 @@ what is still open.
 - Merge `0dc147a` pushed to `main`; CI run 45323962438 green on all 5
   platforms. Open: a cross-family review before the first release. Next:
   milestone 6.
+
+### 2026-11-24 — Plan rewritten around the goal
+- User asked whether milestone 6 (guideline templates) was needed, stated the
+  goal (see the top of this file), asked for proper research, and asked for
+  the resulting plan to be documented for the next sessions.
+- Evidence: CRAN scan (25,848 packages, 22 hits), text search of the `selecta`
+  source, ten new workflows drawn with the current package (nine draw, one
+  refused, one of the nine misleading), and reading of reporting guidance
+  across fields. Scripts, outputs and sources, with what was read and what was
+  only seen as a search summary: `notes/`.
+- Milestones 6 to 13 replace the earlier 6 to 9 and track T. Decisions D1 to
+  D3 recorded as open, with recommendations.
+- No package code changed. Next: confirm D1 to D3, then milestone 6.

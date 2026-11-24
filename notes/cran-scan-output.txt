@@ -1,0 +1,30 @@
+Run 2026-11-24
+25848 packages; 22 hits
+autocodebook 0.1.0 2026-06-08 18:00:19 UTC | Automatic Codebook and Tracking for 'Spark' and 'dplyr' Pipelines | CONSORT,STROBE 
+cohorttools 0.1.8 2026-04-21 05:40:03 UTC | Cohort Data Analyses |  
+consort 1.2.4 2026-10-05 08:00:02 UTC | Create Consort Diagram | CONSORT 
+consortr 0.9.1 2021-09-14 16:30:08 UTC | Interactive Consort Flow Diagrams |  
+diagram 1.6.5 2020-09-30 07:20:02 UTC | Functions for Visualising Simple Graphs (Networks), Plotting Flow Diagrams |  
+dtpcrm 0.1.3 2026-10-01 15:40:54 UTC | Dose Transition Pathways for Continual Reassessment Method |  
+flow 0.3.0 2026-10-23 17:00:02 UTC | View and Browse Code Using Flow Diagrams |  
+flowchart 1.0.1 2026-06-22 14:10:02 UTC | Tidy Flowchart Generator |  
+ggflowchart 1.0.0 2023-05-11 10:10:05 UTC | Flowcharts with 'ggplot2' |  
+ggnext 0.1.0 2026-08-26 18:40:02 UTC | A Next-Generation Grammar of Graphics | CONSORT 
+metagear 0.7 2021-02-15 15:40:02 UTC | Comprehensive Research Synthesis Tools for Systematic Reviews and Meta-Analysis | PRISMA 
+pedbp 2.1.0 2026-03-24 03:20:02 UTC | Pediatric Blood Pressure |  
+pedMermaid 1.0.2 2024-04-09 16:40:02 UTC | Pedigree Mermaid Syntax |  
+PRISMA 0.2-7 2018-05-26 22:01:47 UTC | Protocol Inspection and State Machine Analysis | PRISMA 
+PRISMA2020 1.1.5 2026-09-05 22:20:02 UTC | Make Interactive 'PRISMA' Flow Diagrams | PRISMA 
+prismadiagramR 1.0.0 2020-05-04 15:10:08 UTC | Creates a Prisma Diagram using 'DiagrammeR' | PRISMA 
+scopusflow 0.5.0 2026-11-22 00:40:02 UTC | A Reproducible Workflow Layer for 'Scopus' Bibliographic Searches | PRISMA 
+searchAnalyzeR 0.1.0 2025-08-28 13:10:02 UTC | Advanced Analytics and Testing Framework for Systematic Review Search Strategies | PRISMA 
+selecta 0.6.1 2026-08-22 18:40:02 UTC | Declarative EQUATOR-Style Flow Diagrams for Clinical Studies | CONSORT,STROBE,STARD,PRISMA 
+tidyactuarial 0.2.1 2026-11-09 00:40:02 UTC | Tidy Tools for Actuarial Mathematics and Life Contingencies |  
+triageR 0.2.0 2026-09-05 02:20:02 UTC | Automated Machine Learning and AI Agent Tools for Clinical Prediction Modelling | TRIPOD 
+TrialFlowR 1.0.0 2026-09-18 11:40:07 UTC | Clinical Trial Flow and Participant Disposition | CONSORT 
+      Package Version               Published
+20837 selecta   0.6.1 2026-08-22 18:40:02 UTC
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Description
+20837 Build EQUATOR-style flowcharts for clinical studies by sequentially\n    defining inclusion and exclusion criteria, study arms, and endpoints. The\n    pipe-friendly API supports CONSORT (randomized trials), STROBE\n    (observational cohorts), STARD (diagnostic accuracy), PRISMA (systematic\n    reviews), and MOOSE (observational meta-analysis) diagram layouts, as well\n    as multi-source convergence, split-and-recombine, factorial, and hybrid\n    topologies. Diagrams are rendered via 'grid' graphics in both data-driven\n    (automatic counting) and manual-count modes, with optional\n    'DiagrammeR'/'Graphviz' output.
+                                               Imports
+20837 data.table, grDevices, grid, stats, tools, utils

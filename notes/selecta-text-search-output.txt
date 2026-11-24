@@ -1,0 +1,63 @@
+Run 2026-11-24
+
+== triageR : Provides a streamlined workflow for building, validating, and reporting clinical prediction models. Combines standard machine learning tools with an optional AI agent that recommends appropriate statistical methods, runs sensitivity analyses, and flags common pitfalls. Includes automated generation of reports aligned with TRIPOD+AI reporting guidance (Collins et al. (2024 <doi:10.1136/bmj-2023-078378>)) for reproducible, guideline-aligned research. 
+
+== TrialFlowR : Summarizes participant flow and disposition in clinical trials, including CONSORT-style randomized controlled trials, parallel-group, crossover, cluster randomized, and multi-arm trials. Provides functions for screening failures, exclusions and reasons, allocation, follow-up, loss to follow-up, withdrawals, intention-to-treat and per-protocol populations, and participant-disposition summaries. The methods are based on established principles for reporting participant flow and disposition in randomized trials; see Schulz et al. (2010) <doi:10.1136/bmj.c332>. 
+
+== flowchart : Creates participant flow diagrams directly from a dataframe. Representing the flow of participants through each stage of a study, especially in clinical trials, is essential to assess the generalisability and validity of the results. This package provides a set of functions that can be combined with a pipe operator to create all kinds of flowcharts from a data frame in an easy way. 
+
+== ggnext : An implementation of the Grammar of Graphics described by Wilkinson (2005, ISBN:978-0-387-24544-7), built on 'S7' classes. The familiar grammar vocabulary of aesthetics, geometries, statistics, scales, coordinates, facets and themes composed with '+' is preserved; every constructor that takes an argument also accepts a plot as the first argument of a native pipe ('|>') stage, so the two styles are interchangeable. The package is extended with built-in interactivity, animation, an exact-data export, a plot linter that flags common statistical-graphics mistakes before a figure ships, and a catalogue covering layout diagrams (Sankey, treemap, network, radar), machine-learning diagnostics (SHAP, receiver operating characteristic, calibration, partial dependence) and clinical reporting (Kaplan-Meier, forest, swimmer, CONSORT). Static output is written to Scalable Vector Graphics; interactive output is a self-contained 'HTML' document using a canvas element and vanilla 'JavaScript'. Both render targets consume the same computed-geometry buffer, giving a single source of truth for layer geometry. Layout and estimation algorithms follow their published descriptions, including Bruls, Huizing and van Wijk (2000) <doi:10.1007/978-3-7091-6783-0_4> for squarified treemaps, Fruchterman and Reingold (1991) <doi:10.1002/spe.4380211102> for force-directed graphs, and Kaplan and Meier (1958) <doi:10.1080/01621459.1958.10501452> for survival curves. 
+
+== autocodebook : Wraps 'dplyr' verbs (mutate, summarise, filter) to automatically capture variable metadata (type, source columns, categories, and source code), producing a codebook and eligibility tracking table with zero manual documentation. Works with both 'sparklyr' (tbl_spark) and local data frames. Adds big-data optimizations (caching, assume-unique counting, checkpointing) and a standardized report module with an eligibility flowchart, editable codebook export (HTML, DOCX, XLSX), and cross-sectional or longitudinal variable inspection. The eligibility flowchart follows the CONSORT statement (Schulz, Altman and Moher (2010) <doi:10.1136/bmj.c332>) and the reporting of observational cohort studies follows the STROBE recommendations (von Elm and others (2007) <doi:10.1371/journal.pmed.0040296>). 
+
+== consort : To make it easy to create CONSORT diagrams for the transparent reporting of participant allocation in randomized, controlled clinical trials. This is done by creating a standardized disposition data, and using this data as the source for the creation a standard CONSORT diagram. Human effort by supplying text labels on the node can also be achieved. 
+
+selecta text lines: 22015 
+
+[ alt text|alt_text|alternative text|accessib|screen reader ] 2 
+* Add "split-and-recombine" topology, accessible through use of successive `stratify()` and `combine()` calls.
+Moreover, every intermediate stage is accessible via `cohorts()`, enabling inspection of participants removed at each step:
+
+[ cluster ] 3 
+## Reseat each recombining stratification group as a thin cluster on
+## Elements = vertical bands, found by clustering boxes whose
+| Cluster-randomized layouts | Site-level and individual-level flow within the same diagram | CONSORT extensions |
+
+[ bracket ] 2 
+## Visible bar (plain, not bold) so the convergence bracket renders.
+| Annotation layers | Free-text annotations, footnotes, and bracketed comments overlaid on the diagram | General |
+
+[ TRIPOD ] 0 
+
+
+[ training set|test set|train/test ] 0 
+
+
+[ cross-validation|fold ] 2 
+## collapse_singletons which folds a single-child parent back to a plain leaf.
+## collapse_singletons: single-child parents (Declined, Administrative) fold
+
+[ outcome event|events ] 0 
+
+
+[ ggplot ] 6 
+\code{dpi} argument of \code{ggplot2::ggsave()}.}
+\code{ggplot2::ggsave()} for raster resolution.
+#'   \code{dpi} argument of \code{ggplot2::ggsave()}.
+#' \code{ggplot2::ggsave()} for raster resolution.
+
+[ CONSORT 2025|CONSORT 2010 ] 0 
+
+
+[ PRISMA 2020 ] 12 
+Systematic reviews and meta-analyses synthesize evidence across multiple studies, requiring a transparent account of the literature search and selection process. The PRISMA 2020 (Preferred Reporting Items for Systematic Reviews and Meta-Analyses) statement prescribes a flow diagram with a distinctive structure: multiple parallel identification streams converge into a single screening flow, with progressive exclusions at each stage. The MOOSE (Meta-analysis of Observational Studies in Epidemiology) guidelines follow a similar pattern for observational evidence synthesis.
+The PRISMA 2020 flow diagram uses up to three columns to organize sources: studies from previous reviews (left), databases and registers (center), and other methods such as citation searching and gray literature (right). Each column receives a header label and one source box listing individual databases or methods with their counts.
+Up to three groups are supported, matching the three-column PRISMA 2020 template. The `headers` argument provides custom display labels; when omitted, group names are title-cased automatically.
+### * PRISMA 2020
+
+[ STARD 2015 ] 1 
+### * STARD 2015
+[1] "advanced_workflows.Rmd"  "articles"               
+[3] "enrollment_diagrams.Rmd" "graphviz_export.Rmd"    
+[5] "split_recombine.Rmd"     "systematic_reviews.Rmd" 
+export(allocate) export(assess) export(cohort) export(cohorts) export(combine) export(endpoint) export(enroll) export(exclude) export(flowchart) export(flowsave) export(phase) export(recdims) export(sources) export(stratify)

@@ -1,0 +1,11 @@
+Run 2026-11-24 at a107536
+scraping -> drawn (6.0 x 7.0 in) 
+annotation -> drawn (3.1 x 5.0 in) 
+crossover -> drawn (2.7 x 5.0 in) 
+linkage -> drawn (4.9 x 2.2 in) 
+overlap -> FAILED: A box can feed only one pool per call; "b" is in more than one group. 
+loop -> drawn (2.7 x 4.1 in) 
+panel -> drawn (4.1 x 4.7 in) 
+abtest -> drawn (3.8 x 3.4 in) 
+testing -> drawn (5.1 x 2.9 in) 
+qualitative -> drawn (3.5 x 4.8 in) 
