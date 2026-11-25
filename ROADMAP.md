@@ -21,7 +21,7 @@ milestone step; the progress log at the bottom is append-only.
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
-| 6 | Side-by-side test with other packages | ⏳ in progress | — |
+| 6 | Side-by-side test with other packages | 🟡 done, user to read the comparison | — |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list approved 2026-11-25, nothing drawn | — |
 | 7 | Describe any collection step | ⬜ | — |
 | 8 | Check and explain | ⬜ | — |
@@ -206,7 +206,7 @@ windows) with `grid_layout()`, examples `"ml"`, `"cv"` and `"forecast"`.
 Reviewed independently twice; findings fixed 2026-11-24, including grids of
 the user's own split assignments. Approved by the user 2026-11-24.
 
-### Milestone 6 — Side-by-side test ⏳
+### Milestone 6 — Side-by-side test 🟡
 
 **Delivers:** an honest written comparison, and a plan adjusted to it.
 
@@ -380,7 +380,21 @@ A separate decision, taken after milestone 12.
   causal diagrams (`ggdag`), free drawing, choosing a design or sample size,
   making splits or fitting models.
 
-## Positioning (2026-11-22, corrected 2026-11-24; not tested side by side)
+## Positioning (tested side by side 2026-11-25)
+
+Evidence: `notes/comparison-2026-11-25.md` (with the limits of the test: the
+grader built this package and knows it best). In short:
+
+- **Ours after the test:** designs with many levels that rejoin, several kinds
+  of source kept apart, outcome events, sampling stages, one picture type
+  across fields, a restyleable ggplot, a written description.
+- **No longer ours alone:** pooling a factorial one factor at a time
+  (`selecta`), copies and joins (`dtrackr`, for data in R), pictures of folds
+  (`timetk`, `spatialsample`, `blockCV`, `mlr3spatiotempcv`).
+- **Others are better at:** warning about wrong typed numbers (`selecta`),
+  PRISMA 2020 (`PRISMA2020`), following an R data pipeline (`dtrackr`).
+
+### Earlier positioning notes (2026-11-22, corrected 2026-11-24)
 
 **Correction (2026-11-24).** The 2026-11-22 note missed `selecta` (CRAN,
 0.6.1): piped code, typed or computed counts, several converging sources,
@@ -926,3 +940,19 @@ what is still open.
 ### 2026-11-25 — Textbook list approved; milestone 6 started
 - User approved the textbook design list as it stands (nothing added or
   dropped) and asked to proceed. Milestone 6 started on branch `m6`.
+
+### 2026-11-25 — Milestone 6: side-by-side test run
+- Eight designs in `selecta`, `flowchart`, `dtrackr`, `consort` (and
+  `PRISMA2020` for the review; `TrialFlowR` has no drawing function), same
+  numbers, up to three tries each: `notes/comparison.R`, output and write-up
+  in `notes/`. Pictures looked at one by one.
+- Found against us: wrong typed numbers are drawn without a word; the sampling
+  or allocation method is never in the picture; the description says "split"
+  when each branch gets all records.
+- Corrected claims: see Positioning. `triageR` does not draw a TRIPOD flow;
+  other packages do draw fold pictures.
+- Proposed, for the user to decide: move `flow_check()` to the front of
+  milestone 7; a small new part 7i (show the method in the picture); 7a copies
+  first; point readers to other packages in the README now.
+- Open: user's decision on the four proposals and on milestones 7 to 12. The
+  grading was done by one reader who built the package.

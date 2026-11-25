@@ -1,0 +1,78 @@
+D1   ours       6   calls | drawn
+D1   selecta    9   calls | drawn
+D1   flowchart  4   calls | drawn | note: reasons typed by hand
+D1   consort    1   calls | drawn
+D1   dtrackr    7   calls | drawn
+D1   TrialFlowR 1   calls | no drawing function
+D2   ours       9   calls | drawn
+D2   selecta    6   calls | REFUSED: NAs are not allowed in subscripted assignments | WARNED: Column 1 ['from'] of item 1 is length 0. This (and 2 others like it) has been filled with NA (NULL for list columns) to make each item uniform. | note: streams kept apart, as the key asks
+D2b  selecta    9   calls | drawn | note: its own documented way: streams pooled first
+D2c  selecta    6   calls | drawn | note: streams kept apart by starting from one box
+D2   flowchart  8   calls | drawn
+D2   dtrackr    10  calls | drawn
+D2   PRISMA2020 2   calls | drawn | WARNED: 2.5
+D3   ours       4   calls | drawn
+D3   selecta    4   calls | drawn | note: without pooling
+D3b  selecta    5   calls | drawn | note: combine releases one level, so this pools by A
+D3   flowchart  3   calls | drawn
+D3   consort    1   calls | REFUSED: incorrect number of dimensions | note: needs an exclusion column, so an empty one is given
+D3   dtrackr    4   calls | drawn
+D4   ours       8   calls | drawn
+D4   selecta    6   calls | drawn | WARNED: Combine 'Households selected' is given as 1250 but the incoming streams sum to 50. | note: cannot type 1300 women at the end
+D4   flowchart  4   calls | REFUSED: ℹ In index: 1. Caused by error in `.f()`: ! The number of rows after the filter specified in `N` can't be greater than the original number of rows. | note: more households than areas
+D4   consort    8   calls | drawn | note: all text typed
+D5   ours       8   calls | drawn
+D5   selecta    5   calls | REFUSED: At most two factorial stratify()/allocate() levels are supported; use combine() to recombine a level before splitting again.
+D5b  selecta    5   calls | drawn | note: flattened to two levels; needs invented counts per composition; pools per batch, not per experiment
+D5   flowchart  4   calls | drawn
+D5   consort    4   calls | drawn
+D5   dtrackr    5   calls | drawn
+D6   ours       3   calls | drawn
+D6   selecta    4   calls | drawn | WARNED: Factorial split of 'Development': sub-arm counts sum to 750 but 900 entered (a difference of 150). / Factorial split of 'External': sub-arm counts sum to 550 but 400 entered (a difference of 150).
+D6b  selecta    3   calls | drawn | note: external set left out
+D6c  selecta    3   calls | drawn | note: external set drawn as one more split
+D6   flowchart  4   calls | drawn
+D6   dtrackr    4   calls | drawn
+D7   ours       8   calls | drawn
+D7   selecta    9   calls | REFUSED: NAs are not allowed in subscripted assignments | WARNED: Split 'Split' arm counts sum to 2000 but 7300 entered (a difference of 5300). / Column 1 ['from'] of item 1 is length 0. This (and 0 others like it) has been filled with NA (NULL for list columns) to make each item uniform.
+D7b  selecta    9   calls | drawn | note: streams pooled before removal
+D7c  selecta    8   calls | drawn | note: streams kept apart by starting from one box
+D7   dtrackr    7   calls | drawn
+D8   ours       6   calls | drawn
+D8   selecta    6   calls | drawn | WARNED: Split 'Each labels all records' arm counts sum to 4000 but 2000 entered (a difference of 2000). / Combine 'Labels compared' is given as 2000 but the incoming streams sum to 4000.
+D8   flowchart  2   calls | REFUSED: ℹ In index: 1. Caused by error in `.f()`: ! The number of rows after the split specified in N has to be equal to the original number of rows.
+D8   dtrackr    4   calls | drawn
+D3b  consort    4   calls | REFUSED: Text with length of 1 or same node number as `prev_box`. | note: all text typed
+D2   consort    5   calls | REFUSED: argument "prev_box" is missing, with no default | note: two starting boxes, all text typed
+D2d  consort    6   calls | drawn | note: one starting box, all text typed
+D6   consort    3   calls | drawn | note: one starting box, all text typed
+D8   consort    6   calls | drawn | note: all text typed
+D6b  dtrackr    4   calls | drawn | note: needs an invented last box to join the two
+D8b  dtrackr    4   calls | drawn
+D8b  ours       6   calls | drawn | note: same wording as the others
+D4b  ours       8   calls | drawn | note: method typed into the labels
+S1   selecta    4   calls | drawn | WARNED: Column 1 ['from'] of item 1 is length 0. This (and 0 others like it) has been filled with NA (NULL for list columns) to make each item uniform. | note: look at the picture: the 310 exclusions are missing and All says 1,600
+S2   selecta    5   calls | REFUSED: missing value where TRUE/FALSE needed | WARNED: Column 1 ['from'] of item 1 is length 0. This (and 0 others like it) has been filled with NA (NULL for list columns) to make each item uniform. | note: the same with a phase label
+P1   ours       4   calls | drawn
+P1   selecta    4   calls | drawn | WARNED: Exclusion 'Excluded' sub-reasons sum to 90 but the exclusion total is 100. / Split 'Randomized' arm counts sum to 390 but 400 entered (a difference of 10).
+P1   flowchart  3   calls | REFUSED: ℹ In index: 1. Caused by error in `.f()`: ! The number of rows after the split specified in N has to be equal to the original number of rows.
+P1   consort    4   calls | drawn
+
+our description of D8b:
+ Flow diagram with 2 stages, read from top to bottom. It starts with Records to label (n = 2,000). Annotator: Records to label is split into Annotator 1 labels all 2,000 and Annotator 2 labels all 2,000. 
+
+class of what each tool returns / draws with:
+ours: ggplot2::ggplot 
+selecta: selecta ; flowchart() returns list 
+consort: consort list 
+flowchart: fc 
+
+lines of R code that mention alternative text (whole words; matches printed):
+  selecta 0.6.1 : 0 lines 
+  flowchart 1.0.1 : 0 lines 
+  consort 1.2.4 : 0 lines 
+  dtrackr 0.5.0 : 0 lines 
+  PRISMA2020 1.1.5 : 0 lines 
+  TrialFlowR 1.0.0 : 0 lines 
+  studydesignflow 0.0.0.9000 : 2 lines e.g. ggplot2::labs(alt = unclass(flow_describe(object))) + 
+ours 0.0.0.9000 ;  R version 4.5.2 (2025-10-31 ucrt) 
