@@ -1,0 +1,45 @@
+packages: 25835 ; hits: 30 
+
+adsoRptionCV 0.1.0 | Cross-Validation Methods for Adsorption Isotherm Models 
+ArvindSt 1.1.0 | Five Novel Stochastic Regression Models with Arvind-Distributed
+Errors and Effects 
+backtestGraphics 0.1.8 | Interactive Graphics for Portfolio Data 
+bigPLSR 0.8.0 | Partial Least Squares Regression Models with Big Matrices 
+blockCV 4.0-1 | Spatial and Environmental Blocking for Cross-Validation 
+capnet 0.4.1 | Contribution-Capped Elastic Net Regularization 
+Coxmos 1.1.5 | Cox MultiBlock Survival 
+cxreg 1.1.4 | Complex-Valued Lasso and Complex-Valued Graphical Lasso 
+FuzzyLogit 0.1.1 | Fuzzy Logistic Regression 
+geospt 1.0-6 | Geostatistical Analysis and Design of Optimal Spatial Sampling
+Networks 
+hbamr 2.4.7 | Hierarchical Bayesian Aldrich-McKelvey Scaling via 'Stan' 
+hfr 0.7.1 | Estimate Hierarchical Feature Regression Models 
+ichimoku 1.5.7 | Visualization and Tools for Ichimoku Kinko Hyo Strategies 
+KernSmoothIRT 6.6 | Nonparametric Item Response Theory 
+limpidR 0.1.0 | Reproducible Analysis of Freshwater Microplastic Data 
+monoClust 1.2.1 | Perform Monothetic Clustering with Extensions to Circular Data 
+ncvreg 3.16.0 | Regularization Paths for SCAD and MCP Penalized Regression
+Models 
+NNPreg 0.1.0 | Nuclear Norm Penalized Regression 
+penAFT 0.3.2 | Fit the Semiparametric Accelerated Failure Time Model with
+Elastic Net and Sparse Group La 
+PointedSDMs 2.1.6 | Fit Models Derived from Point Processes to Species Distributions
+using 'inlabru' 
+PortfolioTesteR 0.1.4 | Test Investment Strategies with English-Like Code 
+profileR 0.3-6 | Profile Analysis of Multivariate Data in R 
+PRTree 1.1.1 | Probabilistic Regression Trees 
+ReproStat 0.1.2 | Reproducibility Diagnostics for Statistical Modeling 
+SingRegKrig 0.1.0 | Singularity Regression Kriging for Spatial Prediction 
+spatialRF 1.1.5 | Easy Spatial Modeling with Random Forest 
+survdnn 1.0.0 | Deep Neural Networks for Survival Analysis with R 'torch' 
+unifiedml 0.3.0 | Unified Interface for Machine Learning Models 
+WAreg 0.1.0 | While-Alive Regression for Composite Endpoints with
+Cluster-Robust Inference 
+waves 0.2.7 | Vis-NIR Spectral Analysis Wrapper 
+
+triageR 0.2.0 functions mentioning flow, participant or diagram:
+(end)
+timetk 2.9.1 : plot_time_series_cv_plan plot_time_series_cv_plan plot_time_series_cv_plan.data.frame plot_time_series_cv_plan.default plot_time_series_cv_plan.rolling_origin plot_time_series_cv_plan.time_series_cv 
+spatialsample 0.6.1 : autoplot autoplot.spatial_block_cv autoplot.spatial_rset autoplot.spatial_rsplit 
+mlr3spatiotempcv 2.3.5 : autoplot assert_autoplot autoplot.ResamplingCustomCV autoplot.ResamplingCV autoplot.ResamplingRepeatedCV autoplot.ResamplingRepeatedSpCVBlock autoplot.ResamplingRepeatedSpCVCoords autoplot.ResamplingRepeatedSpCVDisc autoplot.ResamplingRepeatedSpCVEnv autoplot.ResamplingRepeatedSpCVKnndm autoplot.ResamplingRepeatedSpCVTiles autoplot.ResamplingRepeatedSptCVCstf autoplot.ResamplingSpCVBlock autoplot.ResamplingSpCVBuffer autoplot.ResamplingSpCVCoords autoplot.ResamplingSpCVDisc autoplot.ResamplingSpCVEnv autoplot.ResamplingSpCVKnndm autoplot.ResamplingSpCVTiles autoplot.ResamplingSptCVCstf autoplot_all_folds_dt autoplot_all_folds_list autoplot_custom_cv autoplot_multi_fold_dt autoplot_multi_fold_list autoplot_spatial autoplot_spatiotemp 
+blockCV 4.0.1 : cv_plot cv_plot 

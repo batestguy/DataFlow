@@ -19,6 +19,21 @@ evaluation work. What comes next is in
 `"survey"`, `"review"`, `"factorial"`, `"trial_data"`, `"ml"`, `"cv"` and
 `"forecast"`.
 
+## When another package fits better
+
+- PRISMA 2020 review diagrams: [PRISMA2020](https://cran.r-project.org/package=PRISMA2020).
+- Standard clinical flows with warnings when typed numbers do not add up
+  (studydesignflow does not check them yet):
+  [selecta](https://cran.r-project.org/package=selecta).
+- A flow chart made automatically from a dplyr pipeline, with joins:
+  [dtrackr](https://cran.r-project.org/package=dtrackr).
+- Pictures of existing resampling objects:
+  [timetk](https://cran.r-project.org/package=timetk) and
+  [spatialsample](https://cran.r-project.org/package=spatialsample)
+  (seen in their help pages, not tried).
+
+The test behind this list, and its limits: `notes/comparison-2026-11-25.md`.
+
 ## Install
 
 ```r
