@@ -28,22 +28,26 @@ flow_describe <- function(x) {
   ed <- x$edges
   flat <- function(s) gsub("[[:space:]]*\n[[:space:]]*", " ", s)
   nice <- unique_names(x, flat)
-  say <- function(id) {
+  # each = TRUE: the same text stands for several boxes, so "n = 36 each"
+  say <- function(id, each = FALSE) {
     i <- match(id, nd$id)
     out <- flat(nd$label[i])
     ev <- if (is.null(x$events)) NA else x$events[as.character(id)]
-    extra <- c(if (!is.na(nd$n[i])) paste0("n = ", nd$n[i]),
-               if (!is.na(ev)) paste0("events = ", ev),
+    extra <- c(if (!is.na(nd$n[i])) paste0("n = ", nd$n[i],
+                                           if (each) " each"),
+               if (!is.na(ev)) paste0("events = ", ev, if (each) " each"),
                if (!is.na(nd$note[i])) flat_note(nd$note[i]))
     if (length(extra)) paste0(out, " (", paste(extra, collapse = "; "), ")")
     else out
   }
   name <- function(id) nice[as.character(id)]
+  # the first row by its drawn name, or "top" when it has none
+  top_row <- if (st$row_label[1] == "") "top" else st$name[1]
   # TRUE if `ids` are exactly the boxes of one stage; returns that stage name
   whole_row <- function(ids) {
     s <- unique(nd$stage[match(ids, nd$id)])
     if (length(s) == 1 && setequal(ids, nd$id[nd$stage == s])) {
-      st$name[st$id == s]
+      if (s == st$id[1]) top_row else st$name[st$id == s]
     } else {
       NA_character_
     }
@@ -51,7 +55,8 @@ flow_describe <- function(x) {
 
   root <- nd$id[nd$stage == st$id[1]]
   start <- if (length(root) == 1) say(root) else
-    paste0(length(root), " boxes side by side: ",
+    paste0(length(root), " boxes side by side",
+           if (top_row != "top") paste0(" in the ", top_row, " row"), ": ",
            and_list(vapply(root, say, "")))
   sentences <- paste0("Flow diagram with ", nrow(st), " stage",
                       if (nrow(st) != 1) "s", ", read from top to bottom. ",
@@ -70,7 +75,9 @@ flow_describe <- function(x) {
     if (type %in% c("split", "assign")) {
       verb <- if (type == "split") "split into" else
         assign_verb(st$method[s])
-      body <- describe_split(ids, srcs, say, name, whole_row, verb)
+      # units are assigned, not the box they come from
+      whose <- if (type == "assign") "those in " else ""
+      body <- describe_split(ids, srcs, say, name, whole_row, verb, whose)
     } else if (type == "partition") {
       body <- paste0(describe_split(ids, srcs, say, name, whole_row,
                                     "partitioned into"),
@@ -102,7 +109,9 @@ flow_describe <- function(x) {
 }
 
 describe_split <- function(ids, srcs, say, name, whole_row,
-                           verb = "split into") {
+                           verb = "split into", whose = "") {
+  is <- if (whose == "") " is " else " are "
+  each_are <- if (whose == "") " are each " else " are "
   parents <- unique(unlist(srcs))
   kids <- lapply(parents, function(p) {
     ids[vapply(srcs, function(z) p %in% z, logical(1))]
@@ -114,17 +123,18 @@ describe_split <- function(ids, srcs, say, name, whole_row,
   }
   if (length(unique(kid_text)) == 1) {
     if (length(parents) == 1) {
-      return(paste0(name(parents), " is ", verb, " ", kid_text[1]))
+      return(paste0(whose, name(parents), is, verb, " ", kid_text[1]))
     }
     row <- whole_row(parents)
     if (!is.na(row)) {
-      return(paste0("each of the ", length(parents), " boxes in the ", row,
-                    " row is ", verb, " ", kid_text[1]))
+      return(paste0(whose, "each of the ", length(parents), " boxes in the ",
+                    row, " row", is, verb, " ", kid_text[1]))
     }
-    return(paste0(and_list(name(parents)), " are each ", verb, " ",
-                  kid_text[1]))
+    return(paste0(whose, if (whose != "") "each of ", and_list(name(parents)),
+                  each_are, verb, " ", kid_text[1]))
   }
-  paste(paste0(name(parents), " is ", verb, " ", kid_text), collapse = "; ")
+  paste(paste0(whose, name(parents), is, verb, " ", kid_text),
+        collapse = "; ")
 }
 
 # "randomly assigned to", "assigned by minimisation to", "assigned to"
@@ -178,9 +188,10 @@ describe_attach <- function(x, s, ids, srcs, say, name, whole_row,
     }
   }, "")
   if (length(unique(texts)) == 1) {
+    each_text <- say(ids[1], each = length(ids) > 1)
     if (all(bracket)) {
       if (length(ids) == 1) return(paste0(texts[1], ", applied ", part))
-      return(paste0(texts[1], ", applied across all boxes under each ", over,
+      return(paste0(each_text, ", applied across all boxes under each ", over,
                     " box (", and_list(name(groups)), ")"))
     }
     if (!any(bracket)) {
@@ -188,10 +199,10 @@ describe_attach <- function(x, s, ids, srcs, say, name, whole_row,
       if (length(all_src) == 1) return(paste0(texts[1], ", ", part))
       row <- whole_row(all_src)
       if (!is.na(row)) {
-        return(paste0(texts[1], ", for each of the ", length(all_src),
+        return(paste0(each_text, ", for each of the ", length(all_src),
                       " boxes in the ", row, " row"))
       }
-      return(paste0(texts[1], ", ", link, " each of ",
+      return(paste0(each_text, ", ", link, " each of ",
                     and_list(name(all_src))))
     }
   }
@@ -238,9 +249,18 @@ and_list <- function(x) {
   paste0(paste(x[-length(x)], collapse = ", "), " and ", x[length(x)])
 }
 
-# Notes may span several lines; in a sentence the lines are joined with ", "
-# (the "; " separator is kept for between the count and the note).
-flat_note <- function(s) gsub("[[:space:]]*\n[[:space:]]*", ", ", s)
+# Notes may span several lines. In a sentence the lines are joined with ", "
+# (the "; " separator is kept for between the count and the note), or with a
+# space where a line was only wrapped: it ends in punctuation, or the next
+# line goes on in lower case or with a number and no count was just closed.
+# A line that starts in lower case is taken to continue the line before it, so a
+# list of lower-case items on lines of their own is read without commas.
+flat_note <- function(s) {
+  s <- gsub("([,;:.])[[:space:]]*\n[[:space:]]*", "\\1 ", s)
+  s <- gsub("([^)[:space:]])[[:space:]]*\n[[:space:]]*(?=[a-z0-9])", "\\1 ", s,
+            perl = TRUE)
+  gsub("[[:space:]]*\n[[:space:]]*", ", ", s)
+}
 
 # "; all records of each patient_id are in one set; the sets follow each
 # other in time by date (older data for training, newer for testing)",

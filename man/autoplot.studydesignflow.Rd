@@ -21,7 +21,7 @@
 \item{object, x}{A \code{studydesignflow} object.}
 
 \item{...}{Passed to \code{\link[=flow_layout]{flow_layout()}} (e.g. \code{count_format}, \code{base_size},
-\code{hgap}, \code{vgap}, \code{connector}).}
+\code{hgap}, \code{vgap}, \code{connector}, \code{show_method}).}
 
 \item{fill, colour}{Box fill and border colour.}
 

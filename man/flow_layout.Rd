@@ -18,7 +18,8 @@ flow_layout(
   row_label_width = 16,
   connector = c("elbow", "straight"),
   side_format = "{label} (n = {n})",
-  side_gap = 0.3
+  side_gap = 0.3,
+  show_method = FALSE
 )
 }
 \arguments{
@@ -56,6 +57,10 @@ as in \code{count_format}. Reasons are listed below it, one per line.}
 
 \item{side_gap}{Length of the arrow from the flow line to an exclusion
 box, in inches.}
+
+\item{show_method}{Write how boxes were assigned or sampled (the \code{method} of
+\code{\link[=flow_assign]{flow_assign()}}, \code{\link[=flow_cluster]{flow_cluster()}} and \code{\link[=flow_select]{flow_select()}}) under the row label,
+in italics and brackets? The method is always in the description.}
 }
 \value{
 A \code{studydesignflow_layout}: a list of data frames \code{boxes}, \code{side}

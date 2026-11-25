@@ -236,7 +236,7 @@ test_that("the review example follows PRISMA 2020 and its counts add up", {
     }
   }
   txt <- unclass(flow_describe(d))
-  expect_match(txt, "It starts with 2 boxes side by side: Records identified from databases and registers (n = 1,954;",
+  expect_match(txt, "It starts with 2 boxes side by side in the Identification row: Records identified from databases and registers (n = 1,954;",
                fixed = TRUE)
   expect_match(txt, "are combined into Studies included in review (n = 43;",
                fixed = TRUE)

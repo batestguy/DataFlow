@@ -22,8 +22,8 @@ milestone step; the progress log at the bottom is append-only.
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
-| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ 46 core designs drawn, read blind, graded; user to look | — |
-| 7 | Check numbers, then describe any collection step | ⬜ | — |
+| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ 46 core designs drawn, read blind, graded, merged; other 71 after 7a | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0 built and reviewed; 7i built, default for the user to choose | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -265,7 +265,7 @@ list) and `-output.txt`.
 **Done when:** all 117 have a grade, or "source not read", and the user has
 seen the core pictures.
 
-### Milestone 7 — Check numbers, then describe any collection step ⬜
+### Milestone 7 — Check numbers, then describe any collection step ⏳
 
 **Delivers:** every step can say what went in and in what unit, what was done,
 who or what did it, when, and what came out or was lost. Built in this order,
@@ -274,8 +274,8 @@ correctly. Names below are proposals, settled in the design of each part.
 
 | Part | What | Proposed form | Watch for |
 |---|---|---|---|
-| 7-0 Number check (first; moved from milestone 8 on 2026-11-25) | Numbers that do not add up, reasons that do not sum, splits larger than their parent | `flow_check()`, run by the user; reports, never edits or blocks | Designed with 7a and 7b: copies and changes of unit must not be reported |
-| 7a Copies (next after 7-0) | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
+| 7-0 Number check 🟡 (first; moved from milestone 8 on 2026-11-25) | Numbers that do not add up, reasons that do not sum, splits larger than their parent | `flow_check()`, run by the user; reports, never edits or blocks | Designed with 7a and 7b: copies and changes of unit must not be reported |
+| 7a Copies (after 7i) | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
 | 7b Units | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
 | 7c Step details | Tool or instrument, who, dates, method | `details =` with fixed fields after Datasheets and Croissant; drawn as a note or a numbered key; always in the description | Long text; layout height |
 | 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
@@ -283,9 +283,10 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7f Shared groups | One group in two analyses | lift "one pool per box per call" | The layout is a tree today: highest risk, do it on its own branch with the stress test extended first |
 | 7g Loops | Repeat until (label, check, improve; retries) | a back arrow in the side margin with its rule and number of rounds | Counts are never recomputed round a loop; description must not loop |
 | 7h Planned and actual | One diagram for protocol and report | `planned =`; "(planned 100; n = 92)" | Data mode fills the actual number |
-| 7i Method in the picture (added 2026-11-25) | How units were assigned or sampled, shown in the figure and not only in the description | an option on assign, cluster and select | Changes approved pictures: the user sees them before the default is settled |
+| 7i Method in the picture 🟡 (added 2026-11-25, second) | How units were assigned or sampled, shown in the figure and not only in the description | an option on assign, cluster and select | Changes approved pictures: the user sees them before the default is settled |
 
-**Order (user, 2026-11-25):** 7-0, 7a, then the rest.
+**Order (user, 2026-11-25):** 7-0 with the description faults, 7i, 7a, then the
+rest. The 71 extended and edge textbook designs are tested after 7a.
 
 **Checks:** existing diagrams identical (`dev/m5_reg.R` and `dev/m5_cmp.R`, 323
 designs); stress test extended with copies, links, shared groups and loops
@@ -432,8 +433,15 @@ since the data may not reflect the whole design.
 
 ## Known limitations (current)
 
-- Typed counts are drawn as typed; a typed diagram is only as correct as
-  its numbers. In data mode counts are computed, but only for steps given
+- Typed counts are drawn as typed; `flow_check()` reports what does not add
+  up, but a clean report does not show the numbers are right. Until copies
+  (7a) and units (7b) exist it reports correct designs as problems when a
+  split holds the same units several times or counts another unit (textbook
+  designs D08 and E04). After an exclusion, a next box that counts fewer of
+  another unit is also reported as a problem. Fold grids are not checked.
+- A note whose lines start in lower case is described as one wrapped
+  sentence, so a list of lower-case items on lines of their own is read
+  without commas. In data mode counts are computed, but only for steps given
   `by =`, `where =`, formula `reasons`, or (apply, outcome, pool) no `n`;
   boxes made without data have no rows and counts below them stay blank.
   A typed exclusion in data mode also blanks the counts below it.
@@ -1008,3 +1016,29 @@ what is still open.
 - Open: the user looks at the pictures; grades unchecked; extended and edge
   designs; a human reader. The user does not own Cochran and Cox (1957), so
   the cake question stays open.
+
+### 2026-11-25 — Milestone 7: number check, description fixes, method option
+- The user accepted the recommendations: 7-0 and the description faults, then
+  7i, then 7a; the other 71 textbook designs afterwards.
+- `flow_check()` (7-0): reports problems and notes, changes nothing, run by
+  the user. Description faults from the blind reading fixed. `show_method`
+  (7i): method in italics under the row label, off until the user has seen
+  both pictures.
+- Independent review (same model family): no blocking fault, four things to
+  fix, all fixed with tests: typed and edited events in data mode were not
+  compared; part of a report could print as a clean result; pools, selections
+  and brackets were not held to what is left after an exclusion; one box with
+  fewer was a problem in a split and a note elsewhere. Also: a long method
+  stretched boxes and could overprint labels (gaps grow instead); a tall label
+  on the first or last row was cut off.
+- Found by looking at the pictures after the tests passed: lines of text are
+  drawn 1.45 times the font size apart, the layout counted 1.2, so text with
+  many lines (seen with 9 and 13) spilled out of its box, for example an
+  exclusion box with many reasons. Present since milestone 1. Boxes with five
+  or more lines are taller now; shorter ones are unchanged, and the test asks
+  R for the drawn height. Examples and the 323 designs are identical.
+- Checked: 132 single-number changes in six examples, 110 problems, 22 notes,
+  0 silent (the changes were chosen by the author of the check); 0 problems in
+  the built-in examples; in the 60 core textbook flows 2 false problems (D08,
+  E04); 323 designs: objects and layouts identical to `main`, descriptions
+  differ in 138 as intended. Description fixes have not been read blind again.

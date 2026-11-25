@@ -60,3 +60,53 @@ test_that("grouping over the top stage is described plainly", {
   expect_match(unclass(flow_describe(d)),
                "T: m, applied across all 2 boxes under All.", fixed = TRUE)
 })
+
+test_that("units are assigned, not the box they come from", {
+  d <- flow_start("People", n = 30) |>
+    flow_apply("Before", "Depression score", n = 30) |>
+    flow_assign("Condition", c("SSRI", "Placebo"), n = 15)
+  expect_match(flow_describe(d),
+               "those in Depression score are randomly assigned to SSRI",
+               fixed = TRUE)
+  two <- flow_start("Field") |> flow_split("Block", c("B1", "B2")) |>
+    flow_assign("Rate", c("low", "high"), n = 3)
+  expect_match(flow_describe(two), paste(
+    "those in each of the 2 boxes in the Block row are randomly assigned to",
+    "low (n = 3) and high (n = 3)"), fixed = TRUE)
+  some <- flow_start("Field") |> flow_split("Block", c("B1", "B2", "B3")) |>
+    flow_assign("Rate", c("low", "high"), from = c("B1", "B2"))
+  expect_match(flow_describe(some),
+               "those in each of B1 and B2 are randomly assigned to",
+               fixed = TRUE)
+})
+
+test_that("one text for several boxes says each", {
+  d <- flow_start("Field") |> flow_split("Block", c("B1", "B2")) |>
+    flow_outcome("Measured", "Hills", n = 36)
+  expect_match(flow_describe(d),
+               "Hills (n = 36 each), for each of the 2 boxes in the Block row",
+               fixed = TRUE)
+  one <- flow_start("Field") |> flow_outcome("Measured", "Hills", n = 36)
+  expect_no_match(flow_describe(one), "each")
+})
+
+test_that("wrapped notes get no stray comma, listed notes keep theirs", {
+  say <- function(note) unclass(flow_describe(flow_start("A", n = 1, note = note)))
+  expect_match(say("by 6 of the\n12 panellists"), "by 6 of the 12 panellists")
+  expect_match(say("once in every row,\nonce in every column"),
+               "every row, once in every column")
+  expect_match(say("Received it (n = 146)\nDid not (n = 4)"),
+               "Received it (n = 146), Did not (n = 4)", fixed = TRUE)
+  expect_match(say("Adults\nSpeakers"), "Adults, Speakers")
+})
+
+test_that("the first row is called by its name, or top", {
+  a <- flow_start(c("Cases", "Controls"), n = c(2, 3), stage = "Sampled apart") |>
+    flow_outcome("Recorded", "Exposure")
+  expect_match(flow_describe(a), "side by side in the Sampled apart row:")
+  expect_match(flow_describe(a), "2 boxes in the Sampled apart row")
+  b <- flow_start(c("Cases", "Controls"), n = c(2, 3)) |>
+    flow_outcome("Recorded", "Exposure")
+  expect_match(flow_describe(b), "for each of the 2 boxes in the top row")
+  expect_no_match(flow_describe(b), "Start row")
+})

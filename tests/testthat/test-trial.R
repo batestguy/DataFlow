@@ -176,7 +176,7 @@ test_that("the trial is described in plain sentences", {
       "Other reasons (n = 13).",
       "Randomisation: Assessed for eligibility leads to Randomised",
       "(n = 300).",
-      "Allocation: Randomised is randomly assigned to Exercise programme",
+      "Allocation: those in Randomised are randomly assigned to Exercise programme",
       "(n = 150; Received allocated intervention (n = 146), Did not receive",
       "it (n = 4)) and Usual care (n = 150; Received usual care (n = 150)).",
       "Follow-up: Lost to follow-up (n = 9) after Exercise programme: Moved",
@@ -193,10 +193,10 @@ test_that("assignment methods are described", {
   d <- flow_start("Eligible")
   expect_match(flow_describe(flow_assign(d, "Arm", c("A", "B"),
                                          method = "minimisation")),
-               "Eligible is assigned by minimisation to A and B")
+               "those in Eligible are assigned by minimisation to A and B")
   expect_match(flow_describe(flow_assign(d, "Arm", c("A", "B"),
                                          method = NULL)),
-               "Eligible is assigned to A and B")
+               "those in Eligible are assigned to A and B")
 })
 
 test_that("print shows exclusion boxes", {
