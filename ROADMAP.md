@@ -21,8 +21,8 @@ milestone step; the progress log at the bottom is append-only.
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
-| 6 | Side-by-side test with other packages | ⬜ next | — |
-| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list written, nothing drawn | — |
+| 6 | Side-by-side test with other packages | ⏳ in progress | — |
+| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list approved 2026-11-25, nothing drawn | — |
 | 7 | Describe any collection step | ⬜ | — |
 | 8 | Check and explain | ⬜ | — |
 | 9 | Time | ⬜ | — |
@@ -206,7 +206,7 @@ windows) with `grid_layout()`, examples `"ml"`, `"cv"` and `"forecast"`.
 Reviewed independently twice; findings fixed 2026-11-24, including grids of
 the user's own split assignments. Approved by the user 2026-11-24.
 
-### Milestone 6 — Side-by-side test ⬜
+### Milestone 6 — Side-by-side test ⏳
 
 **Delivers:** an honest written comparison, and a plan adjusted to it.
 
@@ -248,7 +248,7 @@ list) and `-output.txt`.
 1. ✅ List: 117 designs (46 core, 53 extended, 18 edge), each with a data set,
    a source where the help page names one, counts computed from the data, what
    the picture must say, and a prediction written before testing.
-2. ⬜ User reads the list: anything missing, anything to drop.
+2. ✅ List approved by the user (2026-11-25), nothing added or dropped.
 3. ⬜ Check each core design against its book or paper; find sources for H08
    and H14; look for the designs listed without data.
 4. ⬜ Answer keys for the 46 core designs, written before drawing.
@@ -922,3 +922,7 @@ what is still open.
   of 9 in progress).
 - Open: user reads the list; then milestone 6 and 6b. A cross-family review
   before the first release.
+
+### 2026-11-25 — Textbook list approved; milestone 6 started
+- User approved the textbook design list as it stands (nothing added or
+  dropped) and asked to proceed. Milestone 6 started on branch `m6`.
