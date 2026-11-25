@@ -21,10 +21,10 @@ milestone step; the progress log at the bottom is append-only.
 | 3 | Multi-stage cluster survey | ✅ built, reviewed, merged into `main` | 2026-11-22 |
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
-| 6 | Side-by-side test with other packages | 🟡 done, user to read the comparison | — |
-| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list approved 2026-11-25, nothing drawn | — |
-| 7 | Describe any collection step | ⬜ | — |
-| 8 | Check and explain | ⬜ | — |
+| 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
+| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list approved 2026-11-25; sources and answer keys | — |
+| 7 | Check numbers, then describe any collection step | ⬜ | — |
+| 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
 | 11 | No-code: spreadsheet, then web form | ⬜ | — |
@@ -206,7 +206,7 @@ windows) with `grid_layout()`, examples `"ml"`, `"cv"` and `"forecast"`.
 Reviewed independently twice; findings fixed 2026-11-24, including grids of
 the user's own split assignments. Approved by the user 2026-11-24.
 
-### Milestone 6 — Side-by-side test 🟡
+### Milestone 6 — Side-by-side test ✅
 
 **Delivers:** an honest written comparison, and a plan adjusted to it.
 
@@ -260,7 +260,7 @@ list) and `-output.txt`.
 **Done when:** all 117 have a grade, or "source not read", and the user has
 seen the core pictures.
 
-### Milestone 7 — Describe any collection step ⬜
+### Milestone 7 — Check numbers, then describe any collection step ⬜
 
 **Delivers:** every step can say what went in and in what unit, what was done,
 who or what did it, when, and what came out or was lost. Built in this order,
@@ -269,7 +269,8 @@ correctly. Names below are proposals, settled in the design of each part.
 
 | Part | What | Proposed form | Watch for |
 |---|---|---|---|
-| 7a Copies | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
+| 7-0 Number check (first; moved from milestone 8 on 2026-11-25) | Numbers that do not add up, reasons that do not sum, splits larger than their parent | `flow_check()`, run by the user; reports, never edits or blocks | Designed with 7a and 7b: copies and changes of unit must not be reported |
+| 7a Copies (next after 7-0) | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
 | 7b Units | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
 | 7c Step details | Tool or instrument, who, dates, method | `details =` with fixed fields after Datasheets and Croissant; drawn as a note or a numbered key; always in the description | Long text; layout height |
 | 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
@@ -277,6 +278,9 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7f Shared groups | One group in two analyses | lift "one pool per box per call" | The layout is a tree today: highest risk, do it on its own branch with the stress test extended first |
 | 7g Loops | Repeat until (label, check, improve; retries) | a back arrow in the side margin with its rule and number of rounds | Counts are never recomputed round a loop; description must not loop |
 | 7h Planned and actual | One diagram for protocol and report | `planned =`; "(planned 100; n = 92)" | Data mode fills the actual number |
+| 7i Method in the picture (added 2026-11-25) | How units were assigned or sampled, shown in the figure and not only in the description | an option on assign, cluster and select | Changes approved pictures: the user sees them before the default is settled |
+
+**Order (user, 2026-11-25):** 7-0, 7a, then the rest.
 
 **Checks:** existing diagrams identical (`dev/m5_reg.R` and `dev/m5_cmp.R`, 323
 designs); stress test extended with copies, links, shared groups and loops
@@ -288,13 +292,11 @@ independent review.
 steps, the core textbook designs that 7a to 7h were meant to fix are graded
 again (milestone 6b), and the user approves the pictures.
 
-### Milestone 8 — Check and explain ⬜
+### Milestone 8 — Explain ⬜
 
 **Delivers:**
-1. `flow_check()` (if D1 is yes): numbers that do not add up, reasons that do
-   not sum, splits larger than their parent (copies and changes of unit
-   excepted), missing units, dates or tools. It reports; it never edits or
-   blocks.
+1. `flow_check()` extended (its number check moved to 7-0): missing units,
+   dates or tools. It reports; it never edits or blocks.
 2. A long description as a nested list (text, Markdown, HTML), beside the
    short alt text, following the W3C complex-images tutorial; title and
    description inside saved SVG files.
@@ -956,3 +958,11 @@ what is still open.
   first; point readers to other packages in the README now.
 - Open: user's decision on the four proposals and on milestones 7 to 12. The
   grading was done by one reader who built the package.
+
+### 2026-11-25 — Milestone 6 approved; four proposals accepted
+- User accepted all four proposals: `flow_check()` moved to the front of
+  milestone 7 (7-0), 7a copies next, new part 7i (method in the picture, the
+  user sees the pictures before the default is settled), and other packages
+  named on the README now. `m6` merged into `main`.
+- Milestone 6b continues: sources checked and answer keys written for the 46
+  core designs before anything is drawn.
