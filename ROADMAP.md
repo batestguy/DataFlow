@@ -861,3 +861,8 @@ what is still open.
   output; a search for the old name finds only the places listed above.
 - Open: CI result under the new name (next entry); decisions D1 to D3; a
   cross-family review before the first release.
+
+### 2026-11-25 — CI green under the new name
+- Commit `96d7f49` pushed to `main`; CI run 45526765601 green on all 5
+  platforms. Open: decisions D1 to D3; a cross-family review before the first
+  release. Next: milestone 6.
