@@ -22,10 +22,11 @@ milestone step; the progress log at the bottom is append-only.
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ⬜ next | — |
+| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list written, nothing drawn | — |
 | 7 | Describe any collection step | ⬜ | — |
 | 8 | Check and explain | ⬜ | — |
 | 9 | Time | ⬜ | — |
-| 10 | Gallery of 25 workflows | ⬜ | — |
+| 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
 | 11 | No-code: spreadsheet, then web form | ⬜ | — |
 | 12 | Documentation, outside review, first release | ⬜ | — |
 | 13 | CRAN submission | ⏸ separate decision, later | — |
@@ -35,15 +36,16 @@ Plan revised on 2026-11-24 to follow the goal above; the evidence is in
 6 to 9 and track T (reporting-guideline templates dropped, paper examples
 became part of the gallery, time-based designs became milestone 9).
 
-**Three decisions to confirm with the user before milestone 6 starts** (the
-user asked for the plan to be documented on 2026-11-24 but did not answer them
-one by one):
+**Three decisions, confirmed by the user on 2026-11-25** (yes to all three):
 
-| # | Question | Recommended |
+| # | Question | Decision |
 |---|---|---|
-| D1 | May the package check whether typed numbers add up? This softens "typed counts are never checked". | Yes, as a separate `flow_check()` the user runs; it reports and never changes the picture |
+| D1 | May the package check whether typed numbers add up? | Yes, as a separate `flow_check()` the user runs; it reports and never changes the picture |
 | D2 | Is the no-code route part of the project? | Yes; the user finds five testers who do not code |
 | D3 | Start with the side-by-side test? | Yes; small, and may save building what exists |
+
+**Order set by the user (2026-11-25):** textbook designs are tested before any
+design is redrawn from a published paper.
 
 ## Locked decisions
 
@@ -52,7 +54,7 @@ one by one):
 | Name / licence | `studydesignflow` (named `DataFlow` until 2026-11-25), MIT |
 | Release | Public GitHub repository from day one; CRAN later |
 | Input | Short pipe-able R code, one verb per stage, verbs prefixed `flow_` |
-| Counts | Typed by hand, drawn exactly as given, never checked (numbers only get thousands separators); or, optionally, computed from a data frame, each box keeping the rows behind it (decided 2026-11-23) |
+| Counts | Typed by hand, drawn exactly as given, never checked while drawing (numbers only get thousands separators; `flow_check()`, milestone 8, will report when asked); or, optionally, computed from a data frame, each box keeping the rows behind it (decided 2026-11-23) |
 | Output | A ggplot object (restyleable) plus saved PDF/PNG at the diagram's natural size |
 | Stage definition | Each stage has a built-in type and a free-text label and note |
 | Step types | split, apply-to-group (bracket), pool/merge, exclusion side box, cluster sampling, selection, assignment |
@@ -209,7 +211,7 @@ the user's own split assignments. Approved by the user 2026-11-24.
 **Delivers:** an honest written comparison, and a plan adjusted to it.
 
 **Steps:**
-1. Confirm D1 to D3 with the user.
+1. Confirm D1 to D3 with the user (done 2026-11-25: yes to all).
 2. Install `selecta`, `flowchart`, `dtrackr`, `consort` and `TrialFlowR` into
    a separate library in `dev/complib/` (git-ignored). Never into the renv
    project library. Record the versions.
@@ -230,6 +232,33 @@ the user's own split assignments. Approved by the user 2026-11-24.
 **Done when:** the user has read the comparison and decided to keep, cut or
 change milestones 7 to 12. If another package already does most of milestone
 7, say so plainly and propose joining or building on it.
+
+### Milestone 6b — Textbook designs ⏳
+
+**Delivers:** the designs taught in applied classical-statistics textbooks,
+from one-sample and paired designs through every kind of ANOVA layout to
+multilevel, longitudinal, case-control and survey designs, each drawn with the
+package as it is and graded. No package code changes.
+
+**Files:** `notes/textbook-designs.md` (method, grading, vignette rules),
+`notes/textbook-designs-list.md` (the list), `.csv`, `.R` (the source of the
+list) and `-output.txt`.
+
+**Steps:**
+1. ✅ List: 117 designs (46 core, 53 extended, 18 edge), each with a data set,
+   a source where the help page names one, counts computed from the data, what
+   the picture must say, and a prediction written before testing.
+2. ⬜ User reads the list: anything missing, anything to drop.
+3. ⬜ Check each core design against its book or paper; find sources for H08
+   and H14; look for the designs listed without data.
+4. ⬜ Answer keys for the 46 core designs, written before drawing.
+5. ⬜ Draw, blind-read, grade: core first, then extended, then edge.
+6. ⬜ `notes/textbook-results-<date>.md`: grades beside predictions, and what
+   they change in milestones 7 and 9 (copies first; rows by columns has no
+   planned answer).
+
+**Done when:** all 117 have a grade, or "source not read", and the user has
+seen the core pictures.
 
 ### Milestone 7 — Describe any collection step ⬜
 
@@ -256,7 +285,8 @@ independent review.
 
 **Done when:** all ten workflows in `notes/workflow-test.R` draw truthfully
 (time axes excepted, milestone 9), the script is rewritten to use the new
-steps, and the user approves the pictures.
+steps, the core textbook designs that 7a to 7h were meant to fix are graded
+again (milestone 6b), and the user approves the pictures.
 
 ### Milestone 8 — Check and explain ⬜
 
@@ -290,7 +320,16 @@ extension and the SPIRIT schedule figure; look at `swcrt` and `steppedwedge`.
 **Done when:** each design above draws on a correct axis checked as data, and
 the user approves.
 
-### Milestone 10 — Gallery of 25 workflows ⬜
+### Milestone 10 — Textbook vignettes, then gallery of 25 workflows ⬜
+
+**10a. Textbook vignettes first.** Regrade all 117 textbook designs with the
+finished package; write ten vignettes, one per family A to J, from the core
+designs graded true; publish the rest as unsupported with the reason.
+
+**Gate:** 10b and every redrawing from a published paper wait until 10a has
+the user's approval.
+
+**10b. Gallery.**
 
 The acceptance test for the goal. Each has code, picture, description, source
 (invented, or citation and DOI), and a result: passes, or listed as
@@ -323,8 +362,8 @@ what stopped them is written down and fixed or listed.
 
 ### Milestone 12 — Documentation, outside review, first release ⬜
 
-**Delivers:** README, one vignette per family, a pkgdown website with the
-gallery, the comparison with other packages (pointing people to `selecta`,
+**Delivers:** README, the textbook vignettes of 10a, a pkgdown website with
+the gallery, the comparison with other packages (pointing people to `selecta`,
 `consort`, `PRISMA2020` where they fit better), a published list of what is
 not supported, a cross-family review (OpenCode `ship-reviewer`), a tagged
 release.
@@ -866,3 +905,20 @@ what is still open.
 - Commit `96d7f49` pushed to `main`; CI run 45526765601 green on all 5
   platforms. Open: decisions D1 to D3; a cross-family review before the first
   release. Next: milestone 6.
+
+### 2026-11-25 — D1 to D3 confirmed; textbook design list written
+- User: yes to the recommendations (D1 to D3). Asked for a rigorous list of
+  designs from applied textbooks for the vignettes, documented, to be done
+  before testing on papers. Added as milestone 6b, after the side-by-side test
+  (D3) and before milestone 7, with a gate in milestone 10.
+- List: 117 designs in 11 families, from 23 R packages installed in
+  `dev/complib/` (not the renv library). `notes/textbook-designs.R` computes
+  every count from the data; 0 of 117 failed. The first run caught four
+  mistakes in the list (rooms, states, a column name, a severity that was
+  classified afterwards), now corrected.
+- Not done: nothing drawn; the books were not read; predictions are not
+  results. H08 and H14 have no source on their help page.
+- No package code changed. README status line corrected (it said milestone 5
+  of 9 in progress).
+- Open: user reads the list; then milestone 6 and 6b. A cross-family review
+  before the first release.

@@ -1,0 +1,148 @@
+designs: 117 
+data sets: 117 
+tiers: core 46, edge 18, extended 53 
+failed facts: 0 
+help page names no source: H08 H14 
+
+                                              
+                                               core extended edge
+  A. One and two groups                           5        5    0
+  B. One factor, separate groups                  4        3    0
+  C. Factorial                                    4        3    6
+  D. Blocks                                       6        5    4
+  E. Split units                                  3        6    1
+  F. Nested and crossed random factors            5        6    0
+  G. Within subjects and crossover                4        8    0
+  H. Multilevel and longitudinal                  7        9    4
+  I. Observational, categorical, time to event    4        6    0
+  J. Sample surveys                               4        2    0
+  K. Special field designs                        0        0    3
+
+prediction (first letter):
+   
+    core extended edge
+  I    8       18    9
+  M   11       18    8
+  R    0        1    0
+  T   27       16    1
+
+A01 AMCP::chapter_3_table_1 | children = 6 
+A02 ISwR::energy | women = 22; lean = 13; obese = 9 
+A03 medicaldata::strep_tb | patients = 107; arms = 2; per_arm = 52-55 
+A04 ISwR::intake | people = 11; measurements = 22 
+A05 MASS::shoes | boys = 10; feet = 20 
+A06 agridat::darwin.maize | plants = 30; pairs = 15; pots = 4; pairs_per_pot = 3-5 
+A07 datasets::sleep | patients = 10; rows = 20; rows_per_patient = 2 
+A08 ISwR::wright | subjects = 17; meters = 2 
+A09 MASS::gehan | patients = 42; pairs = 21; per_pair = 2 
+A10 survival::diabetic | patients = 197; eyes = 394; eyes_per_patient = 2 
+B01 datasets::PlantGrowth | plants = 30; groups = 3; per_group = 10 
+B02 AMCP::chapter_6_table_1 | children = 24; levels = 4; per_level = 6 
+B03 AMCP::chapter_9_table_7 | people = 30; conditions = 3; per_condition = 10 
+B04 MASS::anorexia | people = 72; groups = 3; per_group = 17-29 
+B05 lme4::Dyestuff | batches = 6; preparations = 30; per_batch = 5 
+B06 datasets::InsectSprays | plots = 72; sprays = 6; per_spray = 12 
+B07 carData::Baumann | students = 66; groups = 3; per_group = 22; tests = 5 
+C01 AMCP::chapter_7_table_5 | people = 30; A = 2; B = 3; per_cell = 5 
+C02 AMCP::chapter_7_table_16 | people = 22; cells = 4; per_cell = 3-8 
+C03 AMCP::chapter_7_table_24 | people = 45; therapy = 3; severity = 3; per_cell = 3-7 
+C04 AMCP::chapter_8_table_12 | people = 72; drug = 3; biofeedback = 2; diet = 2; per_cell = 6 
+C05 datasets::ToothGrowth | animals = 60; supp = 2; dose = 3; per_cell = 10 
+C06 HSAUR3::foster | litters = 61; cells = 16; per_cell = 2-5 
+C07 daewr::chem | runs = 16; combinations = 16; per_combination = 1 
+C08 daewr::arso | runs = 8; factors = 7; full = 128 
+C09 daewr::augm | runs = 16; fractions = 2; per_fraction = 8 
+C10 agridat::chinloy.fractionalfactorial | plots = 81; blocks = 9; combinations = 81; full = 243 
+C11 daewr::cement | runs = 20; blocks = 2; points = 15 
+C12 daewr::Treb | runs = 15; points = 13 
+C13 daewr::pest | runs = 13; points = 13 
+D01 agridat::gomez.seedrate | plots = 24; blocks = 4; treatments = 6; per_block = 6; per_cell = 1 
+D02 nlme::ergoStool | people = 9; stools = 4; rows = 36; per_cell = 1 
+D03 agridat::grover.rcb.subsample | blocks = 4; plots = 36; hills = 144; hills_per_plot = 4 
+D04 daewr::rcb | golfers = 9; heights = 3; shots = 135; per_cell = 5 
+D05 agridat::cochran.wireworms | plots = 25; rows = 5; cols = 5; treatments = 5; per_row_trt = 1; per_col_trt = 1 
+D06 datasets::OrchardSprays | cells = 64; rows = 8; cols = 8; treatments = 8; per_row_trt = 1 
+D07 agridat::devries.pine | plots = 36; squares = 4; spacing = 3; thinning = 3; plots_per_square = 9 
+D08 daewr::taste | panellists = 12; recipes = 4; rows = 24; recipes_per_panellist = 2; panellists_per_recipe = 6 
+D09 agridat::cochran.bib | blocks = 13; lines = 13; plots = 52; per_block = 4; per_line = 4 
+D10 SASmixed::PBIB | blocks = 15; treatments = 15; plots = 60; per_block = 4 
+D11 agridat::cochran.lattice | reps = 5; plots = 80; treatments = 16; per_rep = 16 
+D12 agridat::john.alpha | reps = 3; blocks = 18; plots = 72; varieties = 24; per_block = 4 
+D13 agridat::kempton.rowcol | reps = 2; rows = 10; cols = 14; plots = 68; lines = 35 
+D14 agridat::kling.augmented | blocks = 6; plots = 68; lines = 53; lines_seen_once = 50; most_plots_for_a_line = 6 
+D15 datasets::npk | plots = 24; blocks = 6; combinations = 8; per_block = 4 
+E01 agridat::yates.oats | blocks = 6; whole_plots = 18; sub_plots = 72; varieties = 3; nitrogen = 4; per_whole_plot = 4 
+E02 lme4::cake | recipes = 3; batch_labels = 15; batches = 45; cakes = 270; per_batch = 6 
+E03 agridat::gomez.splitsplit | blocks = 3; whole = 15; sub = 45; subsub = 135 
+E04 agridat::gomez.stripplot | blocks = 3; variety_strips = 18; nitrogen_strips = 9; plots = 54 
+E05 agridat::gomez.stripsplitplot | blocks = 3; crossings = 54; plots = 108 
+E06 agridat::gomez.splitplot.subsample | blocks = 3; whole = 24; sub = 96; samples = 192 
+E07 agridat::gomez.groupsplit | blocks = 3; fert = 2; groups = 3; varieties = 45; plots = 270; varieties_per_group = 15 
+E08 daewr::plasma | runs = 32; combinations = 32 
+E09 daewr::sausage | blocks = 2; batches = 8; whole_combinations = 4; runs = 32 
+E10 daewr::strung | diets = 3; cow_labels = 10; cows = 30; rows = 120; weeks = 4 
+F01 lme4::Pastes | batches = 10; cask_labels = 3; casks = 30; analyses = 60; per_cask = 2 
+F02 GAD::rats | treatments = 3; rat_labels = 2; rats = 6; preparations = 18; readings = 36 
+F03 nlme::Oxide | lots = 8; wafers = 24; sites = 72 
+F04 daewr::polymer | lots = 30; boxes = 60; preparations = 90; tests = 120; tests_per_box = 1-3 
+F05 GAD::snails | origins = 2; shores = 4; boulders = 12; cages = 48; snails = 240 
+F06 daewr::gagerr | parts = 10; operators = 3; measurements = 60; per_cell = 2 
+F07 lme4::Penicillin | plates = 24; samples = 6; rows = 144 
+F08 nlme::Machines | workers = 6; machines = 3; runs = 54; per_cell = 3 
+F09 AMCP::chapter_11_table_19 | targets = 6; judges = 4; ratings = 24 
+F10 AMCP::chapter_10_table_9 | genders = 2; trainee_labels = 3; trainees = 6; ratings = 24; per_trainee = 4 
+F11 AMCP::chapter_10_table_5 | students = 40; A = 2; B = 4; per_cell = 5 
+G01 AMCP::chapter_11_table_5 | children = 12; ages = 4 
+G02 AMCP::chapter_12_table_1 | people = 10; conditions = 6 
+G03 AMCP::chapter_14_table_9 | people = 20; groups = 2; per_group = 10; angles = 3 
+G04 carData::OBrienKaiser | people = 16; treatments = 3; per_group = 2-4; occasions = 15 
+G05 daewr::antifungal | people = 17; subject_labels = 17; groups = 2; people_per_group = 8-9; periods = 2; rows = 34 
+G06 daewr::bioequiv | people = 36; periods = 3; rows = 108; sequences = 2 
+G07 daewr::chipman | people = 12; subject_labels = 12; squares = 2; periods = 3; rows = 36 
+G08 AMCP::chapter_12_table_29 | animals = 6; subject_labels = 6; squares = 2; times = 3; rows = 18 
+G09 afex::fhch2010 | people = 45; items = 600; trials = 13222; people_per_task = 20-25; items_per_person = 274-300 
+G10 ez::ANT | people = 20; groups = 2; blocks_per_person = 6; trials_per_person = 288; trials = 5760; cells = 12 
+G11 lme4::VerbAgg | people = 316; items = 24; answers = 7584; answers_per_person = 24 
+G12 WWGbook::rat.brain | rats = 5; rows = 30; per_rat = 6 
+H01 mlmRev::Hsb82 | schools = 160; pupils = 7185; pupils_per_school = 14-67; sectors = 2 
+H02 WWGbook::classroom | schools = 107; classes = 312; pupils = 1190; classes_per_school = 1-9; pupils_per_class = 1-10 
+H03 WWGbook::ratpup | litters = 27; pups = 322; litters_per_dose = 7-10; pups_per_litter = 2-18 
+H04 AMCP::chapter_16_table_4 | room_labels = 3; rooms = 6; children = 29; rooms_per_condition = 3; children_per_room = 3-6 
+H05 AMCP::chapter_14_table_13 | people = 100; people_per_arm = 44-56; times = 3; rows = 300 
+H06 nlme::Orthodont | children = 27; children_per_sex = 11-16; ages = 4; rows = 108 
+H07 WWGbook::autism | children = 158; rows = 612; visits_per_child = 1-5; seen_at_each_age = 156/150/91/120/95 
+H08 geepack::respiratory | clinics = 2; patient_labels = 56; patients = 111; rows = 444; visits = 4 
+H09 HSAUR3::toenail | patients = 294; per_arm = 146-148; rows = 1908; seen_at_each_visit = 294/288/283/272/263/244/264 
+H10 mlmRev::egsingle | schools = 60; pupils = 1721; rows = 7230; occasions_per_pupil = 2-6 
+H11 WWGbook::veneer | patients = 12; teeth = 55; rows = 110; times = 2; teeth_per_patient = 1-6 
+H12 mlmRev::guImmun | communities = 161; mothers = 1595; children = 2159; children_per_mother = 1-3 
+H13 mlmRev::ScotsSec | primary = 148; secondary = 19; pupils = 3435; pairs_seen = 303; secondaries_per_primary = 1-6 
+H14 lme4::InstEval | students = 2972; lecturers = 1128; ratings = 73421; ratings_per_student = 1-92 
+H15 R2MLwiN::wage1 | workers = 3022; first_firms = 141; workers_with_2nd = 526; with_3rd = 54; with_4th = 2 
+H16 lme4::salamander | females = 60; males = 60; trials = 360; trials_per_female = 6 
+H17 mlmRev::star | schools = 80; pupils = 11598; rows = 26796; years_per_pupil = 1-4; pupils_by_grade = 6325/6829/6840/6802 
+H18 SASmixed::Multilocation | sites = 9; block_labels = 3; blocks = 27; plots = 108; treatments = 4 
+H19 HSAUR3::BCG | trials = 13; vaccinated = 191064; not_vaccinated = 166283 
+H20 lme4::cbpp | herds = 15; rows = 56; periods = 4; periods_per_herd = 1-4 
+I01 datasets::HairEyeColor | students = 592; hair = 4; eye = 4; sex = 2 
+I02 datasets::esoph | cases = 200; controls = 775; rows_are_groups = 88 
+I03 datasets::infert | women = 248; cases = 83; sets = 83; women_per_set = 2-3 
+I04 datasets::UCBAdmissions | applicants = 4526; departments = 6 
+I05 MASS::birthwt | births = 189; low = 59; smokers = 74 
+I06 survival::veteran | patients = 137; per_arm = 68-69; events = 128 
+I07 survival::nwtco | patients = 4028; subcohort = 668; relapsed = 571; both = 85 
+I08 datasets::Seatbelts | months = 192; before = 169; after = 23 
+I09 wooldridge::injury | claims = 7150; states = 2; cells = 8; per_cell = 219-1705 
+I10 MASS::Traffic | days = 184; pairs = 92; with_limit = 69 
+J01 SDAResources::agsrs | counties = 300 
+J02 survey::apistrat | schools = 200; strata = 3; per_stratum = 100/50/50 
+J03 survey::apiclus1 | districts = 15; schools = 183; per_district = 1-37 
+J04 survey::apiclus2 | districts = 40; schools = 126; per_district = 1-5 
+J05 SDAResources::algebra | classes = 12; students = 299; per_class = 17-34 
+J06 SDAResources::coots | clutches = 184; eggs = 368; per_clutch = 2 
+K01 agridat::hayman.tobacco | years = 2; males = 8; females = 8; plots = 256 
+K02 agridat::payne.wheat | years = 20; rotations = 6; nitrogen = 4; rows = 480 
+K03 agridat::burgueno.unreplicated | plots = 434; lines = 281; lines_seen_once = 280; check_plots = 154 
+
+packages:; afex 1.5.1; agridat 1.27; AMCP 2.0.0; carData 3.0.6; daewr 1.2.11; datasets 4.5.2; ez 4.5.0; GAD 2.0; geepack 1.3.13; HSAUR3 1.0.16; ISwR 2.0.12; lme4 2.1.0; MASS 7.3.66; medicaldata 0.2.0; mlmRev 1.0.9; nlme 3.1.172; R2MLwiN 0.8.10; SASmixed 1.0.5; SDAResources 0.1.1; survey 4.5; survival 3.8.13; wooldridge 1.4.7; WWGbook 1.0.2
+ R version 4.5.2 (2025-10-31 ucrt) 

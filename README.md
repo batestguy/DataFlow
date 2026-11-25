@@ -9,12 +9,12 @@ pipe-friendly R code. The result is a ggplot object you can restyle, save as
 PDF or PNG, and describe in plain sentences for alternative text. The
 aim: draw how your data came to be, in any field.
 
-**Status:** early development (milestone 5 of 9 in progress). Splits,
+**Status:** early development (milestones 0 to 5 done). Splits,
 bracket merges, outcomes, random assignment, exclusion boxes with reasons,
 cluster sampling, selection, summary rows, several starting streams,
 pooling, counts computed from a data frame, machine-learning data splits
 with outcome events, and fold grids for cross-validation and time-series
-evaluation work. Reporting-guideline templates are planned; see
+evaluation work. What comes next is in
 `ROADMAP.md`. Built-in examples: `flow_example("lab")`, `"trial"`,
 `"survey"`, `"review"`, `"factorial"`, `"trial_data"`, `"ml"`, `"cv"` and
 `"forecast"`.
