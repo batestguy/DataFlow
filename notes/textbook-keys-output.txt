@@ -1,0 +1,53 @@
+A01  agrees    error=5
+A02  agrees    error=20
+A03  agrees    strep=55 control=52 improved=55
+A04  agrees    error=10
+A05  agrees    error=9
+B01  agrees    error=27
+B02  agrees    error=20
+B03  agrees    ancova_error=26
+B05  agrees    batches=5 within=24
+C01  agrees    error=24
+C02  agrees    error=18
+C03  agrees    error=36
+C04  agrees    error=60
+D01  agrees    error=15
+D02  agrees    error=24
+D03  agrees    plot_error=24 hill=108
+D05  agrees    error=12
+D08  agrees    error=9 pair_min=2 pair_max=2
+D15  agrees    error=12
+E01  agrees    whole_error=10 sub_error=45
+E02  agrees    batch_error=42 cake_error=210
+E04  agrees    variety_error=10 nitrogen_error=4 crossing_error=20
+F01  agrees    batch=9 cask=20 analysis=30
+F02  agrees    rat=3 preparation=12 reading=18
+F03  agrees    lot=7 wafer=16 site=48
+F06  agrees    part=9 operator=2 both=18 repeat_=30
+F10  agrees    trainee=4 client=18
+G01  agrees    error=33
+G02  agrees    angle=18 noise=9 both=18
+G03  agrees    between=18 within=36
+G05  agrees    person=15 within=15
+H01  agrees    school=158 pupil=7025
+H02  agrees    school=106 class=205 pupil=878
+H03  agrees    litter=24 pup=295
+H04  agrees    room=4 child=23 control=15 treated=14
+H05  agrees    person=98 within=196
+H06  agrees    person=25 within=75
+H07  agrees    child=157 visit=454
+I01  agrees    total=592 chisq_df=9
+I02  agrees    cases=200 controls=775
+I03  agrees    sets=83 three=82 two=1 cases=83
+I06  agrees    standard=69 test=68 events=128 censored=9
+J01  agrees    sample=300 population=3078
+J02  agrees    E=100 H=50 M=50 NE=4421 NH=755 NM=1018
+J03  agrees    districts=15 all_districts=757 schools=183
+J04  agrees    districts=40 all_districts=757 schools=126
+
+keys: 46 ; agree: 46 
+what the help page says about assignment or selection:
+
+stated partly silent 
+    23     15      8 
+keys with something left open: 31 

@@ -26,6 +26,7 @@ get_data <- function(s) {
   e <- new.env()
   file <- c("survey::apistrat" = "api", "survey::apiclus1" = "api",
             "survey::apiclus2" = "api", "survey::apisrs" = "api",
+            "survey::apipop" = "api",
             "survival::veteran" = "cancer", "survival::diabetic" = "diabetic")
   p <- sub("::.*", "", s)
   x <- sub(".*::", "", s)
