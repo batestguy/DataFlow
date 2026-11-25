@@ -1,12 +1,13 @@
-# DataFlow
+# studydesignflow
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-DataFlow draws publication-quality study-design flow diagrams (splits,
+studydesignflow draws publication-quality study-design flow diagrams (splits,
 brackets that bring groups back together, outcomes) from a few lines of
 pipe-friendly R code. The result is a ggplot object you can restyle, save as
-PDF or PNG, and describe in plain sentences for alternative text.
+PDF or PNG, and describe in plain sentences for alternative text. The
+aim: draw how your data came to be, in any field.
 
 **Status:** early development (milestone 5 of 9 in progress). Splits,
 bracket merges, outcomes, random assignment, exclusion boxes with reasons,
@@ -22,13 +23,13 @@ evaluation work. Reporting-guideline templates are planned; see
 
 ```r
 # install.packages("remotes")
-remotes::install_github("batestguy/DataFlow")
+remotes::install_github("batestguy/studydesignflow")
 ```
 
 ## Example
 
 ```r
-library(DataFlow)
+library(studydesignflow)
 
 design <- flow_start("Cultures", n = 100) |>
   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = c(50, 50)) |>
@@ -97,7 +98,7 @@ flow_describe(d)             # ends "Counts were computed from the data
   under the first reason it matches.
 - `count = "patient_id"` in `flow_start()` counts distinct patients rather
   than rows. If one patient has rows in two boxes made from the same box,
-  their counts add up to more than the box above, and DataFlow warns.
+  their counts add up to more than the box above, and studydesignflow warns.
 - `flow_data()` returns a data frame when the flow started from one data
   frame, and always a named list (one data frame per source) when it
   started from several.
@@ -115,7 +116,7 @@ rows, so counts below them stay blank rather than guessed. See
 
 ## Machine-learning designs
 
-DataFlow documents the split you made; it never splits data at random or
+studydesignflow documents the split you made; it never splits data at random or
 fits a model. `flow_partition()` draws the split into training, validation
 and test sets. From data, `by =` names the column holding each row's set;
 `group = "patient_id"` checks that no patient is in two sets, and

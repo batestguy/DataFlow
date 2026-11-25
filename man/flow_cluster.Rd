@@ -19,7 +19,7 @@ flow_cluster(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{stage}{Name of the new stage; drawn as the row label.}
 
@@ -69,7 +69,7 @@ Without \code{by}, new boxes have no rows behind them, so automatic counts
 below them stay blank.}
 }
 \value{
-The updated \code{dataflow}.
+The updated \code{studydesignflow}.
 }
 \description{
 For cluster sampling: selects clusters (for example enumeration areas,

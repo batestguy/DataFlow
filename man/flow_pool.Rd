@@ -18,7 +18,7 @@ flow_pool(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{stage}{Name of the new stage; drawn as the row label.}
 
@@ -49,7 +49,7 @@ with \code{flow_start(events = ~ ...)} they are computed from the data
 instead; typed values win and are marked as typed.}
 }
 \value{
-The updated \code{dataflow}.
+The updated \code{studydesignflow}.
 }
 \description{
 Merges boxes into a single new box, drawn with converging lines: a line

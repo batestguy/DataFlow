@@ -1,11 +1,11 @@
-# Can DataFlow describe these data-collection workflows today? All numbers invented.
+# Can studydesignflow describe these data-collection workflows today? All numbers invented.
 # Run from the package folder: Rscript notes/workflow-test.R (pictures go to dev/, git-ignored).
 suppressMessages(devtools::load_all(quiet = TRUE))
 try_one <- function(nm, expr) {
   r <- tryCatch({
     x <- force(expr)
     flow_save(x, file.path("dev", paste0("goal_", nm, ".png")), dpi = 110)
-    s <- if (inherits(x, "dataflow")) flow_layout(x)$size else grid_layout(x)$size
+    s <- if (inherits(x, "studydesignflow")) flow_layout(x)$size else grid_layout(x)$size
     sprintf("drawn (%.1f x %.1f in)", s[[1]], s[[2]])
   }, error = function(e) paste("FAILED:", conditionMessage(e)))
   cat(nm, "->", r, "\n")

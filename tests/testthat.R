@@ -1,4 +1,4 @@
 library(testthat)
-library(DataFlow)
+library(studydesignflow)
 
-test_check("DataFlow")
+test_check("studydesignflow")

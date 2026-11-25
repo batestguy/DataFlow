@@ -1,6 +1,6 @@
 test_that("flow_start makes a one-box flow", {
   d <- flow_start("Cultures", n = 100)
-  expect_s3_class(d, "dataflow")
+  expect_s3_class(d, "studydesignflow")
   expect_equal(nrow(d$nodes), 1)
   expect_equal(d$nodes$n, "100")
   expect_equal(d$stages$row_label, "")
@@ -103,14 +103,14 @@ test_that("validator catches broken objects", {
   d <- flow_example("lab")
   bad <- d
   bad$stages$type[2] <- "teleport"
-  expect_error(validate_dataflow(bad), "Unknown stage type")
+  expect_error(validate_studydesignflow(bad), "Unknown stage type")
   bad <- d
   bad$edges <- bad$edges[bad$edges$to != 2, ]
-  expect_error(validate_dataflow(bad), "no incoming arrow")
+  expect_error(validate_studydesignflow(bad), "no incoming arrow")
   bad <- d
   bad$edges$to[1] <- 999L
-  expect_error(validate_dataflow(bad), "does not exist")
-  expect_error(validate_dataflow(list()), "dataflow object")
+  expect_error(validate_studydesignflow(bad), "does not exist")
+  expect_error(validate_studydesignflow(list()), "studydesignflow object")
 })
 
 test_that("flow_nodes lists boxes and leaves", {
@@ -168,5 +168,5 @@ test_that("validator requires every top box to be on the first stage", {
   # (until milestone 4 this rule was "exactly one top box")
   d <- flow_example("lab")
   d$nodes$anchor[5] <- NA
-  expect_error(validate_dataflow(d), "top box must be on the first stage")
+  expect_error(validate_studydesignflow(d), "top box must be on the first stage")
 })

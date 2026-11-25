@@ -18,7 +18,7 @@ flow_apply(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{stage}{Name of the new stage; drawn as the row label.}
 

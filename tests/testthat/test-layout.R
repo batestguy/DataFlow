@@ -2,7 +2,7 @@ lab_layout <- function(...) flow_layout(flow_example("lab"), ...)
 
 test_that("layout is a set of data frames with one box per node", {
   lay <- lab_layout()
-  expect_s3_class(lay, "dataflow_layout")
+  expect_s3_class(lay, "studydesignflow_layout")
   expect_equal(nrow(lay$boxes), 27)
   expect_true(all(c("x", "y", "w", "h", "xmin", "xmax") %in% names(lay$boxes)))
   expect_true(all(is.finite(c(lay$boxes$x, lay$boxes$y))))

@@ -7,10 +7,10 @@
 flow_describe(x)
 }
 \arguments{
-\item{x}{A \code{dataflow} object, or a fold grid from \code{\link[=flow_folds]{flow_folds()}}.}
+\item{x}{A \code{studydesignflow} object, or a fold grid from \code{\link[=flow_folds]{flow_folds()}}.}
 }
 \value{
-A single string (class \code{dataflow_description}). Printing it wraps
+A single string (class \code{studydesignflow_description}). Printing it wraps
 the text to the console width.
 }
 \description{

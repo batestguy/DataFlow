@@ -1,6 +1,6 @@
-# The `dataflow` object ---------------------------------------------------
+# The `studydesignflow` object --------------------------------------------
 #
-# A dataflow is pure data: no coordinates, no drawing.
+# A studydesignflow is pure data: no coordinates, no drawing.
 #
 # * stages: one row per stage (= one row of the diagram), in drawing order.
 #     id, name (used by `over =`), row_label (drawn in the left margin; "" for
@@ -27,12 +27,12 @@ stage_types <- c(
   "apply", "pool", "exclude", "outcome", "partition"
 )
 
-new_dataflow <- function(stages, nodes, edges, side, leaves,
+new_studydesignflow <- function(stages, nodes, edges, side, leaves,
                          reasons = empty_reasons()) {
   structure(
     list(stages = stages, nodes = nodes, edges = edges, side = side,
          reasons = reasons, leaves = leaves),
-    class = "dataflow"
+    class = "studydesignflow"
   )
 }
 
@@ -49,19 +49,19 @@ empty_side <- function() {
   )
 }
 
-#' Check that an object is a valid dataflow
+#' Check that an object is a valid studydesignflow
 #'
 #' Checks structure only: every stage has a known type, there is at least
 #' one top box and every top box is on the first stage, every other box is
 #' reached by an arrow, bracket or pool line, every edge points at real
 #' boxes, and pools have at least two sources. Counts are never checked.
 #'
-#' @param x A `dataflow` object.
+#' @param x A `studydesignflow` object.
 #' @return `x`, invisibly. Signals an error describing the first problem found.
 #' @export
-validate_dataflow <- function(x) {
-  if (!inherits(x, "dataflow")) {
-    stop("`x` must be a dataflow object (start one with flow_start()).",
+validate_studydesignflow <- function(x) {
+  if (!inherits(x, "studydesignflow")) {
+    stop("`x` must be a studydesignflow object (start one with flow_start()).",
          call. = FALSE)
   }
   st <- x$stages
@@ -86,7 +86,7 @@ validate_dataflow <- function(x) {
   }
   root <- nd$id[nd$stage == st$id[1]]
   if (length(root) == 0) {
-    stop("A dataflow must have at least one top box.", call. = FALSE)
+    stop("A studydesignflow must have at least one top box.", call. = FALSE)
   }
   if (any(!is.na(nd$anchor[nd$id %in% root])) || any(ed$to %in% root)) {
     stop("Top boxes (the boxes of the first stage) cannot have a box above ",
@@ -140,11 +140,11 @@ validate_dataflow <- function(x) {
   invisible(x)
 }
 
-#' List the boxes in a dataflow
+#' List the boxes in a studydesignflow
 #'
 #' Useful for finding the ids to pass to the `from` argument of the verbs.
 #'
-#' @param x A `dataflow` object.
+#' @param x A `studydesignflow` object.
 #' @return A data frame with one row per box: `id`, `stage` (the stage name),
 #'   `label`, `n`, `note`, `leaf` (`TRUE` if the next verb will attach to
 #'   it by default), `n_edited` (`TRUE` if its count was changed with
@@ -155,7 +155,7 @@ validate_dataflow <- function(x) {
 #'   flow_split("Site", c("North", "South"), n = c(60, 60)) |>
 #'   flow_nodes()
 flow_nodes <- function(x) {
-  validate_dataflow(x)
+  validate_studydesignflow(x)
   nd <- x$nodes
   data.frame(
     id = nd$id,
@@ -172,10 +172,10 @@ flow_nodes <- function(x) {
 }
 
 #' @export
-print.dataflow <- function(x, ...) {
+print.studydesignflow <- function(x, ...) {
   st <- x$stages
   ns <- if (is.null(x$side)) 0 else nrow(x$side)
-  cat("<dataflow> ", nrow(st), " stage", if (nrow(st) != 1) "s", ", ",
+  cat("<studydesignflow> ", nrow(st), " stage", if (nrow(st) != 1) "s", ", ",
       nrow(x$nodes), " box", if (nrow(x$nodes) != 1) "es",
       if (ns > 0) paste0(", ", ns, " exclusion box", if (ns != 1) "es"),
       "\n", sep = "")

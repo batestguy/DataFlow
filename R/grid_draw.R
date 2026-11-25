@@ -11,7 +11,7 @@ grid_abbrev <- c(Training = "Train", Validation = "Valid.", Test = "Test",
 
 #' Compute the positions of everything in a fold grid
 #'
-#' Turns a `dataflow_grid` (from [flow_folds()]) into coordinates, in
+#' Turns a `studydesignflow_grid` (from [flow_folds()]) into coordinates, in
 #' inches: one rectangle per block, row labels, fold headers or a time axis,
 #' counts that do not fit their block, and a legend when some block is too
 #' narrow for its role name. Exported so grids can be inspected and tested
@@ -28,7 +28,7 @@ grid_abbrev <- c(Training = "Train", Validation = "Valid.", Test = "Test",
 #' block narrower than `min_width` is drawn `min_width` wide (wider than
 #' scale, taking the room from its wider neighbours), which the legend says.
 #'
-#' @param x A `dataflow_grid`.
+#' @param x A `studydesignflow_grid`.
 #' @param base_size Font size, in points.
 #' @param family Font family (`""` is the device default sans-serif).
 #' @param width Width of the grid area (without row labels), in inches. By
@@ -38,7 +38,7 @@ grid_abbrev <- c(Training = "Train", Validation = "Valid.", Test = "Test",
 #' @param row_gap Vertical gap between rows, in inches.
 #' @param min_width Narrowest drawn width of a block that holds a role other
 #'   than not used, in inches.
-#' @return A `dataflow_grid_layout`: data frames `blocks` (true positions
+#' @return A `studydesignflow_grid_layout`: data frames `blocks` (true positions
 #'   `xmin`, `xmax`, and drawn positions `draw_xmin`, `draw_xmax`),
 #'   `row_labels`, `row_counts`, `headers`, `ticks`, `axis`, `legend`, plus
 #'   `extent` and `size` (natural width and height in inches).
@@ -48,7 +48,7 @@ grid_abbrev <- c(Training = "Train", Validation = "Valid.", Test = "Test",
 #' lay$blocks[1:5, c("split", "role", "xmin", "xmax", "text")]
 grid_layout <- function(x, base_size = 9, family = "", width = NULL,
                         row_height = NULL, row_gap = 0.1, min_width = 0.12) {
-  if (!inherits(x, "dataflow_grid")) {
+  if (!inherits(x, "studydesignflow_grid")) {
     stop("`x` must be a fold grid made by flow_folds().", call. = FALSE)
   }
   bl <- x$blocks
@@ -224,7 +224,7 @@ grid_layout <- function(x, base_size = 9, family = "", width = NULL,
     size = c(width = unname(extent["xmax"] - extent["xmin"]),
              height = unname(extent["ymax"] - extent["ymin"])),
     params = list(base_size = base_size, family = family)
-  ), class = "dataflow_grid_layout")
+  ), class = "studydesignflow_grid_layout")
 }
 
 # Axis title: "Time (months)" when typed; from data, the time unit if given
@@ -286,8 +286,8 @@ widen_blocks <- function(bl, min_width) {
 }
 
 #' @export
-print.dataflow_grid_layout <- function(x, ...) {
-  cat(sprintf("<dataflow_grid_layout> %d blocks in %d rows; natural size %.2f x %.2f in\n",
+print.studydesignflow_grid_layout <- function(x, ...) {
+  cat(sprintf("<studydesignflow_grid_layout> %d blocks in %d rows; natural size %.2f x %.2f in\n",
               nrow(x$blocks), nrow(x$row_labels), x$size[["width"]],
               x$size[["height"]]))
   invisible(x)
@@ -298,18 +298,18 @@ print.dataflow_grid_layout <- function(x, ...) {
 #' `autoplot()` returns a ggplot object; `plot()` draws it and returns it
 #' invisibly. The plot carries the grid's description (from
 #' [flow_describe()]) as alt text and its natural size in the
-#' `"dataflow_size"` attribute, used by [flow_save()].
+#' `"studydesignflow_size"` attribute, used by [flow_save()].
 #'
-#' @param object,x A `dataflow_grid` from [flow_folds()].
+#' @param object,x A `studydesignflow_grid` from [flow_folds()].
 #' @param ... Passed to [grid_layout()] (e.g. `base_size`, `width`).
 #' @param colour Colour of borders and text outside blocks.
 #' @param linewidth Line width of borders.
 #' @return A ggplot object.
-#' @method autoplot dataflow_grid
+#' @method autoplot studydesignflow_grid
 #' @export
 #' @examples
 #' p <- ggplot2::autoplot(flow_folds(k = 5))
-autoplot.dataflow_grid <- function(object, ..., colour = "black",
+autoplot.studydesignflow_grid <- function(object, ..., colour = "black",
                                    linewidth = 0.4) {
   lay <- grid_layout(object, ...)
   bl <- lay$blocks
@@ -374,16 +374,16 @@ autoplot.dataflow_grid <- function(object, ..., colour = "black",
                          ylim = ex[c("ymin", "ymax")],
                          expand = FALSE, clip = "off") +
     ggplot2::labs(alt = unclass(flow_describe(object))) +
-    theme_dataflow(base_size = ps$base_size, base_family = ps$family)
-  attr(p, "dataflow_size") <- lay$size
+    theme_studydesignflow(base_size = ps$base_size, base_family = ps$family)
+  attr(p, "studydesignflow_size") <- lay$size
   p
 }
 
-#' @rdname autoplot.dataflow_grid
-#' @method plot dataflow_grid
+#' @rdname autoplot.studydesignflow_grid
+#' @method plot studydesignflow_grid
 #' @export
-plot.dataflow_grid <- function(x, ...) {
-  p <- autoplot.dataflow_grid(x, ...)
+plot.studydesignflow_grid <- function(x, ...) {
+  p <- autoplot.studydesignflow_grid(x, ...)
   print(p)
   invisible(p)
 }
@@ -532,7 +532,7 @@ describe_grid <- function(x) {
                          x$data$name, "` (", format_n(nrow(x$data$df)),
                          " rows)", typed, "."))
   }
-  structure(paste(out, collapse = " "), class = "dataflow_description")
+  structure(paste(out, collapse = " "), class = "studydesignflow_description")
 }
 
 # "Numbers per split: split 1: training (n = 180), gap (n = 3), test

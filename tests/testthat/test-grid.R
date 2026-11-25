@@ -16,7 +16,7 @@ check_cover <- function(g) {
 
 test_that("typed k-fold: one test fold per row, on the diagonal", {
   g <- flow_folds(k = 5, n = c(80, 81, 82, 83, 84))
-  expect_s3_class(g, "dataflow_grid")
+  expect_s3_class(g, "studydesignflow_grid")
   expect_equal(nrow(g$blocks), 25)
   check_cover(g)
   te <- g$blocks[g$blocks$role == "Test", ]

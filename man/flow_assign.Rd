@@ -19,7 +19,7 @@ flow_assign(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{stage}{Name of the new stage; drawn as the row label.}
 
@@ -74,7 +74,7 @@ Without \code{by}, new boxes have no rows behind them, so automatic counts
 below them stay blank.}
 }
 \value{
-The updated \code{dataflow}.
+The updated \code{studydesignflow}.
 }
 \description{
 Like \code{\link[=flow_split]{flow_split()}}, but records that the boxes were \emph{assigned} (for

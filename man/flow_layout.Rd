@@ -22,7 +22,7 @@ flow_layout(
 )
 }
 \arguments{
-\item{x}{A \code{dataflow} object.}
+\item{x}{A \code{studydesignflow} object.}
 
 \item{count_format}{How a box's label and count are combined. \code{{label}}
 and \code{{n}} are replaced; used only for boxes that have a count. Outcome
@@ -58,14 +58,14 @@ as in \code{count_format}. Reasons are listed below it, one per line.}
 box, in inches.}
 }
 \value{
-A \code{dataflow_layout}: a list of data frames \code{boxes}, \code{side}
+A \code{studydesignflow_layout}: a list of data frames \code{boxes}, \code{side}
 (exclusion boxes), \code{segments}, \code{brackets} and \code{row_labels}, plus
 \code{extent} (xmin, xmax, ymin, ymax) and \code{size} (natural width and height
 in inches).
 }
 \description{
-Turns a \code{dataflow} into coordinates, in inches, for every box, arrow,
-bracket and row label. This is what \code{\link[=autoplot.dataflow]{autoplot.dataflow()}} draws; it is
+Turns a \code{studydesignflow} into coordinates, in inches, for every box, arrow,
+bracket and row label. This is what \code{\link[=autoplot.studydesignflow]{autoplot.studydesignflow()}} draws; it is
 exported so layouts can be inspected and tested as data.
 }
 \details{

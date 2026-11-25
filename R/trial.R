@@ -15,7 +15,7 @@
 #'   described as "randomly assigned"; any other text is described as
 #'   "assigned ... by <method>", e.g. `method = "minimisation"`; `NULL` says
 #'   only "assigned".
-#' @return The updated `dataflow`.
+#' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' flow_start("Randomised", n = 300) |>
@@ -191,7 +191,7 @@ flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
       }
     }
   }
-  validate_dataflow(x)
+  validate_studydesignflow(x)
 }
 
 # Rows, counts and reasons of exclusion boxes computed from data: each row

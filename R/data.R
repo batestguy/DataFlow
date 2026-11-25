@@ -185,7 +185,7 @@ need_data <- function(x, arg) {
 #' box hanging off it); for an exclusion box (`excluded = TRUE`), the rows it
 #' removed from the flow.
 #'
-#' @param x A `dataflow` with data, or a fold grid from [flow_folds()] made
+#' @param x A `studydesignflow` with data, or a fold grid from [flow_folds()] made
 #'   from data (then `box` is a block id, see `x$blocks`).
 #' @param box A box id or label (see [flow_nodes()]). A label must match
 #'   exactly one box.
@@ -202,7 +202,7 @@ need_data <- function(x, arg) {
 #' head(flow_data(d, "Randomised"))
 #' nrow(flow_data(d, "Excluded", excluded = TRUE))
 flow_data <- function(x, box, excluded = FALSE) {
-  if (inherits(x, "dataflow_grid")) return(grid_data(x, box))
+  if (inherits(x, "studydesignflow_grid")) return(grid_data(x, box))
   check_flow(x)
   if (!has_data(x)) {
     stop("This flow has no data; counts were typed. Start a flow with ",
@@ -287,7 +287,7 @@ describe_data <- function(x) {
 #' Builds a flow whose whole nested structure and all counts come from the
 #' data: a top box for all rows, then one split per column in `levels`
 #' (outermost first), each with [flow_split()]`(by = column)`. The result is
-#' an ordinary `dataflow`, so you can keep adding steps
+#' an ordinary `studydesignflow`, so you can keep adding steps
 #' ([flow_exclude()], [flow_apply()], [flow_outcome()], [flow_pool()]) and
 #' change any text or count with [flow_edit()].
 #'
@@ -303,7 +303,7 @@ describe_data <- function(x) {
 #'   of [flow_split()] with `by`: the order of the values and readable text,
 #'   e.g. `list(exp = c("Ex. 1" = "exp1", "Ex. 2" = "exp2"))`. Planned values
 #'   with no rows may be included (count 0).
-#' @return A `dataflow` with data.
+#' @return A `studydesignflow` with data.
 #' @export
 #' @examples
 #' cultures <- data.frame(

@@ -50,8 +50,8 @@
 #'   with a fixed seed.
 #'
 #' @param name Which example.
-#' @return A `dataflow` object; for `"cv"` and `"forecast"`, a
-#'   `dataflow_grid`.
+#' @return A `studydesignflow` object; for `"cv"` and `"forecast"`, a
+#'   `studydesignflow_grid`.
 #' @export
 #' @examples
 #' flow_example("lab")

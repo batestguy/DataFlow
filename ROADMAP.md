@@ -1,8 +1,8 @@
-# DataFlow roadmap
+# studydesignflow roadmap
 
 **Goal (user, 2026-11-24):** everyone can describe their data collection
 process with figures, from lab experiments to surveys, scraping, machine
-learning and testing. In one sentence: DataFlow shows how any dataset came to
+learning and testing. In one sentence: studydesignflow shows how any dataset came to
 be. It draws publication-quality diagrams from short, pipe-able R code. This
 file is the single record of the phases, what each one
 delivers, how it is checked, and where it stands. It is updated at every
@@ -49,7 +49,7 @@ one by one):
 
 | Topic | Decision |
 |---|---|
-| Name / licence | `DataFlow`, MIT |
+| Name / licence | `studydesignflow` (named `DataFlow` until 2026-11-25), MIT |
 | Release | Public GitHub repository from day one; CRAN later |
 | Input | Short pipe-able R code, one verb per stage, verbs prefixed `flow_` |
 | Counts | Typed by hand, drawn exactly as given, never checked (numbers only get thousands separators); or, optionally, computed from a data frame, each box keeping the rows behind it (decided 2026-11-23) |
@@ -77,7 +77,7 @@ repository exists and the CI check is green on it.
 
 **Status:**
 - ✅ Local scaffold, git, renv, CI workflow file (2026-11-22).
-- ✅ Public GitHub repository `batestguy/DataFlow` created and pushed
+- ✅ Public GitHub repository `batestguy/studydesignflow` created and pushed
   (2026-11-22), author email changed to the user's university address first.
 - ✅ First green CI run on GitHub (2026-11-22, run 44993834534).
 
@@ -85,7 +85,7 @@ repository exists and the CI check is green on it.
 
 **Delivers:** `flow_start`, `flow_split`, `flow_apply` (with `over =` for
 brackets), `flow_outcome`; layout engine `flow_layout()`; renderer
-(`autoplot()`, `plot()`, `theme_dataflow()`, `flow_save()`);
+(`autoplot()`, `plot()`, `theme_studydesignflow()`, `flow_save()`);
 `flow_describe()`; `flow_example("lab")` reproducing the hand-drawn design.
 
 **Done when:** the rendered lab diagram looks journal-ready, Claude has
@@ -185,7 +185,7 @@ which is a second diagram type next to the flow diagram. Added by the user
 (2026-11-23): time-series designs in the grid, namely expanding-window and
 rolling-window evaluation (initial training window, forecast horizon, step
 between forecast origins, gap between training and test) and blocked k-fold
-for time-ordered data. Principle: DataFlow documents a split the user
+for time-ordered data. Principle: studydesignflow documents a split the user
 already made; it never splits data at random or fits models. Anything drawn
 from data stays editable by hand, with hand-typed counts marked as typed.
 
@@ -347,7 +347,7 @@ A separate decision, taken after milestone 12.
 0.6.1): piped code, typed or computed counts, several converging sources,
 split and recombine, factorial designs, arithmetic checking, and CONSORT,
 STROBE, STARD, PRISMA and MOOSE layouts. Several things listed below as
-DataFlow's own are therefore shared. A search of its source found no
+studydesignflow's own are therefore shared. A search of its source found no
 training/test splits, outcome events, fold grids or alternative text (see
 `notes/scope-research-2026-11-24.md`); milestone 6 tests this properly. The
 2026-11-22 note, kept for the record:
@@ -840,3 +840,24 @@ what is still open.
 - Milestones 6 to 13 replace the earlier 6 to 9 and track T. Decisions D1 to
   D3 recorded as open, with recommendations.
 - No package code changed. Next: confirm D1 to D3, then milestone 6.
+
+### 2026-11-25 — Renamed from DataFlow to studydesignflow
+- User's choice, after comparing it with `studydesigngraphs`. Reasons:
+  "dataflow" is a computing term and a Google product name; "design graph"
+  already means something else in experimental statistics; the verbs already
+  start with `flow_`. Name availability checked the same day: not on CRAN
+  (current 25,850 or archived 28,609), not in Bioconductor software (2,385),
+  no GitHub repository of that name. Trademarks not checked.
+- Changed: package, S3 classes (`studydesignflow`, `studydesignflow_grid`),
+  `theme_dataflow()` to `theme_studydesignflow()`, `validate_dataflow()` to
+  `validate_studydesignflow()`, the `_size` attribute, help pages, documents
+  and the GitHub repository. Verbs and arguments are unchanged. README gained
+  one sentence stating the aim. Earlier entries of this log, the 2026-11-22
+  positioning note and `notes/scope-research-2026-11-24.md` keep the old name.
+- Objects saved to disk under the old name must be rebuilt; nothing had been
+  released, so no compatibility layer was added.
+- Checked: 12,630 test expectations pass, picture snapshots unchanged;
+  `devtools::check()` 0/0/0; `notes/workflow-test.R` gives the recorded
+  output; a search for the old name finds only the places listed above.
+- Open: CI result under the new name (next entry); decisions D1 to D3; a
+  cross-family review before the first release.

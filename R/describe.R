@@ -12,8 +12,8 @@
 #' flow with data, a last sentence names the data frame(s) the counts were
 #' computed from.
 #'
-#' @param x A `dataflow` object, or a fold grid from [flow_folds()].
-#' @return A single string (class `dataflow_description`). Printing it wraps
+#' @param x A `studydesignflow` object, or a fold grid from [flow_folds()].
+#' @return A single string (class `studydesignflow_description`). Printing it wraps
 #'   the text to the console width.
 #' @export
 #' @examples
@@ -21,8 +21,8 @@
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_describe()
 flow_describe <- function(x) {
-  if (inherits(x, "dataflow_grid")) return(describe_grid(x))
-  validate_dataflow(x)
+  if (inherits(x, "studydesignflow_grid")) return(describe_grid(x))
+  validate_studydesignflow(x)
   st <- x$stages
   nd <- x$nodes
   ed <- x$edges
@@ -98,7 +98,7 @@ flow_describe <- function(x) {
     sentences <- c(sentences, paste0(head, ": ", body, "."))
   }
   if (has_data(x)) sentences <- c(sentences, describe_data(x))
-  structure(paste(sentences, collapse = " "), class = "dataflow_description")
+  structure(paste(sentences, collapse = " "), class = "studydesignflow_description")
 }
 
 describe_split <- function(ids, srcs, say, name, whole_row,
@@ -226,7 +226,7 @@ unique_names <- function(x, flat) {
 }
 
 #' @export
-print.dataflow_description <- function(x, ...) {
+print.studydesignflow_description <- function(x, ...) {
   cat(strwrap(unclass(x), width = getOption("width", 80)), sep = "\n")
   invisible(x)
 }

@@ -7,11 +7,11 @@
 #' description (from [flow_describe()]) as alt text.
 #'
 #' The diagram is laid out in inches at its natural size, stored in the
-#' plot's `"dataflow_size"` attribute. [flow_save()] uses that size by default,
+#' plot's `"studydesignflow_size"` attribute. [flow_save()] uses that size by default,
 #' so text and boxes stay matched. Drawing it much smaller than its natural
 #' size can make text spill out of the boxes.
 #'
-#' @param object,x A `dataflow` object.
+#' @param object,x A `studydesignflow` object.
 #' @param ... Passed to [flow_layout()] (e.g. `count_format`, `base_size`,
 #'   `hgap`, `vgap`, `connector`).
 #' @param fill,colour Box fill and border colour.
@@ -19,13 +19,13 @@
 #' @param linewidth Line width for boxes and connectors.
 #' @param row_labels Draw stage names down the left margin?
 #' @return A ggplot object.
-#' @method autoplot dataflow
+#' @method autoplot studydesignflow
 #' @export
 #' @examples
 #' d <- flow_start("Cultures", n = 100) |>
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50)
 #' p <- ggplot2::autoplot(d)
-autoplot.dataflow <- function(object, ..., fill = "white", colour = "black",
+autoplot.studydesignflow <- function(object, ..., fill = "white", colour = "black",
                               outcome_fill = "#EDEDED", linewidth = 0.4,
                               row_labels = TRUE) {
   lay <- flow_layout(object, ...)
@@ -122,16 +122,16 @@ autoplot.dataflow <- function(object, ..., fill = "white", colour = "black",
                          ylim = ex[c("ymin", "ymax")],
                          expand = FALSE, clip = "off") +
     ggplot2::labs(alt = unclass(flow_describe(object))) +
-    theme_dataflow(base_size = ps$base_size, base_family = ps$family)
-  attr(p, "dataflow_size") <- lay$size
+    theme_studydesignflow(base_size = ps$base_size, base_family = ps$family)
+  attr(p, "studydesignflow_size") <- lay$size
   p
 }
 
-#' @rdname autoplot.dataflow
-#' @method plot dataflow
+#' @rdname autoplot.studydesignflow
+#' @method plot studydesignflow
 #' @export
-plot.dataflow <- function(x, ...) {
-  p <- autoplot.dataflow(x, ...)
+plot.studydesignflow <- function(x, ...) {
+  p <- autoplot.studydesignflow(x, ...)
   print(p)
   invisible(p)
 }
@@ -145,7 +145,7 @@ plot.dataflow <- function(x, ...) {
 #' @param base_family Base font family.
 #' @return A ggplot2 theme.
 #' @export
-theme_dataflow <- function(base_size = 9, base_family = "") {
+theme_studydesignflow <- function(base_size = 9, base_family = "") {
   ggplot2::theme_void(base_size = base_size, base_family = base_family) +
     ggplot2::theme(
       plot.background = ggplot2::element_rect(fill = "white", colour = NA),
@@ -160,7 +160,7 @@ theme_dataflow <- function(base_size = 9, base_family = "") {
 #' A thin wrapper on [ggplot2::ggsave()] that uses the diagram's natural size
 #' unless you give one.
 #'
-#' @param x A `dataflow` object, a fold grid from [flow_folds()], or a plot
+#' @param x A `studydesignflow` object, a fold grid from [flow_folds()], or a plot
 #'   made from either.
 #' @param filename File to write; the extension picks the format.
 #' @param width,height Size in inches. Defaults to the natural size.
@@ -168,8 +168,8 @@ theme_dataflow <- function(base_size = 9, base_family = "") {
 #' @param bg Background colour.
 #' @param device Optional device passed to [ggplot2::ggsave()]; by default
 #'   it is chosen from the file extension.
-#' @param ... Passed to [autoplot.dataflow()] (or
-#'   [autoplot.dataflow_grid()]) when `x` is a dataflow (or fold grid),
+#' @param ... Passed to [autoplot.studydesignflow()] (or
+#'   [autoplot.studydesignflow_grid()]) when `x` is a studydesignflow (or fold grid),
 #'   otherwise to [ggplot2::ggsave()].
 #' @return `filename`, invisibly.
 #' @export
@@ -180,20 +180,20 @@ theme_dataflow <- function(base_size = 9, base_family = "") {
 #' flow_save(d, f)
 flow_save <- function(x, filename, width = NULL, height = NULL, dpi = 300,
                       bg = "white", device = NULL, ...) {
-  if (inherits(x, "dataflow")) {
-    p <- autoplot.dataflow(x, ...)
+  if (inherits(x, "studydesignflow")) {
+    p <- autoplot.studydesignflow(x, ...)
     dots <- list()
-  } else if (inherits(x, "dataflow_grid")) {
-    p <- autoplot.dataflow_grid(x, ...)
+  } else if (inherits(x, "studydesignflow_grid")) {
+    p <- autoplot.studydesignflow_grid(x, ...)
     dots <- list()
   } else if (inherits(x, "ggplot")) {
     p <- x
     dots <- list(...)
   } else {
-    stop("`x` must be a dataflow, a fold grid, or a plot made from one.",
+    stop("`x` must be a studydesignflow, a fold grid, or a plot made from one.",
          call. = FALSE)
   }
-  size <- attr(p, "dataflow_size")
+  size <- attr(p, "studydesignflow_size")
   width <- width %||% size[["width"]]
   height <- height %||% size[["height"]]
   if (is.null(width) || is.null(height)) {

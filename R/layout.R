@@ -1,9 +1,9 @@
-# Layout engine: dataflow -> coordinates (inches). Pure data, no drawing. --
+# Layout engine: studydesignflow -> coordinates (inches). Pure data, no drawing.
 
 #' Compute the positions of everything in a flow diagram
 #'
-#' Turns a `dataflow` into coordinates, in inches, for every box, arrow,
-#' bracket and row label. This is what [autoplot.dataflow()] draws; it is
+#' Turns a `studydesignflow` into coordinates, in inches, for every box, arrow,
+#' bracket and row label. This is what [autoplot.studydesignflow()] draws; it is
 #' exported so layouts can be inspected and tested as data.
 #'
 #' Boxes are sized from their text. Each box is centred over the boxes that
@@ -12,7 +12,7 @@
 #' streams sit side by side, `group_gap` apart. Rows sit at fixed heights, one
 #' row per stage.
 #'
-#' @param x A `dataflow` object.
+#' @param x A `studydesignflow` object.
 #' @param count_format How a box's label and count are combined. `{label}`
 #'   and `{n}` are replaced; used only for boxes that have a count. Outcome
 #'   events (see [flow_start()]) are added to the count as
@@ -35,7 +35,7 @@
 #'   as in `count_format`. Reasons are listed below it, one per line.
 #' @param side_gap Length of the arrow from the flow line to an exclusion
 #'   box, in inches.
-#' @return A `dataflow_layout`: a list of data frames `boxes`, `side`
+#' @return A `studydesignflow_layout`: a list of data frames `boxes`, `side`
 #'   (exclusion boxes), `segments`, `brackets` and `row_labels`, plus
 #'   `extent` (xmin, xmax, ymin, ymax) and `size` (natural width and height
 #'   in inches).
@@ -52,7 +52,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                         row_label_width = 16,
                         connector = c("elbow", "straight"),
                         side_format = "{label} (n = {n})", side_gap = 0.3) {
-  validate_dataflow(x)
+  validate_studydesignflow(x)
   connector <- match.arg(connector)
   st <- x$stages
   nd <- x$nodes
@@ -497,13 +497,13 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       params = list(base_size = base_size, family = family,
                     note_size = note_size)
     ),
-    class = "dataflow_layout"
+    class = "studydesignflow_layout"
   )
 }
 
 #' @export
-print.dataflow_layout <- function(x, ...) {
-  cat(sprintf("<dataflow_layout> %d boxes, %d line segments, %d brackets; ",
+print.studydesignflow_layout <- function(x, ...) {
+  cat(sprintf("<studydesignflow_layout> %d boxes, %d line segments, %d brackets; ",
               nrow(x$boxes), nrow(x$segments),
               length(unique(x$brackets$group))))
   cat(sprintf("natural size %.2f x %.2f in\n", x$size[["width"]],

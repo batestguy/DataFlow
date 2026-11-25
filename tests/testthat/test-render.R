@@ -2,7 +2,7 @@ test_that("autoplot returns a ggplot with alt text and natural size", {
   p <- autoplot(flow_example("lab"))
   expect_true(ggplot2::is_ggplot(p))
   expect_match(ggplot2::get_alt_text(p), "^Flow diagram with 8 stages")
-  expect_named(attr(p, "dataflow_size"), c("width", "height"))
+  expect_named(attr(p, "studydesignflow_size"), c("width", "height"))
 })
 
 test_that("notes are drawn in their own text layer", {
@@ -29,7 +29,7 @@ test_that("flow_save writes PNG and PDF at the natural size", {
 })
 
 test_that("flow_save refuses other objects", {
-  expect_error(flow_save(1, tempfile(fileext = ".png")), "must be a dataflow")
+  expect_error(flow_save(1, tempfile(fileext = ".png")), "must be a studydesignflow")
 })
 
 test_that("the lab diagram looks right", {

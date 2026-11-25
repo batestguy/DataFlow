@@ -15,7 +15,7 @@ grid_layout(
 )
 }
 \arguments{
-\item{x}{A \code{dataflow_grid}.}
+\item{x}{A \code{studydesignflow_grid}.}
 
 \item{base_size}{Font size, in points.}
 
@@ -33,13 +33,13 @@ blocks show counts.}
 than not used, in inches.}
 }
 \value{
-A \code{dataflow_grid_layout}: data frames \code{blocks} (true positions
+A \code{studydesignflow_grid_layout}: data frames \code{blocks} (true positions
 \code{xmin}, \code{xmax}, and drawn positions \code{draw_xmin}, \code{draw_xmax}),
 \code{row_labels}, \code{row_counts}, \code{headers}, \code{ticks}, \code{axis}, \code{legend}, plus
 \code{extent} and \code{size} (natural width and height in inches).
 }
 \description{
-Turns a \code{dataflow_grid} (from \code{\link[=flow_folds]{flow_folds()}}) into coordinates, in
+Turns a \code{studydesignflow_grid} (from \code{\link[=flow_folds]{flow_folds()}}) into coordinates, in
 inches: one rectangle per block, row labels, fold headers or a time axis,
 counts that do not fit their block, and a legend when some block is too
 narrow for its role name. Exported so grids can be inspected and tested

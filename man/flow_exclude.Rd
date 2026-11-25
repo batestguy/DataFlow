@@ -16,7 +16,7 @@ flow_exclude(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{label}{Text for the exclusion box(es): one value, or one per box.}
 

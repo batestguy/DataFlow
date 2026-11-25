@@ -44,7 +44,7 @@ patients, when there is one row per visit). Rows with a missing value
 in that column are not counted. If one value has rows in two boxes made
 from the same box (e.g. a patient with visits in two arms, or with some
 visits excluded and others not), the counts of those boxes add up to
-more than the box above; DataFlow warns when this happens.}
+more than the box above; studydesignflow warns when this happens.}
 
 \item{events}{Outcome events, shown with the count of each box as
 "(n = 412; events = 37)", as asked for prediction-model studies
@@ -61,7 +61,7 @@ item 20a asks (typed: \code{n} minus events; with \code{count}, a unit with rows
 of both kinds is counted in both).}
 }
 \value{
-A \code{dataflow} object.
+A \code{studydesignflow} object.
 }
 \description{
 Creates the top box of the diagram, or several top boxes side by side.

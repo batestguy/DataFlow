@@ -75,13 +75,13 @@ test_that("validator checks exclusion boxes", {
   e <- flow_start("A") |> flow_exclude("X")
   bad <- e
   bad$side$parent <- 99L
-  expect_error(validate_dataflow(bad), "hang off an existing box")
+  expect_error(validate_studydesignflow(bad), "hang off an existing box")
   bad <- e
   bad$side$stage <- 1L
-  expect_error(validate_dataflow(bad), "exclusion stage")
+  expect_error(validate_studydesignflow(bad), "exclusion stage")
   bad <- flow_exclude(e, "Y", reasons = "why")
   bad$reasons$side <- 99L
-  expect_error(validate_dataflow(bad), "reason must belong")
+  expect_error(validate_studydesignflow(bad), "reason must belong")
 })
 
 test_that("row_label = \"\" hides a row label", {

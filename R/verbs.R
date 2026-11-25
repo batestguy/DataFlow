@@ -1,4 +1,4 @@
-# Verbs: each takes and returns a dataflow --------------------------------
+# Verbs: each takes and returns a studydesignflow -------------------------
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
@@ -17,8 +17,8 @@ pick_row_label <- function(row_label, stage) {
 }
 
 check_flow <- function(x) {
-  if (!inherits(x, "dataflow")) {
-    stop("The first argument must be a dataflow. Start one with flow_start().",
+  if (!inherits(x, "studydesignflow")) {
+    stop("The first argument must be a studydesignflow. Start one with flow_start().",
          call. = FALSE)
   }
 }
@@ -200,8 +200,8 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   in that column are not counted. If one value has rows in two boxes made
 #'   from the same box (e.g. a patient with visits in two arms, or with some
 #'   visits excluded and others not), the counts of those boxes add up to
-#'   more than the box above; DataFlow warns when this happens.
-#' @return A `dataflow` object.
+#'   more than the box above; studydesignflow warns when this happens.
+#' @return A `studydesignflow` object.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100)
@@ -254,7 +254,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
   }
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")
-  x <- new_dataflow(
+  x <- new_studydesignflow(
     stages = data.frame(id = integer(), name = character(),
                         row_label = character(), type = character(),
                         display = character(), over = character(),
@@ -284,7 +284,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
   if (!is.null(x$data$events)) {
     x$data$events_na <- count_missing_outcome(x)
   }
-  validate_dataflow(x)
+  validate_studydesignflow(x)
 }
 
 #' Split every current box into several
@@ -292,7 +292,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #' Each current end box (or each box chosen with `from`) gets one child box
 #' per label. Arrows join each box to its children.
 #'
-#' @param .flow A `dataflow` object.
+#' @param .flow A `studydesignflow` object.
 #' @param stage Name of the new stage; drawn as the row label.
 #' @param labels Either a character vector, used for every current box, or a
 #'   list with one character vector per current box (for different children
@@ -338,7 +338,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #'   being split.
 #'   Without `by`, new boxes have no rows behind them, so automatic counts
 #'   below them stay blank.
-#' @return The updated `dataflow`.
+#' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100) |>
@@ -425,7 +425,7 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
   if (!is.null(events)) {
     x <- set_events(x, a$ids, events, per = per, per_target = per_target)
   }
-  validate_dataflow(x)
+  validate_studydesignflow(x)
 }
 
 # Labels, counts and rows for a split computed from the column `by`: per box
@@ -644,7 +644,7 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
     for (j in g[-1]) new_by_target[[match(j, targets)]] <- integer()
   }
   x$leaves <- replace_leaves(x$leaves, targets, new_by_target)
-  validate_dataflow(x)
+  validate_studydesignflow(x)
 }
 
 # Rows behind each new box of attach_per_group() in a flow with data. A

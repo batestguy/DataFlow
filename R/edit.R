@@ -19,7 +19,7 @@
 #' move them: change the structure with the verbs and their `from =`
 #' argument instead.
 #'
-#' @param .flow A `dataflow` object.
+#' @param .flow A `studydesignflow` object.
 #' @param box Box ids or labels (see [flow_nodes()]). A label edits every box
 #'   with that label. With `excluded = TRUE`, exclusion boxes instead (ids
 #'   from `.flow$side$id`).
@@ -32,7 +32,7 @@
 #' @param stage,row_label To change a row label instead: the stage name and
 #'   its new row label (`""` hides it).
 #' @param excluded If `TRUE`, `box` names exclusion boxes.
-#' @return The updated `dataflow`.
+#' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' d <- flow_start("Assessed", n = 412) |>
@@ -44,7 +44,7 @@
 flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
                       stage = NULL, row_label = NULL, excluded = FALSE,
                       events = NULL) {
-  if (inherits(.flow, "dataflow_grid")) {
+  if (inherits(.flow, "studydesignflow_grid")) {
     return(grid_edit(.flow, box, label, n))
   }
   check_flow(.flow)
@@ -60,7 +60,7 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
       stop("There is no stage \"", stage, "\".", call. = FALSE)
     }
     .flow$stages$row_label[i] <- row_label
-    return(validate_dataflow(.flow))
+    return(validate_studydesignflow(.flow))
   }
   if (is.null(box)) {
     stop("Give `box` (ids or labels), or `stage` and `row_label`.",
@@ -141,7 +141,7 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     tab$note[rows] <- recycle_values(as.character(note), k, "note")
   }
   .flow[[what]] <- tab
-  validate_dataflow(.flow)
+  validate_studydesignflow(.flow)
 }
 
 # Ids of boxes whose count was edited by hand ("nodes" or "side").

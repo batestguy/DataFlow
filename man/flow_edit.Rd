@@ -17,7 +17,7 @@ flow_edit(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{box}{Box ids or labels (see \code{\link[=flow_nodes]{flow_nodes()}}). A label edits every box
 with that label. With \code{excluded = TRUE}, exclusion boxes instead (ids
@@ -37,7 +37,7 @@ its new row label (\code{""} hides it).}
 as typed like an edited count. Not for exclusion boxes.}
 }
 \value{
-The updated \code{dataflow}.
+The updated \code{studydesignflow}.
 }
 \description{
 Changes what existing boxes say without rebuilding the flow: useful when a

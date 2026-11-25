@@ -24,25 +24,25 @@ test_that("flow_start makes several top boxes side by side", {
 
 test_that("validator: top boxes on the first stage, others reached", {
   d <- flow_start(c("A", "B")) |> flow_split("S", c("x", "y"), from = "A")
-  expect_silent(validate_dataflow(d))
+  expect_silent(validate_studydesignflow(d))
   bad <- d
   bad$nodes$anchor[3] <- NA
-  expect_error(validate_dataflow(bad), "top box must be on the first stage")
+  expect_error(validate_studydesignflow(bad), "top box must be on the first stage")
   bad <- d
   bad$edges <- rbind(bad$edges, data.frame(from = 1L, to = 2L,
                                            kind = "arrow"))
-  expect_error(validate_dataflow(bad), "cannot have a box above")
+  expect_error(validate_studydesignflow(bad), "cannot have a box above")
   bad <- d
   bad$nodes <- bad$nodes[0, ]
   bad$edges <- bad$edges[0, ]
-  expect_error(validate_dataflow(bad), "at least one top box")
+  expect_error(validate_studydesignflow(bad), "at least one top box")
   # a pool joining two streams has no common ancestor: allowed
   p <- flow_pool(flow_start(c("A", "B")), "Joined", "All")
   expect_true(is.na(p$nodes$anchor[3]))
-  expect_silent(validate_dataflow(p))
+  expect_silent(validate_studydesignflow(p))
   bad <- p
   bad$edges <- bad$edges[-1, ]
-  expect_error(validate_dataflow(bad), "at least two sources")
+  expect_error(validate_studydesignflow(bad), "at least two sources")
 })
 
 test_that("`from` continues one stream while the other waits", {

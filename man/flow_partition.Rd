@@ -19,7 +19,7 @@ flow_partition(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{stage}{Name of the new stage (row label), by default \code{"Data split"}.}
 
@@ -54,11 +54,11 @@ recycled like \code{n}. In a flow started with \verb{events =} as a formula they
 are computed instead; typed values win and are marked as typed.}
 }
 \value{
-The updated \code{dataflow}.
+The updated \code{studydesignflow}.
 }
 \description{
 Draws the split of the data into sets, such as training, validation and
-test, as one box per set. DataFlow does not make the split: it shows the
+test, as one box per set. studydesignflow does not make the split: it shows the
 one you made. In a flow with data, \code{by} names the column that says which
 set each row is in, the counts are computed, and the split is checked:
 }

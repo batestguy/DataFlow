@@ -13,8 +13,8 @@ flow_example(
 \item{name}{Which example.}
 }
 \value{
-A \code{dataflow} object; for \code{"cv"} and \code{"forecast"}, a
-\code{dataflow_grid}.
+A \code{studydesignflow} object; for \code{"cv"} and \code{"forecast"}, a
+\code{studydesignflow_grid}.
 }
 \description{
 Ready-made designs used in the documentation and tests. Each records where

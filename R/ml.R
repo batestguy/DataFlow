@@ -1,6 +1,6 @@
 # Machine-learning steps: data splits (partitions) and outcome events -------
 #
-# DataFlow documents a split the user already made; it never splits data at
+# studydesignflow documents a split the user already made; it never splits data at
 # random or fits models. In data mode it checks what can be checked (no
 # group in two sets, sets in time order) and computes counts and events.
 #
@@ -72,7 +72,7 @@ warn_events <- function(x, ids) {
 #' Document a data split for a machine-learning model
 #'
 #' Draws the split of the data into sets, such as training, validation and
-#' test, as one box per set. DataFlow does not make the split: it shows the
+#' test, as one box per set. studydesignflow does not make the split: it shows the
 #' one you made. In a flow with data, `by` names the column that says which
 #' set each row is in, the counts are computed, and the split is checked:
 #'
@@ -101,7 +101,7 @@ warn_events <- function(x, ids) {
 #' @param events Optional typed numbers of outcome events per new box,
 #'   recycled like `n`. In a flow started with `events =` as a formula they
 #'   are computed instead; typed values win and are marked as typed.
-#' @return The updated `dataflow`.
+#' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' flow_start("Patients", n = 1000) |>
@@ -158,7 +158,7 @@ flow_partition <- function(.flow, stage = "Data split", labels = NULL,
   x$partition[[as.character(sid)]] <- list(group = group, time = time,
                                           checked = checked,
                                           na_group = na_group)
-  validate_dataflow(x)
+  validate_studydesignflow(x)
 }
 
 # No group (e.g. patient) may have rows in two sets. Returns the number of

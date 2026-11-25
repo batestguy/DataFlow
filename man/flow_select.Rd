@@ -17,7 +17,7 @@ flow_select(
 )
 }
 \arguments{
-\item{.flow}{A \code{dataflow} object.}
+\item{.flow}{A \code{studydesignflow} object.}
 
 \item{stage}{Name of the new stage; drawn as the row label.}
 
@@ -48,7 +48,7 @@ flow with data has no rows behind it (the data do not say which units
 were selected), so its count is as typed.}
 }
 \value{
-The updated \code{dataflow}.
+The updated \code{studydesignflow}.
 }
 \description{
 For the units sampled or selected within each current box, for example

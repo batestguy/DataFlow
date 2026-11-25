@@ -29,7 +29,7 @@
 #'   end boxes. Cannot be combined with `over` or `from`.
 #' @param over Optional name of an earlier stage: one pool per box of that
 #'   stage, holding the current boxes under it.
-#' @return The updated `dataflow`.
+#' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' flow_start(c("Records from databases", "Records from other sources"),

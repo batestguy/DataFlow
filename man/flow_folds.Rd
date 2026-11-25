@@ -81,12 +81,12 @@ original data, e.g. \code{unique(visits$date)}. Needed to draw a gap made of
 time values that no split uses; a warning says when one may be missing.}
 }
 \value{
-A \code{dataflow_grid}. Draw it with \code{plot()} or \code{\link[=autoplot]{autoplot()}}, save it
+A \code{studydesignflow_grid}. Draw it with \code{plot()} or \code{\link[=autoplot]{autoplot()}}, save it
 with \code{\link[=flow_save]{flow_save()}}, describe it with \code{\link[=flow_describe]{flow_describe()}}.
 }
 \description{
 A second kind of diagram: one row per split, showing which part of the
-data is used for training, validation and testing. DataFlow documents
+data is used for training, validation and testing. studydesignflow documents
 the split you made; it does not split data or fit models.
 }
 \details{
@@ -113,18 +113,18 @@ it is not an evaluation of forecasting.
 }
 
 How this compares with the rsample package: \code{initial}, \code{assess}, \code{skip}
-and \code{type = "expanding"} / \code{"rolling"} match \code{rolling_origin(initial, assess, skip, cumulative = TRUE / FALSE)}. DataFlow's \code{gap} is an embargo
+and \code{type = "expanding"} / \code{"rolling"} match \code{rolling_origin(initial, assess, skip, cumulative = TRUE / FALSE)}. studydesignflow's \code{gap} is an embargo
 between training and test, comparable to the \verb{sliding_*()} functions'
 \code{assess_start = gap + 1}; it is not \code{rolling_origin(lag =)}, which makes
 the test window overlap training. \code{skip} follows \code{rolling_origin()}, not
-the \verb{sliding_*()} functions. rsample counts rows; DataFlow's data mode
+the \verb{sliding_*()} functions. rsample counts rows; studydesignflow's data mode
 counts distinct time values, so with several rows per time value a
 period is a time value, not a row.
 
 Typed: \code{n} is the number of time periods (or give \code{n_splits}). From data:
 \code{time} names a date, date-time or number column; each distinct value is
 one period, and counts are the rows in each window. These settings
-describe a design: DataFlow draws the windows they define, it does not
+describe a design: studydesignflow draws the windows they define, it does not
 read your resampling code, so check the picture against it.
 
 \strong{Your own split assignments} (\verb{split =}, \verb{role =}): to document the

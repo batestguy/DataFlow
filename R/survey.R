@@ -20,7 +20,7 @@
 #'   `"all"` draws every cluster (text `labels` only).
 #' @param summary Label of each summary box; `{k}` is replaced by the number
 #'   of clusters and `{stage}` by the stage name.
-#' @return The updated `dataflow`.
+#' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' flow_start("Enumeration areas in frame", n = 9200) |>
@@ -56,7 +56,7 @@ flow_cluster <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
 #'   is missing (`NA`) are not selected. Without `where`, a selection in a
 #'   flow with data has no rows behind it (the data do not say which units
 #'   were selected), so its count is as typed.
-#' @return The updated `dataflow`.
+#' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' flow_start("EA", n = 1) |>

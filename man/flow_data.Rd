@@ -7,7 +7,7 @@
 flow_data(x, box, excluded = FALSE)
 }
 \arguments{
-\item{x}{A \code{dataflow} with data, or a fold grid from \code{\link[=flow_folds]{flow_folds()}} made
+\item{x}{A \code{studydesignflow} with data, or a fold grid from \code{\link[=flow_folds]{flow_folds()}} made
 from data (then \code{box} is a block id, see \code{x$blocks}).}
 
 \item{box}{A box id or label (see \code{\link[=flow_nodes]{flow_nodes()}}). A label must match

@@ -1,6 +1,6 @@
 # Fold grids: cross-validation and time-series evaluation designs -----------
 #
-# A second diagram type next to the flow diagram. A `dataflow_grid` is pure
+# A second diagram type next to the flow diagram. A `studydesignflow_grid` is pure
 # data: one row per split (fold or forecast origin), each made of blocks
 # with a role (Training, Validation, Test, Gap, Not used), a start and end
 # position (fold number, or time period), and a count. Like the flow
@@ -35,7 +35,7 @@ new_grid <- function(type, axis, blocks, settings, n_pos, times = NULL,
     blocks = blocks, n_pos = n_pos, times = times, settings = settings,
     fold_names = fold_names %||% as.character(seq_len(n_pos)),
     data = data, edited = integer()
-  ), class = "dataflow_grid")
+  ), class = "studydesignflow_grid")
 }
 
 whole_number <- function(v, arg, min = 0) {
@@ -50,7 +50,7 @@ whole_number <- function(v, arg, min = 0) {
 #' Draw cross-validation folds or time-series evaluation splits as a grid
 #'
 #' A second kind of diagram: one row per split, showing which part of the
-#' data is used for training, validation and testing. DataFlow documents
+#' data is used for training, validation and testing. studydesignflow documents
 #' the split you made; it does not split data or fit models.
 #'
 #' **Cross-validation** (`type = "kfold"`): `k` folds; in row `i`, fold `i`
@@ -76,18 +76,18 @@ whole_number <- function(v, arg, min = 0) {
 #'
 #' How this compares with the rsample package: `initial`, `assess`, `skip`
 #' and `type = "expanding"` / `"rolling"` match `rolling_origin(initial,
-#' assess, skip, cumulative = TRUE / FALSE)`. DataFlow's `gap` is an embargo
+#' assess, skip, cumulative = TRUE / FALSE)`. studydesignflow's `gap` is an embargo
 #' between training and test, comparable to the `sliding_*()` functions'
 #' `assess_start = gap + 1`; it is not `rolling_origin(lag =)`, which makes
 #' the test window overlap training. `skip` follows `rolling_origin()`, not
-#' the `sliding_*()` functions. rsample counts rows; DataFlow's data mode
+#' the `sliding_*()` functions. rsample counts rows; studydesignflow's data mode
 #' counts distinct time values, so with several rows per time value a
 #' period is a time value, not a row.
 #'
 #' Typed: `n` is the number of time periods (or give `n_splits`). From data:
 #' `time` names a date, date-time or number column; each distinct value is
 #' one period, and counts are the rows in each window. These settings
-#' describe a design: DataFlow draws the windows they define, it does not
+#' describe a design: studydesignflow draws the windows they define, it does not
 #' read your resampling code, so check the picture against it.
 #'
 #' **Your own split assignments** (`split =`, `role =`): to document the
@@ -147,7 +147,7 @@ whole_number <- function(v, arg, min = 0) {
 #'   checked) or text (otherwise; described as not checked) saying that all
 #'   rows of each group stay together. Rows with a missing group value
 #'   cannot be checked; a warning and the description say how many.
-#' @return A `dataflow_grid`. Draw it with `plot()` or [autoplot()], save it
+#' @return A `studydesignflow_grid`. Draw it with `plot()` or [autoplot()], save it
 #'   with [flow_save()], describe it with [flow_describe()].
 #' @export
 #' @examples
@@ -472,8 +472,8 @@ windows_to_blocks <- function(w, total) {
 }
 
 #' @export
-print.dataflow_grid <- function(x, ...) {
-  cat("<dataflow_grid> ", x$type, ": ", nrow(x$splits), " splits over ",
+print.studydesignflow_grid <- function(x, ...) {
+  cat("<studydesignflow_grid> ", x$type, ": ", nrow(x$splits), " splits over ",
       x$n_pos, if (x$axis == "folds") " folds" else
         if (x$axis == "rows") " rows (longest split)" else
           paste0(" ", x$settings$time_unit), "\n", sep = "")

@@ -2,12 +2,12 @@
 % Please edit documentation in R/flow.R
 \name{flow_nodes}
 \alias{flow_nodes}
-\title{List the boxes in a dataflow}
+\title{List the boxes in a studydesignflow}
 \usage{
 flow_nodes(x)
 }
 \arguments{
-\item{x}{A \code{dataflow} object.}
+\item{x}{A \code{studydesignflow} object.}
 }
 \value{
 A data frame with one row per box: \code{id}, \code{stage} (the stage name),

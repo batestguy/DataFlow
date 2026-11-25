@@ -33,13 +33,13 @@ e.g. \code{list(exp = c("Ex. 1" = "exp1", "Ex. 2" = "exp2"))}. Planned values
 with no rows may be included (count 0).}
 }
 \value{
-A \code{dataflow} with data.
+A \code{studydesignflow} with data.
 }
 \description{
 Builds a flow whose whole nested structure and all counts come from the
 data: a top box for all rows, then one split per column in \code{levels}
 (outermost first), each with \code{\link[=flow_split]{flow_split()}}\code{(by = column)}. The result is
-an ordinary \code{dataflow}, so you can keep adding steps
+an ordinary \code{studydesignflow}, so you can keep adding steps
 (\code{\link[=flow_exclude]{flow_exclude()}}, \code{\link[=flow_apply]{flow_apply()}}, \code{\link[=flow_outcome]{flow_outcome()}}, \code{\link[=flow_pool]{flow_pool()}}) and
 change any text or count with \code{\link[=flow_edit]{flow_edit()}}.
 }
