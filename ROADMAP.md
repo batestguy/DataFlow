@@ -22,7 +22,7 @@ milestone step; the progress log at the bottom is append-only.
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
-| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list approved; 46 answer keys written; nothing drawn | — |
+| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ 46 core designs drawn, read blind, graded; user to look | — |
 | 7 | Check numbers, then describe any collection step | ⬜ | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
@@ -256,7 +256,8 @@ list) and `-output.txt`.
 4. ✅ Answer keys for the 46 core designs, written before drawing
    (`notes/textbook-keys.R`, `.csv`, `-output.txt`): structure, what is left
    open, and numbers implied by it; 46 of 46 agree with the data.
-5. ⬜ Draw, blind-read, grade: core first, then extended, then edge.
+5. ⏳ Draw, blind-read, grade: core done (31 true, 15 incomplete, 0 misleading in
+   their best version; plain versions 26, 17, 3); extended and edge to do.
 6. ⬜ `notes/textbook-results-<date>.md`: grades beside predictions, and what
    they change in milestones 7 and 9 (copies first; rows by columns has no
    planned answer).
@@ -988,3 +989,22 @@ what is still open.
   teaching.
 - Open: draw the 46, blind reading, grades. Keys are by the same author as the
   list; nobody independent has checked them.
+
+### 2026-11-25 — Milestone 6b: core designs drawn, read blind and graded
+- 60 pictures of 46 designs (14 in plain and in careful words), three fresh
+  readers who saw only coded pictures or only descriptions (the user agreed to
+  a helper session as first blind reader). Files and limits:
+  `notes/textbook-results-2026-11-25.md`.
+- Best version of each design: 31 true, 15 incomplete, 0 misleading. Plain:
+  26, 17, 3. Descriptions: 40, 2, 4.
+- Main finding: in 13 designs the only fault is that the picture does not say
+  how units were assigned or sampled. Predictions were wrong in both
+  directions (12 of 27 predicted true were incomplete; 7 of 11 predicted
+  misleading were read correctly).
+- Data mode warned in all five counting traps tried. Readers found five faults
+  in the descriptions, listed in the results.
+- Proposed: 7i (method in the picture) before 7a; description faults fixed
+  with 7-0. The user has not decided.
+- Open: the user looks at the pictures; grades unchecked; extended and edge
+  designs; a human reader. The user does not own Cochran and Cox (1957), so
+  the cake question stays open.
