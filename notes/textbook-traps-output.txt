@@ -1,0 +1,10 @@
+E02 real units 45 | counting replicate: top 15, groups 15 15 15 [WARNED] | counting a unique label: top 45, groups 15 15 15 [silent]
+   warning: With count = "replicate", 15 values of "replicate" (e.g. 1) are in more than one of the boxes made by `by = "recipe"` under "Batches", so their counts add up to more than the box above. 
+F02 real units 6 | counting rat: top 2, groups 2 2 2 [WARNED] | counting a unique label: top 6, groups 2 2 2 [silent]
+   warning: With count = "rat", 2 values of "rat" (e.g. 1) are in more than one of the boxes made by `by = "treat"` under "Rats", so their counts add up to more than the box above. 
+F10 real units 6 | counting Trainee: top 3, groups 3 3 [WARNED] | counting a unique label: top 6, groups 3 3 [silent]
+   warning: With count = "Trainee", 3 values of "Trainee" (e.g. 1) are in more than one of the boxes made by `by = "Gender"` under "Trainees", so their counts add up to more than the box above. 
+H04 real units 6 | counting Room: top 3, groups 3 3 [WARNED] | counting a unique label: top 6, groups 3 3 [silent]
+   warning: With count = "Room", 3 values of "Room" (e.g. 1) are in more than one of the boxes made by `by = "Condition"` under "Rooms", so their counts add up to more than the box above. 
+F01 real units 30 | counting cask: top 3, groups 3 3 3 3 3 3 3 3 3 3 [WARNED] | counting a unique label: top 30, groups 3 3 3 3 3 3 3 3 3 3 [silent]
+   warning: With count = "cask", 3 values of "cask" (e.g. a) are in more than one of the boxes made by `by = "batch"` under "Casks", so their counts add up to more than the box above. 

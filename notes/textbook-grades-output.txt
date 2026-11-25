@@ -1,0 +1,37 @@
+pictures drawn: 60 
+plain version, 46 designs:
+
+ T  I  M 
+26 17  3 
+best version of each design:
+
+ T  I  M 
+31 15  0 
+careful versions (14):
+
+ T  I  M 
+13  1  0 
+plain versions of the same 14:
+
+T I M 
+8 3 3 
+descriptions (46):
+
+ T  I  M 
+40  2  4 
+
+plain pictures, prediction (rows) against grade (columns):
+         grade
+predicted  T  I  M
+        T 15 12  0
+        I  4  3  1
+        M  7  2  2
+
+the only defect is the missing method: 13 designs: A01 A03 B02 B03 C03 F01 F10 H02 H03 H05 I06 J01 J02 
+true if the method were shown (best version): 44 of 46
+
+not true in any version, other reasons:
+  C02 p I reader called education nested in sex and also crossed 
+  D08 c I does not say that every pair of recipes meets equally often 
+  D08 p I reader could not tell that each panellist tastes two 
+wider than 7 inches: 10 of 60 pictures

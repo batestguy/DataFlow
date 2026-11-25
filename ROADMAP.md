@@ -22,7 +22,7 @@ milestone step; the progress log at the bottom is append-only.
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
-| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ list approved 2026-11-25; sources and answer keys | — |
+| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ 46 core designs drawn, read blind, graded; user to look | — |
 | 7 | Check numbers, then describe any collection step | ⬜ | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
@@ -249,10 +249,15 @@ list) and `-output.txt`.
    a source where the help page names one, counts computed from the data, what
    the picture must say, and a prediction written before testing.
 2. ✅ List approved by the user (2026-11-25), nothing added or dropped.
-3. ⬜ Check each core design against its book or paper; find sources for H08
-   and H14; look for the designs listed without data.
-4. ⬜ Answer keys for the 46 core designs, written before drawing.
-5. ⬜ Draw, blind-read, grade: core first, then extended, then edge.
+3. ⏳ Sources. Help page of every core design read in full (23 state how units
+   were assigned or chosen, 15 partly, 8 are silent). Books not read; two open
+   sources were tried and could not be opened. Still to do: H08 and H14, the
+   designs listed without data, extended and edge designs.
+4. ✅ Answer keys for the 46 core designs, written before drawing
+   (`notes/textbook-keys.R`, `.csv`, `-output.txt`): structure, what is left
+   open, and numbers implied by it; 46 of 46 agree with the data.
+5. ⏳ Draw, blind-read, grade: core done (31 true, 15 incomplete, 0 misleading in
+   their best version; plain versions 26, 17, 3); extended and edge to do.
 6. ⬜ `notes/textbook-results-<date>.md`: grades beside predictions, and what
    they change in milestones 7 and 9 (copies first; rows by columns has no
    planned answer).
@@ -966,3 +971,40 @@ what is still open.
   named on the README now. `m6` merged into `main`.
 - Milestone 6b continues: sources checked and answer keys written for the 46
   core designs before anything is drawn.
+
+### 2026-11-25 — Milestone 6b: sources and answer keys for the core designs
+- `notes/textbook-keys.R`: one key per core design, with the degrees of
+  freedom or counts its structure implies, checked against the data by a
+  separate route: 46 of 46 agree. Agreement shows the key fits the data as
+  coded, not that the study was run that way.
+- Sources: 23 help pages state the assignment or selection, 15 partly, 8 are
+  silent; 31 keys leave something open, written down in the key. Tried and not
+  readable: the 1931 Rothamsted report (page without text) and the 1948 BMJ
+  streptomycin paper (page without text, PDF behind a robot check).
+- Found: the streptomycin help page says placebo-controlled while secondary
+  sources found by search describe bed rest without placebo (its arm is
+  labelled Control: draw it so); the cake page leaves open whether replicates
+  are days, which would make them blocks; crossover person 13 is missing from
+  the numbering; the sex split of the hair and eye table was added for
+  teaching.
+- Open: draw the 46, blind reading, grades. Keys are by the same author as the
+  list; nobody independent has checked them.
+
+### 2026-11-25 — Milestone 6b: core designs drawn, read blind and graded
+- 60 pictures of 46 designs (14 in plain and in careful words), three fresh
+  readers who saw only coded pictures or only descriptions (the user agreed to
+  a helper session as first blind reader). Files and limits:
+  `notes/textbook-results-2026-11-25.md`.
+- Best version of each design: 31 true, 15 incomplete, 0 misleading. Plain:
+  26, 17, 3. Descriptions: 40, 2, 4.
+- Main finding: in 13 designs the only fault is that the picture does not say
+  how units were assigned or sampled. Predictions were wrong in both
+  directions (12 of 27 predicted true were incomplete; 7 of 11 predicted
+  misleading were read correctly).
+- Data mode warned in all five counting traps tried. Readers found five faults
+  in the descriptions, listed in the results.
+- Proposed: 7i (method in the picture) before 7a; description faults fixed
+  with 7-0. The user has not decided.
+- Open: the user looks at the pictures; grades unchecked; extended and edge
+  designs; a human reader. The user does not own Cochran and Cox (1957), so
+  the cake question stays open.

@@ -10,6 +10,7 @@ design is redrawn from a published paper. It is milestone 6b of `ROADMAP.md`.
 | `textbook-designs-list.md` | the list, one table per family (generated) |
 | `textbook-designs.csv` | the same, with the source named on each help page (generated) |
 | `textbook-designs.R` | the only place to edit the list |
+| `textbook-keys.R`, `.csv`, `-output.txt` | answer keys for the 46 core designs, written before drawing and checked against the data |
 | `textbook-designs-output.txt` | the run the numbers below come from, with package versions |
 
 ## What has and has not been done
@@ -24,6 +25,11 @@ design is redrawn from a published paper. It is milestone 6b of `ROADMAP.md`.
   picture must say" and "prediction" are the list author's reading. A help
   page is often too short to settle what was randomised, so step 1 below is
   to check it.
+- **Update 2026-11-25:** the help page of every core design has been read in
+  full and its answer key written. 23 pages state how units were assigned or
+  chosen, 15 partly, 8 not at all; what is left open is in the key. A design
+  whose source is silent is drawn with neutral words ("received"), never with
+  "randomised".
 - A data set's help page may follow another edition than the one in hand.
 
 ## What counts as a different design
