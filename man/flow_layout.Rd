@@ -19,7 +19,9 @@ flow_layout(
   connector = c("elbow", "straight"),
   side_format = "{label} (n = {n})",
   side_gap = 0.3,
-  show_method = TRUE
+  show_method = TRUE,
+  copy_format = "the same {n} as above",
+  copy_none = "copied from the box above"
 )
 }
 \arguments{
@@ -62,6 +64,15 @@ box, in inches.}
 \code{\link[=flow_assign]{flow_assign()}}, \code{\link[=flow_cluster]{flow_cluster()}} and \code{\link[=flow_select]{flow_select()}}) under the row label,
 in italics and brackets? On by default; the method is always in the
 description.}
+
+\item{copy_format}{The line in italics marking a box made by
+\code{\link[=flow_copy]{flow_copy()}}, which receives all the units of the box above. \code{{n}} is
+replaced by the box's count. Used only when that count is what is left in
+the box above; otherwise \code{copy_none} is used. Either may be \code{NA} for no
+line, though then nothing in the picture says that the boxes are copies.}
+
+\item{copy_none}{The line for a copied box whose count is missing or
+differs from what is left in the box above.}
 }
 \value{
 A \code{studydesignflow_layout}: a list of data frames \code{boxes}, \code{side}

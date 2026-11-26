@@ -431,7 +431,8 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
 # Labels, counts and rows for a split computed from the column `by`: per box
 # being split, one box per value present in its rows (factor level order, or
 # sorted), or with display = "summary" one box standing for them all.
-split_by <- function(x, targets, by, labels, display, n) {
+split_by <- function(x, targets, by, labels, display, n,
+                     warn_shared = TRUE) {
   need_data(x, "by")
   check_string(by, "by")
   if (!is.null(n)) {
@@ -505,7 +506,7 @@ split_by <- function(x, targets, by, labels, display, n) {
            box, "\" hold ", sum(lengths(sub)), " rows, not ", length(r),
            ". Please report this.", call. = FALSE)
     }
-    warn_shared_ids(x, sub, paste0("the boxes made by `by = \"", by,
+    if (warn_shared) warn_shared_ids(x, sub, paste0("the boxes made by `by = \"", by,
                                    "\"` under \"", box, "\""))
     if (display == "summary") {
       # {k}: the values drawn, planned ones included

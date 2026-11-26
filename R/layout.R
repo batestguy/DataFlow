@@ -39,6 +39,13 @@
 #'   [flow_assign()], [flow_cluster()] and [flow_select()]) under the row label,
 #'   in italics and brackets? On by default; the method is always in the
 #'   description.
+#' @param copy_format The line in italics marking a box made by
+#'   [flow_copy()], which receives all the units of the box above. `{n}` is
+#'   replaced by the box's count. Used only when that count is what is left in
+#'   the box above; otherwise `copy_none` is used. Either may be `NA` for no
+#'   line, though then nothing in the picture says that the boxes are copies.
+#' @param copy_none The line for a copied box whose count is missing or
+#'   differs from what is left in the box above.
 #' @return A `studydesignflow_layout`: a list of data frames `boxes`, `side`
 #'   (exclusion boxes), `segments`, `brackets` and `row_labels`, plus
 #'   `extent` (xmin, xmax, ymin, ymax) and `size` (natural width and height
@@ -56,14 +63,16 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                         row_label_width = 16,
                         connector = c("elbow", "straight"),
                         side_format = "{label} (n = {n})", side_gap = 0.3,
-                        show_method = TRUE) {
+                        show_method = TRUE,
+                        copy_format = "the same {n} as above",
+                        copy_none = "copied from the box above") {
   validate_studydesignflow(x)
   connector <- match.arg(connector)
   if (!isTRUE(show_method) && !isFALSE(show_method)) {
     stop("`show_method` must be TRUE or FALSE.", call. = FALSE)
   }
   st <- x$stages
-  nd <- x$nodes
+  nd <- copy_notes(x, copy_format, copy_none)
   ed <- x$edges
   sd <- x$side %||% empty_side()
   rs <- x$reasons %||% empty_reasons()
@@ -707,4 +716,39 @@ box_text_events <- function(nd, events, count_format, non_events = NULL) {
 non_events_known <- function(non_events, ids) {
   if (is.null(non_events)) return(rep(NA, length(ids)))
   ifelse(as.character(ids) %in% names(non_events), TRUE, NA)
+}
+
+# Boxes made by flow_copy() get a first note line saying they hold the same
+# units as the box above ("the same 1,960 as above").
+copy_notes <- function(x, copy_format, copy_none) {
+  nd <- x$nodes
+  for (a in list(list(copy_format, "copy_format"), list(copy_none, "copy_none"))) {
+    if (length(a[[1]]) != 1 || !(is.na(a[[1]]) || is.character(a[[1]]))) {
+      stop("`", a[[2]], "` must be one piece of text, or NA.", call. = FALSE)
+    }
+  }
+  is_copy <- nd$stage %in% x$stages$id[x$stages$type == "copy"]
+  if (!any(is_copy)) return(nd)
+  # "the same {n}" only when the count is what is left in the box above
+  parent <- x$edges$from[match(nd$id, x$edges$to)]
+  same <- vapply(seq_len(nrow(nd)), function(i) {
+    if (!is_copy[i] || is.na(nd$n[i])) return(FALSE)
+    above <- left_count_text(x, parent[i])
+    if (is.na(above)) return(FALSE)
+    v <- parse_count(c(nd$n[i], above))
+    identical(nd$n[i], above) || (!anyNA(v) && !differs(v[1], v[2]))
+  }, logical(1))
+  line <- rep(copy_none, nrow(nd))
+  if (!is.na(copy_format)) {
+    line[same] <- vapply(nd$n[same], function(v) {
+      gsub("{n}", v, copy_format, fixed = TRUE)
+    }, character(1), USE.NAMES = FALSE)
+  } else {
+    line[same] <- NA
+  }
+  line[!is_copy] <- NA
+  add <- !is.na(line)
+  nd$note[add] <- ifelse(is.na(nd$note[add]), line[add],
+                         paste0(line[add], "\n", nd$note[add]))
+  nd
 }

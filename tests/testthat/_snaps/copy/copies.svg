@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='svglite' data-engine-version='2.0' width='720.00pt' height='576.00pt' viewBox='0 0 720.00 576.00'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA='>
+    <rect x='0.00' y='0.00' width='720.00' height='576.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+</g>
+<defs>
+  <clipPath id='cpMTAuNDF8NzA5LjU5fDAuMDB8NTc2LjAw'>
+    <rect x='10.41' y='0.00' width='699.18' height='576.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMTAuNDF8NzA5LjU5fDAuMDB8NTc2LjAw)'>
+<rect x='10.41' y='0.00' width='699.18' height='576.00' style='stroke-width: 0.00; stroke: none; fill: #FFFFFF;' />
+</g>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+<rect x='10.41' y='14.16' width='699.18' height='561.84' style='stroke-width: 0.00; stroke: none; fill: #FFFFFF;' />
+<line x1='435.45' y1='100.15' x2='435.45' y2='306.03' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='309.50' y1='306.03' x2='561.39' y2='306.03' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='309.50' y1='440.40' x2='309.50' y2='477.61' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='561.39' y1='440.40' x2='561.39' y2='477.61' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='309.50' y1='477.61' x2='561.39' y2='477.61' style='stroke-width: 0.85; stroke-linecap: square;' />
+<line x1='309.50' y1='306.03' x2='309.50' y2='343.24' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='307.75,338.90 309.50,343.24 311.25,338.90 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='561.39' y1='306.03' x2='561.39' y2='343.24' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='559.64,338.90 561.39,343.24 563.15,338.90 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='435.45' y1='477.61' x2='435.45' y2='514.81' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='433.69,510.47 435.45,514.81 437.20,510.47 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<line x1='435.45' y1='221.70' x2='485.06' y2='221.70' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter;' />
+<polygon points='480.72,223.45 485.06,221.70 480.72,219.94 ' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #000000;' />
+<rect x='371.95' y='30.69' width='127.00' height='69.46' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='193.48' y='343.24' width='232.05' height='97.15' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='445.37' y='343.24' width='232.05' height='97.15' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<rect x='311.05' y='514.81' width='248.80' height='44.65' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<text x='435.45' y='62.04' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='33.52px' lengthAdjust='spacingAndGlyphs'>Records</text>
+<text x='435.45' y='75.00' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='43.78px' lengthAdjust='spacingAndGlyphs'>(n = 2,000)</text>
+<text x='309.50' y='374.59' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='46.54px' lengthAdjust='spacingAndGlyphs'>Annotator 1</text>
+<text x='309.50' y='387.55' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='43.78px' lengthAdjust='spacingAndGlyphs'>(n = 1,960)</text>
+<text x='561.39' y='374.59' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='46.54px' lengthAdjust='spacingAndGlyphs'>Annotator 2</text>
+<text x='561.39' y='387.55' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='43.78px' lengthAdjust='spacingAndGlyphs'>(n = 1,960)</text>
+<text x='435.45' y='540.24' text-anchor='middle' style='font-size: 9.00px; font-family: sans;' textLength='97.07px' lengthAdjust='spacingAndGlyphs'>Disagreements resolved</text>
+<rect x='485.06' y='174.57' width='207.99' height='94.26' style='stroke-width: 0.85; stroke-linecap: butt; stroke-linejoin: miter; fill: #FFFFFF;' />
+<text x='498.29' y='211.83' style='font-size: 9.00px; font-family: sans;' textLength='72.30px' lengthAdjust='spacingAndGlyphs'>Removed (n = 40)</text>
+<text x='498.29' y='224.79' style='font-size: 9.00px; font-family: sans;' textLength='76.79px' lengthAdjust='spacingAndGlyphs'>- Duplicate (n = 25)</text>
+<text x='498.29' y='237.75' style='font-size: 9.00px; font-family: sans;' textLength='64.78px' lengthAdjust='spacingAndGlyphs'>- Empty (n = 15)</text>
+<text x='309.50' y='422.57' text-anchor='middle' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='85.92px' lengthAdjust='spacingAndGlyphs'>the same 1,960 as above</text>
+<text x='561.39' y='422.57' text-anchor='middle' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='85.92px' lengthAdjust='spacingAndGlyphs'>the same 1,960 as above</text>
+<text x='26.95' y='394.92' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='36.03px' lengthAdjust='spacingAndGlyphs'>Labelling</text>
+<text x='26.95' y='540.24' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='49.04px' lengthAdjust='spacingAndGlyphs'>Adjudication</text>
+<text x='10.41' y='11.92' style='font-size: 10.80px; font-family: sans;' textLength='31.23px' lengthAdjust='spacingAndGlyphs'>copies</text>
+</g>
+</svg>

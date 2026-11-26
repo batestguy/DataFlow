@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ 46 core designs drawn, read blind, graded, merged; other 71 after 7a | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0 and 7i built, reviewed, merged into `main` (method shown by default); 7a next | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i and 7a (copies, approved 2026-11-26) merged into `main`; 7b units next in order | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -275,7 +275,7 @@ correctly. Names below are proposals, settled in the design of each part.
 | Part | What | Proposed form | Watch for |
 |---|---|---|---|
 | 7-0 Number check 🟡 (first; moved from milestone 8 on 2026-11-25) | Numbers that do not add up, reasons that do not sum, splits larger than their parent | `flow_check()`, run by the user; reports, never edits or blocks | Designed with 7a and 7b: copies and changes of unit must not be reported |
-| 7a Copies (after 7i) | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
+| 7a Copies (after 7i) ✅ approved 2026-11-26 | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
 | 7b Units | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
 | 7c Step details | Tool or instrument, who, dates, method | `details =` with fixed fields after Datasheets and Croissant; drawn as a note or a numbered key; always in the description | Long text; layout height |
 | 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
@@ -1063,3 +1063,38 @@ what is still open.
   and kept the plan's order: features first, then the page.
 - Checked: full test suite; package check (result in the commit message).
 - Open: 7a copies next; the two false problems of `flow_check()` (D08, E04).
+
+### 2026-11-26 — Milestone 7a: copies
+- `flow_copy()`: every new box receives all the units left in the box above
+  (stage type "copy"). Counts default to what is left (count minus exclusion
+  boxes); in data mode every copy carries the rows left, and typed `n` is
+  refused for boxes with rows. Summary boxes cannot be copied.
+- Picture (chosen by the user from two mock-ups, 2026-11-26): an italic line
+  inside each copied box, "the same 1,960 as above"; when the count is not
+  what is left above, "copied from the box above" (`copy_format`,
+  `copy_none` in `flow_layout()`).
+- Description: "each of A (n = ..) and B (n = ..) receives all the units
+  [left] in X"; a pool of copies adds "each unit counted once" when its count
+  allows it.
+- Number check: a copy larger than what is left above is a problem, smaller
+  a note. Pools: the most and fewest different units are worked out through
+  the tree (copies hold at most what was left in the box copied, shares add
+  up); more than the most is a note (a change of unit, e.g. person-periods),
+  fewer than the fewest a problem. Copies fix the false problem in textbook
+  design D08 (now a note); E04 version 1 checks clean, version 2 needs units
+  (7b).
+- Independent review (same model family): no blocking fault; three things to
+  fix, all fixed with tests: the line "the same 97 as above" under a box of
+  100; false problems for pools mixing copies and other boxes, or copies
+  under several parents; person-periods called a problem. Also: copies of
+  copies, summary boxes refused.
+- Checked: copy tests; 323 earlier designs identical to `main` (objects,
+  layouts, descriptions); stress test with copies and pools, 400 designs,
+  0 overlaps, 0 crossings; package check (result in the commit message).
+- Added after drawing a real textbook design (`nlme::ergoStool`, one row per
+  person and stool): `by =` on `flow_copy()`, so each copy holds only its own
+  rows while counting the same units (`count =`); no shared-id warning there.
+- The user looked at the pictures (labelling with adjudication; the stool
+  design from data) and approved them on 2026-11-26.
+- Checked: package check 0 errors, 0 warnings, 0 notes after the last change.
+- Open: the 71 extended and edge textbook designs, now that copies exist.

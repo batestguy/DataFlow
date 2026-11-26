@@ -78,6 +78,8 @@ flow_describe <- function(x) {
       # units are assigned, not the box they come from
       whose <- if (type == "assign") "those in " else ""
       body <- describe_split(ids, srcs, say, name, whole_row, verb, whose)
+    } else if (type == "copy") {
+      body <- describe_copy(x, ids, srcs, say, name, whole_row)
     } else if (type == "partition") {
       body <- paste0(describe_split(ids, srcs, say, name, whole_row,
                                     "partitioned into"),
@@ -92,7 +94,11 @@ flow_describe <- function(x) {
     } else if (type == "pool") {
       # "X and Y are combined into Z (n = ..)", one clause per pool
       body <- paste(vapply(seq_along(ids), function(i) {
-        paste0(and_list(name(srcs[[i]])), " are combined into ", say(ids[i]))
+        paste0(and_list(name(srcs[[i]])), " are combined into ", say(ids[i]),
+               if (counted_once(x, ids[i], srcs[[i]], s)) {
+                 paste0(", each unit counted once, as some of the boxes are ",
+                        "copies of the same units")
+               })
       }, ""), collapse = "; ")
     } else {
       body <- describe_attach(x, s, ids, srcs, say, name, whole_row)
@@ -135,6 +141,34 @@ describe_split <- function(ids, srcs, say, name, whole_row,
   }
   paste(paste0(whose, name(parents), is, verb, " ", kid_text),
         collapse = "; ")
+}
+
+# "each of Annotator 1 (n = 1,960) and Annotator 2 (n = 1,960) receives all
+# the units in Records", one clause per parent, or one for a whole row with
+# the same boxes under every parent.
+describe_copy <- function(x, ids, srcs, say, name, whole_row) {
+  parents <- unique(unlist(srcs))
+  kids <- lapply(parents, function(p) {
+    ids[vapply(srcs, function(z) p %in% z, logical(1))]
+  })
+  kid_text <- vapply(kids, function(k) {
+    if (length(k) == 1) paste0(say(k), " receives")
+    else paste0("each of ", and_list(vapply(k, say, "")), " receives")
+  }, "")
+  if (length(parents) > 1 && length(unique(kid_text)) == 1) {
+    row <- whole_row(parents)
+    if (!is.na(row)) {
+      return(paste0("under each of the ", length(parents), " boxes in the ",
+                    row, " row, ", kid_text[1], " all the units ",
+                    if (any(parents %in% (x$side %||% empty_side())$parent))
+                      "left " else "", "in that box"))
+    }
+  }
+  # "left in" when exclusion boxes hang off the box being copied
+  sd <- x$side %||% empty_side()
+  left <- ifelse(parents %in% sd$parent, " all the units left in ",
+                 " all the units in ")
+  paste(paste0(kid_text, left, name(parents)), collapse = "; ")
 }
 
 # "randomly assigned to", "assigned by minimisation to", "assigned to"
@@ -280,4 +314,18 @@ describe_partition <- function(p) {
                                  p$time, " (older data for training, newer ",
                                  "for testing)", unchecked)
   )
+}
+
+# TRUE when a pool joins copies of the same units and its count says each
+# unit was counted once: rows from data, or a typed count no larger than the
+# number of different units there can be.
+counted_once <- function(x, id, src, r) {
+  cp <- pool_units(x, src, r)
+  if (is.null(cp)) return(FALSE)
+  if (has_data(x) && !is.null(box_rows(x, id)) &&
+      !id %in% edited_ids(x, "nodes")) {
+    return(TRUE)
+  }
+  v <- parse_count(x$nodes$n[x$nodes$id == id])
+  !is.na(v) && !is.na(cp$upper) && v <= cp$upper + 1e-8
 }
