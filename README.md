@@ -22,8 +22,8 @@ evaluation work. What comes next is in
 ## When another package fits better
 
 - PRISMA 2020 review diagrams: [PRISMA2020](https://cran.r-project.org/package=PRISMA2020).
-- Standard clinical flows with warnings when typed numbers do not add up
-  (studydesignflow does not check them yet):
+- Standard clinical flows with automatic warnings when typed numbers do not
+  add up (studydesignflow reports them only when you run `flow_check()`):
   [selecta](https://cran.r-project.org/package=selecta).
 - A flow chart made automatically from a dplyr pipeline, with joins:
   [dtrackr](https://cran.r-project.org/package=dtrackr).
@@ -198,9 +198,11 @@ block's text or count (marked as typed). See `flow_example("cv")` and
 
 ## What it does not do
 
-- Typed counts are drawn exactly as you type them and never checked, so a
-  typed diagram is only as correct as the numbers given to it. With data,
-  counts are computed, but the data must hold what the diagram claims.
+- Typed counts are drawn exactly as you type them. `flow_check()` reports
+  counts that do not add up, but numbers that fit each other can still be
+  wrong, and a change of unit or a group used twice can look like an error.
+  With data, counts are computed, but the data must hold what the diagram
+  claims.
 - Box sizes come from text measured with the PDF device's standard fonts. If
   you draw with a very different font, or much smaller than the natural size,
   text can spill out of boxes.

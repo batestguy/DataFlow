@@ -87,9 +87,10 @@
 <text x='260.76' y='477.98' style='font-size: 9.00px; font-family: sans;' textLength='115.33px' lengthAdjust='spacingAndGlyphs'>No outcome recorded (n = 4)</text>
 <text x='479.59' y='477.98' style='font-size: 9.00px; font-family: sans;' textLength='115.33px' lengthAdjust='spacingAndGlyphs'>No outcome recorded (n = 2)</text>
 <text x='86.56' y='45.62' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='41.02px' lengthAdjust='spacingAndGlyphs'>Enrolment</text>
-<text x='86.56' y='311.90' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='39.03px' lengthAdjust='spacingAndGlyphs'>Allocation</text>
+<text x='86.56' y='304.68' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='39.03px' lengthAdjust='spacingAndGlyphs'>Allocation</text>
 <text x='86.56' y='398.37' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='39.02px' lengthAdjust='spacingAndGlyphs'>Follow-up</text>
 <text x='86.56' y='550.73' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='33.52px' lengthAdjust='spacingAndGlyphs'>Analysis</text>
+<text x='86.56' y='319.44' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='31.04px' lengthAdjust='spacingAndGlyphs'>(random)</text>
 <text x='77.41' y='11.92' style='font-size: 10.80px; font-family: sans;' textLength='76.25px' lengthAdjust='spacingAndGlyphs'>trial data design</text>
 </g>
 </svg>

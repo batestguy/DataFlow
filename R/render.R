@@ -13,7 +13,7 @@
 #'
 #' @param object,x A `studydesignflow` object.
 #' @param ... Passed to [flow_layout()] (e.g. `count_format`, `base_size`,
-#'   `hgap`, `vgap`, `connector`).
+#'   `hgap`, `vgap`, `connector`, `show_method`).
 #' @param fill,colour Box fill and border colour.
 #' @param outcome_fill Fill for outcome boxes at the end of each branch.
 #' @param linewidth Line width for boxes and connectors.
@@ -116,6 +116,15 @@ autoplot.studydesignflow <- function(object, ..., fill = "white", colour = "blac
       size = ps$base_size, size.unit = "pt", family = ps$family,
       fontface = "bold", hjust = 0, lineheight = 1.2, colour = colour
     )
+    methods <- lay$row_labels[!is.na(lay$row_labels$method %||% NA), ]
+    if (nrow(methods) > 0) {
+      p <- p + ggplot2::geom_text(
+        data = methods,
+        ggplot2::aes(x = .data$x, y = .data$method_y, label = .data$method),
+        size = ps$note_size, size.unit = "pt", family = ps$family,
+        fontface = "italic", hjust = 0, lineheight = 1.2, colour = colour
+      )
+    }
   }
   p <- p +
     ggplot2::coord_fixed(xlim = ex[c("xmin", "xmax")],

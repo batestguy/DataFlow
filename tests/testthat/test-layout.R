@@ -178,3 +178,117 @@ test_that("no stretch of line is drawn twice in the example layouts", {
     }
   }
 })
+
+# height of k lines as R draws them: asked of grid, not of the package
+drawn <- function(k, size) {
+  grDevices::pdf(NULL)
+  on.exit(grDevices::dev.off())
+  vapply(k, function(i) {
+    if (i == 0) return(0)
+    g <- grid::textGrob(paste(rep("Ag", i), collapse = "\n"),
+                        gp = grid::gpar(fontsize = size, lineheight = 1.2))
+    grid::convertHeight(grid::grobHeight(g), "in", valueOnly = TRUE)
+  }, 1)
+}
+
+test_that("show_method writes the method under the row label and no more", {
+  for (e in c("trial", "survey", "lab", "review")) {
+    d <- flow_example(e)
+    off <- flow_layout(d, show_method = FALSE)
+    on <- flow_layout(d, show_method = TRUE)
+    expect_null(off$row_labels$method)
+    expect_equal(on$boxes[c("label", "x", "w", "h")],
+                 off$boxes[c("label", "x", "w", "h")])
+    expect_equal(sum(!is.na(on$row_labels$method)), sum(!is.na(d$stages$method)))
+  }
+  on <- flow_layout(flow_example("trial"), show_method = TRUE)
+  expect_equal(on$row_labels$method[on$row_labels$stage == "Allocation"],
+               "(random)")
+})
+
+test_that("labels with a method never overlap their neighbours", {
+  d <- flow_start("A", n = 100)
+  for (i in 1:4) {
+    d <- flow_select(d, paste("Stage number", i, "with a long name"), "x", n = 5,
+                     method = "a sampling method with a long description in words")
+  }
+  on <- flow_layout(d, show_method = TRUE)
+  rl <- on$row_labels
+  lines <- function(s) ifelse(is.na(s), 0, lengths(strsplit(s, "\n", fixed = TRUE)))
+  top <- rl$y + drawn(lines(rl$label), 9) / 2
+  bottom <- ifelse(is.na(rl$method), rl$y - drawn(lines(rl$label), 9) / 2,
+                   rl$method_y - drawn(lines(rl$method), 9 * 0.85) / 2)
+  expect_true(all(top[-1] <= bottom[-length(bottom)] + 1e-6))
+})
+
+test_that("a hidden row label can still carry its method", {
+  d <- flow_start("A", n = 10) |>
+    flow_assign("Arm", c("x", "y"), n = 5, row_label = "")
+  expect_equal(nrow(flow_layout(d, show_method = FALSE)$row_labels), 0)
+  on <- flow_layout(d, show_method = TRUE)
+  expect_equal(on$row_labels$method, "(random)")
+  expect_s3_class(ggplot2::autoplot(d, show_method = TRUE), "ggplot")
+})
+
+test_that("a long method never stretches boxes or runs into tall labels", {
+  long <- paste(rep("stratified block randomisation by site", 4), collapse = " ")
+  for (g in c(0.1, 0.45)) {
+    d <- flow_start("P", n = 100) |>
+      flow_apply("A very long row label that wraps onto several lines", "x",
+                 n = 100) |>
+      flow_apply("Hidden", "h", n = 100, row_label = "") |>
+      flow_assign("Allocation", c("a", "b"), n = 50, method = long) |>
+      flow_apply("Another very long row label that wraps onto several lines",
+                 "y", n = 50)
+    off <- flow_layout(d, vgap = g, show_method = FALSE)
+    on <- flow_layout(d, vgap = g, show_method = TRUE)
+    expect_equal(on$boxes$h, off$boxes$h)
+    rl <- on$row_labels
+    lines <- function(s) {
+      ifelse(is.na(s), 0, lengths(strsplit(s, "\n", fixed = TRUE)))
+    }
+    lab <- drawn(lines(rl$label), 9) / 2
+    met <- drawn(lines(rl$method), 9 * 0.85) / 2
+    top <- rl$y + lab
+    bottom <- ifelse(is.na(rl$method), rl$y - lab, rl$method_y - met)
+    near <- which(!is.na(rl$method))
+    expect_true(all(top[near] <= bottom[near - 1]))
+    expect_true(all(top[near + 1] <= bottom[near]))
+    expect_lte(max(top), on$extent[["ymax"]])
+    expect_gte(min(bottom), on$extent[["ymin"]])
+  }
+  expect_error(flow_layout(d, show_method = NA), "TRUE or FALSE")
+})
+
+test_that("a method on the first or last row stays inside the picture", {
+  d <- flow_start("P", n = 100) |>
+    flow_assign("Allocation", c("a", "b"), n = 50,
+                method = paste(rep("a long method", 10), collapse = " "))
+  on <- flow_layout(d, show_method = TRUE)
+  rl <- on$row_labels[!is.na(on$row_labels$method), ]
+  expect_gte(rl$method_y - drawn(lengths(strsplit(rl$method, "\n")), 9 * 0.85) / 2, on$extent[["ymin"]])
+})
+
+test_that("a tall label on the first or last row is not cut off", {
+  tall <- "A very long row label that wraps onto four or five lines in the margin"
+  d <- flow_start("P", n = 100, stage = tall) |>
+    flow_apply(paste(tall, "again"), "x", n = 100)
+  l <- flow_layout(d)
+  half <- drawn(lengths(strsplit(l$row_labels$label, "\n")), 9) / 2
+  expect_lte((l$row_labels$y + half)[1], l$extent[["ymax"]])
+  expect_gte((l$row_labels$y - half)[2], l$extent[["ymin"]])
+})
+
+test_that("text with many lines stays inside its box", {
+  for (k in 1:14) {
+    d <- flow_start(paste(rep("Ag", k), collapse = "\n"), n = 100) |>
+      flow_exclude("Out", n = k, reasons = stats::setNames(
+        rep(1, k), paste("Reason", seq_len(k)))) |>
+      flow_apply("Next", "x", n = 100 - k,
+                 note = paste(rep("a", k), collapse = "\n"))
+    l <- flow_layout(d)
+    expect_lt(drawn(k + 1, 9), l$boxes$h[1])
+    expect_lt(drawn(k + 1, 9), l$side$ymax - l$side$ymin)
+    expect_lt(drawn(2, 9) + drawn(k, 9 * 0.85), l$boxes$h[2])
+  }
+})

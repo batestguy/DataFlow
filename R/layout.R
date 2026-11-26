@@ -35,6 +35,10 @@
 #'   as in `count_format`. Reasons are listed below it, one per line.
 #' @param side_gap Length of the arrow from the flow line to an exclusion
 #'   box, in inches.
+#' @param show_method Write how boxes were assigned or sampled (the `method` of
+#'   [flow_assign()], [flow_cluster()] and [flow_select()]) under the row label,
+#'   in italics and brackets? On by default; the method is always in the
+#'   description.
 #' @return A `studydesignflow_layout`: a list of data frames `boxes`, `side`
 #'   (exclusion boxes), `segments`, `brackets` and `row_labels`, plus
 #'   `extent` (xmin, xmax, ymin, ymax) and `size` (natural width and height
@@ -51,15 +55,24 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                         pad_x = 0.08, pad_y = 0.06, min_width = 0.3,
                         row_label_width = 16,
                         connector = c("elbow", "straight"),
-                        side_format = "{label} (n = {n})", side_gap = 0.3) {
+                        side_format = "{label} (n = {n})", side_gap = 0.3,
+                        show_method = TRUE) {
   validate_studydesignflow(x)
   connector <- match.arg(connector)
+  if (!isTRUE(show_method) && !isFALSE(show_method)) {
+    stop("`show_method` must be TRUE or FALSE.", call. = FALSE)
+  }
   st <- x$stages
   nd <- x$nodes
   ed <- x$edges
   sd <- x$side %||% empty_side()
   rs <- x$reasons %||% empty_reasons()
-  line_in <- function(size) size * 1.2 / 72
+  # Height of `k` lines of text. Lines are drawn 1.4453 times the font size
+  # apart (R's 1.2 times the size, times the line height of 1.2), so 1.2 per
+  # line is too little from five lines on.
+  text_in <- function(k, size) pmax(1.2 * k, 1.4453 * (k - 1) + 0.36) * size / 72
+  # the same without spare room, for row labels, which have no box around them
+  label_in <- function(k, size) (1.4453 * (k - 1) + 0.92) * size / 72
   measure_family <- family
   if (!identical(family, "") &&
       !family %in% names(grDevices::pdfFonts())) {
@@ -89,6 +102,15 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     if (s == "") "" else paste(strwrap(s, row_label_width), collapse = "\n")
   }, character(1), USE.NAMES = FALSE)
 
+  method_text <- rep("", nrow(st))
+  if (show_method) {
+    has_method <- !is.na(st$method)
+    method_text[has_method] <- vapply(
+      paste0("(", st$method[has_method], ")"),
+      function(s) paste(strwrap(s, row_label_width + 2), collapse = "\n"), ""
+    )
+  }
+
   # exclusion boxes: heading (with count) then one line per reason
   side_text <- vapply(seq_len(nrow(sd)), function(i) {
     head <- if (is.na(sd$n[i])) sd$label[i] else {
@@ -108,6 +130,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                     text_width(ifelse(has_note, nd$note, ""), note_size,
                                measure_family, "italic"), 0),
       row = text_width(rl_wrapped, base_size, measure_family, "bold"),
+      method = text_width(method_text, note_size, measure_family, "italic"),
       side = text_width(side_text, base_size, measure_family, "plain"),
       side_note = ifelse(side_has_note,
                          text_width(ifelse(side_has_note, sd$note, ""),
@@ -115,17 +138,17 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     )
   })
   n_lines <- function(s) lengths(strsplit(s, "\n", fixed = TRUE))
-  main_h <- n_lines(text) * line_in(base_size)
-  note_h <- ifelse(has_note, n_lines(ifelse(has_note, nd$note, "")) *
-                     line_in(note_size) + 0.04, 0)
+  main_h <- text_in(n_lines(text), base_size)
+  note_h <- ifelse(has_note, text_in(n_lines(ifelse(has_note, nd$note, "")),
+                                     note_size) + 0.04, 0)
   w <- pmax(min_width, pmax(widths$main, widths$note) + 2 * pad_x)
   text_h <- main_h + note_h
   h_box <- text_h + 2 * pad_y
 
-  side_main_h <- n_lines(side_text) * line_in(base_size)
+  side_main_h <- text_in(n_lines(side_text), base_size)
   side_note_h <- ifelse(side_has_note,
-                        n_lines(ifelse(side_has_note, sd$note, "")) *
-                          line_in(note_size) + 0.04, 0)
+                        text_in(n_lines(ifelse(side_has_note, sd$note, "")),
+                                note_size) + 0.04, 0)
   side_w <- pmax(min_width, pmax(widths$side, widths$side_note) + 2 * pad_x)
   side_text_h <- side_main_h + side_note_h
   side_h <- side_text_h + 2 * pad_y
@@ -136,7 +159,26 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   row_h <- vapply(seq_len(nrow(st)), function(r) {
     max(c(0, h_box[row == r], side_h[side_row == r]))
   }, numeric(1))
+  # heights of the row label and of the method under it
+  rl_h <- ifelse(rl_wrapped == "", 0,
+                 label_in(n_lines(rl_wrapped), base_size))
+  mt_h <- ifelse(method_text == "", 0,
+                 label_in(n_lines(method_text), note_size) + 0.06)
   row_top <- -c(0, cumsum(row_h + vgap))[seq_len(nrow(st))]
+  # a label with a method must not run into the labels of the rows around it:
+  # the gap above the lower row is made longer, the boxes keep their height
+  block <- rl_h + mt_h
+  for (r in seq_len(nrow(st))[-1]) {
+    above <- seq_len(r - 1)
+    above <- above[block[above] > 0 & (mt_h[above] > 0 | mt_h[r] > 0)]
+    if (block[r] == 0 || length(above) == 0) next
+    top <- min((row_top - row_h / 2)[above] - block[above] / 2) - 0.05
+    short <- (row_top[r] - row_h[r] / 2 + block[r] / 2) - top
+    if (short > 0) {
+      below <- r:nrow(st)
+      row_top[below] <- row_top[below] - short
+    }
+  }
   row_y <- row_top - row_h / 2
   row_bottom <- row_top - row_h
   h <- row_h[row]
@@ -475,18 +517,27 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
 
   # --- row labels and extent ---------------------------------------------
   label_gap <- 0.25
-  has_rl <- rl_wrapped != ""
-  rl_x <- min(boxes$xmin) - label_gap - max(c(0, widths$row[has_rl]))
+  has_rl <- rl_wrapped != "" | method_text != ""
+  rl_w <- pmax(ifelse(rl_wrapped == "", 0, widths$row),
+               ifelse(method_text == "", 0, widths$method))
+  rl_x <- min(boxes$xmin) - label_gap - max(c(0, rl_w[has_rl]))
   row_labels <- data.frame(
     stage = st$name[has_rl], label = rl_wrapped[has_rl],
-    x = rep(rl_x, sum(has_rl)), y = row_y[has_rl],
-    w = widths$row[has_rl], stringsAsFactors = FALSE
+    x = rep(rl_x, sum(has_rl)), y = (row_y + mt_h / 2)[has_rl],
+    w = rl_w[has_rl], stringsAsFactors = FALSE
   )
+  if (show_method) {
+    row_labels$method <- ifelse(method_text == "", NA, method_text)[has_rl]
+    row_labels$method_y <- (row_y - rl_h / 2 - 0.03)[has_rl]
+  }
   margin <- 0.1
   xmin <- (if (any(has_rl)) rl_x else min(boxes$xmin)) - margin
   xmax <- max(c(boxes$xmax, side$xmax)) + margin
   ymin <- min(c(boxes$ymin, side$ymin)) - margin
   ymax <- max(boxes$ymax) + margin
+  # a row label, with its method, can be taller than the boxes of its row
+  ymin <- min(ymin, (row_y - block / 2 - 0.03)[block > 0])
+  ymax <- max(ymax, (row_y + block / 2 + 0.03)[block > 0])
 
   structure(
     list(

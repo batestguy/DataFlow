@@ -83,9 +83,10 @@
 <text x='250.49' y='361.18' text-anchor='middle' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='81.43px' lengthAdjust='spacingAndGlyphs'>Did not receive it (n = 4)</text>
 <text x='469.68' y='355.67' text-anchor='middle' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='102.29px' lengthAdjust='spacingAndGlyphs'>Received usual care (n = 150)</text>
 <text x='62.74' y='46.95' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='41.02px' lengthAdjust='spacingAndGlyphs'>Enrolment</text>
-<text x='62.74' y='339.85' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='39.03px' lengthAdjust='spacingAndGlyphs'>Allocation</text>
+<text x='62.74' y='332.29' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='39.03px' lengthAdjust='spacingAndGlyphs'>Allocation</text>
 <text x='62.74' y='451.69' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='39.02px' lengthAdjust='spacingAndGlyphs'>Follow-up</text>
 <text x='62.74' y='549.40' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='33.52px' lengthAdjust='spacingAndGlyphs'>Analysis</text>
+<text x='62.74' y='347.76' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='31.04px' lengthAdjust='spacingAndGlyphs'>(random)</text>
 <text x='53.16' y='11.92' style='font-size: 10.80px; font-family: sans;' textLength='52.23px' lengthAdjust='spacingAndGlyphs'>trial design</text>
 </g>
 </svg>

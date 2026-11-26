@@ -261,7 +261,7 @@ test_that("flows without data are unchanged from main (layouts as data)", {
   skip_on_ci()
   ref <- readRDS(test_path("fixtures", "typed_layouts_main.rds"))
   for (nm in names(ref)) {
-    lay <- unclass(flow_layout(flow_example(nm)))
+    lay <- unclass(flow_layout(flow_example(nm), show_method = FALSE))
     # identical, except that lines drawn twice on main are now drawn once
     expect_identical(lay[names(lay) != "segments"],
                      ref[[nm]][names(ref[[nm]]) != "segments"], label = nm)
