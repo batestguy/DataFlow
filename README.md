@@ -9,12 +9,14 @@ pipe-friendly R code. The result is a ggplot object you can restyle, save as
 PDF or PNG, and describe in plain sentences for alternative text. The
 aim: draw how your data came to be, in any field.
 
-**Status:** early development (milestones 0 to 5 done). Splits,
-bracket merges, outcomes, random assignment, exclusion boxes with reasons,
-cluster sampling, selection, summary rows, several starting streams,
-pooling, counts computed from a data frame, machine-learning data splits
-with outcome events, and fold grids for cross-validation and time-series
-evaluation work. What comes next is in
+**Status:** early development (milestones 0 to 6 and parts of 7 done).
+Splits, bracket merges, outcomes, random assignment, exclusion boxes with
+reasons, cluster sampling, selection, summary rows, several starting
+streams, pooling, copies (every branch gets all the units), the method of
+assignment or sampling shown in the picture, a number check, counts
+computed from a data frame, machine-learning data splits with outcome
+events, and fold grids for cross-validation and time-series evaluation
+work. What comes next is in
 `ROADMAP.md`. Built-in examples: `flow_example("lab")`, `"trial"`,
 `"survey"`, `"review"`, `"factorial"`, `"trial_data"`, `"ml"`, `"cv"` and
 `"forecast"`.
@@ -81,6 +83,49 @@ flow_start(c("Records from databases", "Records from other sources"),
 example the cells of a factorial design pooled per drug group), and
 `groups = list(...)` lists the boxes of each pool. See
 `flow_example("review")` and `flow_example("factorial")`.
+
+## Copies: every branch gets all of them
+
+`flow_split()` divides units between boxes. When every box gets all of
+them (two people label the same records, every person tries every
+treatment), use `flow_copy()`. Each copied box then says so in the picture
+("the same 1,960 as above"), in the description ("each of Annotator 1 and
+Annotator 2 receives all the units left in Records"), and to the number
+check:
+
+```r
+flow_start("Records", n = 2000) |>
+  flow_exclude("Removed", n = 40) |>
+  flow_copy("Labelling", c("Annotator 1", "Annotator 2")) |>
+  flow_pool("Adjudication", "Disagreements resolved", n = 1960)
+```
+
+With data in one row per unit and treatment, `flow_copy(by = "treatment")`
+gives each copy its own rows, and `count =` in `flow_start()` counts the
+units (see Counts computed from data).
+
+## How units were assigned or sampled
+
+The method given to `flow_assign()`, `flow_cluster()` or `flow_select()`
+(for example `"random"` or `"probability proportional to size"`) is written
+in italics under the row label, and always in the description. Turn it off
+with `plot(design, show_method = FALSE)`.
+
+## Checking the numbers
+
+`flow_check()` reports counts that cannot all be right (boxes of a split
+that do not add up to the box above, reasons that do not add up to their
+exclusion box, more excluded than there were) and, as notes, counts that
+may be right but are worth a look. It never changes the diagram:
+
+```r
+flow_start("Assessed", n = 500) |>
+  flow_exclude("Excluded", n = 100,
+               reasons = c("Not eligible" = 60, "Declined" = 30)) |>
+  flow_split("Randomised", "Randomised", n = 400) |>
+  flow_assign("Allocation", c("Drug", "Placebo"), n = c(200, 190)) |>
+  flow_check()
+```
 
 ## Counts computed from data
 
