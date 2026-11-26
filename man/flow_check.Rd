@@ -32,6 +32,9 @@ excluded than there were;
 \item after an exclusion, the next box is not what is left, or a pool or a
 selection has more than what is left;
 \item a pool has fewer than its sources together;
+\item a copy made by \code{\link[=flow_copy]{flow_copy()}} has more than what is left in the box it
+copies, or a pool of copies has more units than were copied (each unit
+is counted once) or fewer than one of the copies;
 \item there are more outcome events than units, or the events of a split do not
 add up.
 }
@@ -40,7 +43,8 @@ A \strong{note} is something that may be right and is worth a look: every branch
 of a split has the same count as the box above (fine if each branch gets
 all of them, as when two people label the same records), a later box counts
 more than the one above (fine if the unit changes, as from households to
-people), or fewer with no exclusion drawn.
+people), or fewer with no exclusion drawn, including a copy with fewer than
+the box it copies.
 
 Sampling steps (\code{\link[=flow_cluster]{flow_cluster()}}, \code{\link[=flow_select]{flow_select()}}) and summary boxes are not
 compared, except that a selection larger than its source is reported. Missing

@@ -16,6 +16,9 @@
 #' * after an exclusion, the next box is not what is left, or a pool or a
 #'   selection has more than what is left;
 #' * a pool has fewer than its sources together;
+#' * a copy made by [flow_copy()] has more than what is left in the box it
+#'   copies, or a pool of copies has more units than were copied (each unit
+#'   is counted once) or fewer than one of the copies;
 #' * there are more outcome events than units, or the events of a split do not
 #'   add up.
 #'
@@ -23,7 +26,8 @@
 #' of a split has the same count as the box above (fine if each branch gets
 #' all of them, as when two people label the same records), a later box counts
 #' more than the one above (fine if the unit changes, as from households to
-#' people), or fewer with no exclusion drawn.
+#' people), or fewer with no exclusion drawn, including a copy with fewer than
+#' the box it copies.
 #'
 #' Sampling steps ([flow_cluster()], [flow_select()]) and summary boxes are not
 #' compared, except that a selection larger than its source is reported. Missing
@@ -194,6 +198,32 @@ flow_check <- function(x) {
     }
     srcs <- lapply(ids, function(i) ed$from[ed$to == i])
 
+    if (type == "copy") {
+      for (i in seq_along(ids)) {
+        id <- ids[i]
+        p <- srcs[[i]]
+        sides <- sides_of(p, s)
+        if (all_computed(c(p, id), sides)) next
+        lft <- left_in(p, s)
+        if (is.na(lft) || is.na(N(id))) {
+          unknown <- unknown + 1L
+          next
+        }
+        made <- made + 1L
+        if (differs(N(id), lft) && N(id) > lft) {
+          report("problem", stage, nice[[as.character(id)]], quoted(id),
+                 " has ", show_count(N(id)), ", more than the ",
+                 left_text(p, s), " it is a copy of.")
+        } else if (differs(N(id), lft)) {
+          report("note", stage, nice[[as.character(id)]], quoted(id),
+                 " has ", show_count(N(id)), ", fewer than the ",
+                 left_text(p, s), " it is a copy of. Fine if not every unit ",
+                 "reached it; the label should say so.", kind = "copy_fewer")
+        }
+      }
+      next
+    }
+
     if (type %in% c("split", "assign", "partition")) {
       for (p in unique(unlist(srcs))) {
         kids <- ids[vapply(srcs, function(z) p %in% z, NA)]
@@ -224,7 +254,7 @@ flow_check <- function(x) {
                    length(kids), " boxes under ", quoted(p),
                    " has the same count as what is there (",
                    show_count(lft), "). Fine if every branch gets all of ",
-                   "them; the labels should say so.", kind = "copies")
+                   "them; flow_copy() draws that.", kind = "copies")
           } else if (length(kids) == 1 && kn > N(p)) {
             report("note", stage, nice[[as.character(kids)]], quoted(kids),
                    " has ", show_count(kn), ", more than the ",
@@ -280,6 +310,28 @@ flow_check <- function(x) {
       total <- sum(lft)
       if (is.na(N(id)) || is.na(total)) {
         unknown <- unknown + 1L
+        next
+      }
+      cp <- if (type == "pool") pool_units(x, src, s) else NULL
+      if (!is.null(cp)) {
+        # some sources are copies of the same units: each unit once
+        if (anyNA(c(cp$upper, cp$lower))) {
+          unknown <- unknown + 1L
+          next
+        }
+        made <- made + 1L
+        if (N(id) > cp$upper + 1e-8) {
+          report("note", stage, box, quoted(id), " has ", show_count(N(id)),
+                 ", more than the ", show_count(cp$upper), " different units ",
+                 "in the boxes joined in it, as some are copies of the same ",
+                 "units. Fine if the unit changes (for example to ",
+                 "person-periods); the label should say so.",
+                 kind = "pool_more")
+        } else if (N(id) < cp$lower - 1e-8) {
+          report("problem", stage, box, quoted(id), " has ",
+                 show_count(N(id)), ", but the boxes joined in it hold at ",
+                 "least ", show_count(cp$lower), " different units.")
+        }
         next
       }
       made <- made + 1L
@@ -340,6 +392,51 @@ flow_check <- function(x) {
   attr(out, "found") <- nrow(out)
   class(out) <- c("studydesignflow_check", "data.frame")
   out
+}
+
+# For a pool of `src` on row `r`: the most and the fewest different units it
+# can hold, when some sources are copies (flow_copy()) of the same units;
+# NULL when no copies are involved. Sources are grouped by the box they come
+# from under their lowest common ancestor: copies of it hold at most what was
+# left in it and at least the largest group; shares (splits) add up.
+pool_units <- function(x, src, r) {
+  if (length(src) < 2) return(NULL)
+  st <- x$stages
+  nd <- x$nodes
+  sd <- x$side %||% empty_side()
+  copy_stages <- st$id[st$type == "copy"]
+  left_at <- function(id, row) {
+    out <- sd$n[sd$parent == id & match(sd$stage, st$id) < row]
+    v <- parse_count(c(nd$n[nd$id == id], out))
+    if (anyNA(v)) NA_real_ else v[1] - sum(v[-1])
+  }
+  used <- FALSE
+  bounds <- function(ids) {
+    if (length(ids) == 1) return(rep(left_at(ids, r), 2))
+    top <- lowest_common_ancestor(x, ids)
+    child <- vapply(ids, function(i) {
+      chain <- c(i, node_ancestors(x, i))
+      k <- if (is.na(top)) length(chain) else match(top, chain) - 1L
+      if (is.na(k) || k < 1) i else chain[k]
+    }, integer(1))
+    kids <- unique(child)
+    if (length(kids) == 1) {
+      return(rowSums(vapply(ids, function(i) rep(left_at(i, r), 2),
+                            numeric(2))))
+    }
+    b <- vapply(split(ids, factor(child, levels = kids)), bounds, numeric(2))
+    is_copy <- nd$stage[match(kids, nd$id)] %in% copy_stages
+    if (!is.na(top) && any(is_copy)) {
+      used <<- TRUE
+      row <- match(nd$stage[match(kids[is_copy][1], nd$id)], st$id)
+      c(min(left_at(top, row), sum(b[1, ])), max(b[2, ]))
+    } else {
+      rowSums(b)
+    }
+  }
+  out <- bounds(src)
+  if (!used) return(NULL)
+  list(upper = out[1], lower = out[2])
 }
 
 # Notes of one kind in one stage become one row: the first, and how many more.

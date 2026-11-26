@@ -24,7 +24,7 @@
 
 stage_types <- c(
   "start", "select", "cluster", "split", "assign",
-  "apply", "pool", "exclude", "outcome", "partition"
+  "apply", "pool", "exclude", "outcome", "partition", "copy"
 )
 
 new_studydesignflow <- function(stages, nodes, edges, side, leaves,
