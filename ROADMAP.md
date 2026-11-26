@@ -22,7 +22,7 @@ milestone step; the progress log at the bottom is append-only.
 | 4 | Factorial design, pooling, several starting streams; counts from data | ✅ built, reviewed, merged into `main` | 2026-11-23 |
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
-| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ 46 core designs drawn, read blind, graded, merged; other 71 after 7a | — |
+| 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ all 117 drawn, read blind and graded (core 2026-11-25, other 71 2026-11-26); user has not seen the pictures of the 71 | — |
 | 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i and 7a (copies, approved 2026-11-26) merged into `main`; 7b units next in order | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
@@ -251,16 +251,18 @@ list) and `-output.txt`.
 2. ✅ List approved by the user (2026-11-25), nothing added or dropped.
 3. ⏳ Sources. Help page of every core design read in full (23 state how units
    were assigned or chosen, 15 partly, 8 are silent). Books not read; two open
-   sources were tried and could not be opened. Still to do: H08 and H14, the
-   designs listed without data, extended and edge designs.
+   sources were tried and could not be opened. Extended and edge help pages
+   read in full (2026-11-26): 9 stated, 39 partly, 23 silent; H08 and H14
+   name no source. Still to do: the designs listed without data.
 4. ✅ Answer keys for the 46 core designs, written before drawing
    (`notes/textbook-keys.R`, `.csv`, `-output.txt`): structure, what is left
    open, and numbers implied by it; 46 of 46 agree with the data.
 5. ⏳ Draw, blind-read, grade: core done (31 true, 15 incomplete, 0 misleading in
-   their best version; plain versions 26, 17, 3); extended and edge to do.
-6. ⬜ `notes/textbook-results-<date>.md`: grades beside predictions, and what
-   they change in milestones 7 and 9 (copies first; rows by columns has no
-   planned answer).
+   their best version; plain versions 26, 17, 3); extended and edge done
+   (best 68, 3, 0; plain 47, 14, 10).
+6. ✅ `notes/textbook-results-2026-11-25.md` (core) and
+   `notes/textbook-ext-results-2026-11-26.md` (the other 71): grades beside
+   predictions, and what they change.
 
 **Done when:** all 117 have a grade, or "source not read", and the user has
 seen the core pictures.
@@ -285,8 +287,11 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7h Planned and actual | One diagram for protocol and report | `planned =`; "(planned 100; n = 92)" | Data mode fills the actual number |
 | 7i Method in the picture ✅ (added 2026-11-25, second; default on, user 2026-11-26) | How units were assigned or sampled, shown in the figure and not only in the description | `show_method =` on the layout, on by default | Changed four approved pictures (trial, survey, factorial, trial_data); reviewed and accepted |
 
+| 7j One measurement box (added 2026-11-26 by the user, next) | When the same outcome is measured at the end of every branch, draw it once: one box, with arrows from every branch pointing into it, instead of the same box repeated under each branch (seen in D06: eight "Decrease in volume" boxes) | an option of `flow_outcome()`; converging arrows as in pools, but a measurement, not a pooling of units (own edge kind, described as "measured in every branch", not counted as a pool by `flow_check()`) | Not for designs where the measurement itself differs: repeated measurements of the same units (visits, periods, ages) and several outcomes on the same units (MANOVA) need a different picture: which units, how many times or how many outcomes. Recorded here; designed with 7b units and milestone 9 (time). The lab reference photo draws "600 each" under every branch: keep that possible |
+
 **Order (user, 2026-11-25):** 7-0 with the description faults, 7i, 7a, then the
 rest. The 71 extended and edge textbook designs are tested after 7a.
+**2026-11-26 (user):** 7j next, before 7b.
 
 **Checks:** existing diagrams identical (`dev/m5_reg.R` and `dev/m5_cmp.R`, 323
 designs); stress test extended with copies, links, shared groups and loops
@@ -1098,3 +1103,40 @@ what is still open.
   design from data) and approved them on 2026-11-26.
 - Checked: package check 0 errors, 0 warnings, 0 notes after the last change.
 - Open: the 71 extended and edge textbook designs, now that copies exist.
+
+### 2026-11-26 — Milestone 6b: extended and edge designs drawn, read blind and graded
+- The 71 other textbook designs, with the package as it is after 7a. Two
+  builders (A to F, G to K) read every help page (9 stated, 39 partly, 23
+  silent) and wrote answer keys before drawing: 71 of 71 agree with the data,
+  two (C10, G12) after one correction made before drawing.
+- 126 pictures (a plain version of every design, a careful one of 55), none
+  refused; six fresh readers, one folder each; a grader who wrote neither keys
+  nor pictures; an independent review (same model family) re-graded 46
+  pictures and 17 descriptions, re-ran the keys and scanned for leaks: no
+  blocking fault, four grades lowered (H08 three times, E07 once), accepted.
+- Plain pictures 47 true, 14 incomplete, 10 misleading; best version 68, 3, 0;
+  descriptions 54, 13, 4. Edge designs 18 of 18 true in their best version,
+  but three of them only because a sentence in a box says it (D07, D10, D11):
+  rows by columns is still not drawn.
+- Showing the method worked: no picture lacks a stated method. H08 says it
+  too precisely (random step under each clinic; the source does not say).
+- Main causes in plain pictures: wording 9 of 24 faults (fixed every time by
+  careful words), crossing 7. Predictions too gloomy again.
+- Found: 14 contradictions between help pages and data; 8 small package faults
+  (listed in the results; none fixed). Data mode warned in the three counting
+  traps tried (H08, H18, H11).
+- Files: `notes/textbook-ext-*`; results in
+  `notes/textbook-ext-results-2026-11-26.md`.
+- Open: the user looks at a sample of pictures; a reader who is not the
+  author; a cross-family review; decide rows by columns (recommendation: not
+  supported for now); 7b units next.
+
+### 2026-11-26 — User review of the samples; part 7j added
+- The user looked at the sample pictures and found the measured row
+  repetitive (D06: the same box under each of 8 rows). Asked for one
+  measurement box with arrows from every branch when the same outcome is
+  measured, and noted that repeated measurements and several outcomes
+  (MANOVA) need a different picture. Recorded as part 7j (next, before 7b);
+  the repeated and several-outcome cases are recorded there for 7b and
+  milestone 9.
+- The user said to begin; milestone 6b work (the 71 designs) merged.

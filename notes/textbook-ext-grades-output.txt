@@ -1,0 +1,121 @@
+pictures drawn: 126 for 71 designs; none refused
+only one version drawn: 16 designs ( 0 of them careful only )
+
+plain picture of each design (71; careful where no plain was drawn):
+
+ T  I  M 
+47 14 10 
+best version of each design (71):
+
+ T  I  M 
+68  3  0 
+descriptions (71):
+
+ T  I  M 
+54 13  4 
+
+designs with two versions (55):
+  plain:
+
+ T  I  M 
+31 14 10 
+  careful:
+
+ T  I  M 
+51  4  0 
+
+by tier, best version:
+          grade
+tier        T  I  M
+  edge     18  0  0
+  extended 50  3  0
+by tier, plain picture:
+          grade
+tier        T  I  M
+  edge      9  5  4
+  extended 38  9  6
+by tier, descriptions:
+          grade
+tier        T  I  M
+  edge     12  4  2
+  extended 42  9  2
+
+prediction from the list (rows) against best-version grade (columns):
+         grade
+predicted  T  I  M
+   T      17  0  0
+   I      25  2  0
+   M      25  1  0
+   R or M  1  0  0
+prediction against plain-picture grade:
+         grade
+predicted  T  I  M
+   T      13  2  2
+   I      17  7  3
+   M      16  5  5
+   R or M  1  0  0
+
+causes of faults (a fault with two causes counts under both):
+  all pictures (28 not true):
+
+          7b units   7f shared groups             9 time           crossing 
+                 3                  4                  2                  7 
+method too precise               size            wording 
+                 2                  1                 10 
+  plain pictures (24 not true):
+
+          7b units   7f shared groups             9 time           crossing 
+                 2                  4                  1                  7 
+method too precise               size            wording 
+                 1                  1                  9 
+  descriptions (17 not true):
+
+  7f shared groups             9 time           crossing  description fault 
+                 2                  1                  3                  4 
+method too precise            wording 
+                 1                  6 
+  misleading pictures and descriptions only:
+
+        7b units 7f shared groups         crossing             size 
+               1                2                5                1 
+         wording 
+               6 
+
+every misleading grade:
+  D06 p picture     Q11: columns of the Latin square not shown: read as blocks by row [crossing]
+  D07 p picture     P04: rows and columns inside each block (Graeco-Latin) not shown: read as randomised complete blocks [crossing]
+  D10 p picture     Q14: number of treatments (15) not shown: read as complete blocks of 4 treatments [wording]
+  E05 p picture     Q29: nitrogen drawn under each genotype: read as 54 nitrogen strips, there are 9 [crossing]
+  E06 p picture     Q03: n = 6 in '2 hills per sub-plot' boxes read as 6 hills per sub-plot: 576 hills, there are 192 (picture 49 inches wide) [wording; size]
+  E08 p picture     P39: split-plot (runs in whole plots) not shown: read as a completely randomised full factorial [wording]
+  G10 p picture     R20: '72 trials per person' under each cue read as 72 per person in all (1,440 trials, there are 5,760); flanker not shown [wording]
+  H13 p picture     R09: primary schools drawn inside secondary schools: read as a three-level hierarchy [7f shared groups]
+  H19 p picture     S13: arms drawn as totals under all 13 trials: read as arms pooled across trials, not two arms inside each trial [7b units]
+  I10 p picture     S11: matching of day j of 1961 with day j of 1962 not shown: read as unpaired days [wording]
+  D07 p description U04: rows and columns inside each block not said: read as randomised complete blocks [crossing]
+  E08 p description U39: split-plot not said: read as a completely randomised full factorial [wording]
+  F05 p description U30: read as 24 boulders (3 per shore per origin), there are 12; origin crossed with boulder not said [crossing]
+  H13 p description V09: primary schools described inside secondary schools [7f shared groups]
+
+not true in any picture version:
+  G09 (I): c I number of trials (13,222) and the 278 missing trials not shown | p I items (600) and number of trials not shown
+  H08 (I): c I random step drawn under each clinic: reader says randomised within clinic; the source does not say | p I random step drawn under each clinic: reader says stratified by clinic; the source does not say
+  H17 (I): c I number of measurements (26,796) and years per pupil not shown; reader error besides: 1,900 + 2,194 + 2,231 is 6,325, as drawn | p I number of measurements (26,796) and years per pupil not shown
+
+T with a note (reader error, or key left it open):
+  C07 p P02: tree draws the factors one under the other; reader still read a full crossing
+  C08 p Q30: generators not shown; the key leaves them open (not on the help page)
+
+wider than 7 inches: 43 of 126 pictures; widest Q03 E06 49.1 inches
+
+faults in the written descriptions found by the readers:
+  I10 c (V05): 'No limit (n = 71; )': an empty note leaves '; )'
+  H14 c (V26): 'Students (n = 2,972; )': the same empty note
+  G09 c (V14): 'Words (n = 20; up to 150 of the 300)': people and items counted in one bracket
+  F04 p (U25): 'Lots is split into Box 1 (n = 30) and Box 2 (n = 30)': every lot has both boxes; 'split' reads as dividing the lots
+  H10 c (V10): the outcome sentence gives 'n = 1,721' (pupils) before '7,230 scores in all'
+  D10 c (U33): '4 of the 15 in each block' does not say 15 of what
+  D13 c (U05): the number of genotypes is never said
+  E07 p (U36): the number of varieties (45) is never said
+  H19 c (V04): what one recorded count belongs to (a trial arm) is not said
+  G04 p (V31): whether the 5 hours lie inside each of the 3 sessions is not said

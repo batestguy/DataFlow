@@ -1,0 +1,59 @@
+G04  agrees    between=10 phase=20 hour=40 phase_hour=80
+G06  agrees    person=34 within=68 per_sequence_min=18 per_sequence_max=18
+G07  agrees    error=18 sequences=6 per_sequence=2
+G08  agrees    error=8 orders=6
+G09  agrees    people=45 naming=20 lexdec=25 items=600 max_items_per_person=300 missing=278
+G10  agrees    between=18 cue=54 flank=36 cue_flank=108 per_cell=24
+G11  agrees    answers=7584 error=7245 items=24
+G12  agrees    rat=4 treatment=4 region=8 both=8
+H08  agrees    patients=111 patient_labels=56 rows=444 patient_error=107
+H09  agrees    patients=294 itraconazole=146 terbinafine=148 missed_visits=150
+H10  agrees    school=59 pupil=1661 occasion=5509 pupils_in_two_schools=0
+H11  agrees    patient=11 tooth=43 within=54 tooth_labels=6
+H12  agrees    community=160 mother=1434 child=564 children=2159
+H13  agrees    pairs=303 extra=155 error=3269
+H14  agrees    students=2972 lecturers=1128 ratings=73421 repeated_pairs=0 lecturers_in_two_depts=0
+H15  agrees    workers=3022 memberships=3604 with_2nd=526 with_3rd=54 with_4th=2
+H16  agrees    trials=360 per_female=6 per_male=6 per_cross_experiment=30 repeated_pairs=0
+H17  agrees    pupils=11598 rows=26796 schools=80
+H18  agrees    blocks=27 error=54
+H19  agrees    trials=13 q_df=12 vaccinated=191064 not_vaccinated=166283
+H20  agrees    herds=15 rows=56 missing=4
+I04  agrees    applicants=4526 male=2691 female=1835 male_admitted=1198 female_admitted=557 departments=6
+I05  agrees    births=189 error=187
+I07  agrees    cohort=4028 subcohort=668 cases=571 both=85 phase2=1154 rest=2874
+I08  agrees    months=192 before=169 after=23
+I09  agrees    claims=7150 cells=8 error=7142
+I10  agrees    days=184 pairs=92 with_limit=69 error=90
+J05  agrees    classes=12 students=299 classes_all_taken=12
+J06  agrees    clutches=184 eggs=368
+K01  agrees    plots=256 crosses=64 error_1951=63 error_1952=63
+K02  agrees    rows=480 per_cell=1
+K03  agrees    plots=434 check_plots=154 new_once=280 check_columns=11
+
+keys: 32 ; agree: 32 
+what the help page says about assignment or selection:
+
+stated partly silent 
+     6     10     16 
+keys with something left open: 30 
+
+R R version 4.5.2 (2025-10-31 ucrt) 
+carData 3.0.6 
+daewr 1.2.11 
+AMCP 2.0.0 
+afex 1.5.1 
+ez 4.5.0 
+lme4 2.1.0 
+WWGbook 1.0.2 
+geepack 1.3.13 
+HSAUR3 1.0.16 
+mlmRev 1.0.9 
+R2MLwiN 0.8.10 
+SASmixed 1.0.5 
+datasets 4.5.2 
+MASS 7.3.66 
+survival 3.8.13 
+wooldridge 1.4.7 
+SDAResources 0.1.1 
+agridat 1.27 
