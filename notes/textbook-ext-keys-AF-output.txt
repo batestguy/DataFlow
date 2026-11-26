@@ -1,0 +1,65 @@
+tiers in the list:
+
+    edge extended 
+      11       28 
+A06  agrees    pairs=15 pairs_one_of_each=15 pair_error=14
+A07  agrees    patients_with_both=10 error=9
+A08  agrees    subjects=17 difference_error=16
+A09  agrees    pairs=21 pairs_one_of_each=21 within_pair_error=20
+A10  agrees    patients=197 one_treated_one_not=197 eyes=394 laser_types_per_patient=1 within_error=196
+B04  agrees    ancova_error=68
+B06  agrees    error=66
+B07  agrees    error=63 smallest_group=22 largest_group=22 tests=5
+C05  agrees    error=54
+C06  agrees    cells=16 error=45
+C07  agrees    distinct=16 residual=0
+C08  agrees    runs=8 distinct=8 words=15 shortest_word=3 per_level=4
+C09  agrees    runs=16 mirror_is_reversed=1 words_first=15 words_both=7 shortest_word_both=4
+C10  agrees    plots=81 defining=2 shortest_defining=4 block_contrasts=26 per_level=27 per_block=9
+C11  agrees    corners=8 axial=6 centre=6 points=15 block1=11 block2=9 alpha_x1000=1682
+C12  agrees    edge=12 centre=3 points=13 edge_points_one_zero=12
+C13  agrees    runs=13 sum_to_one=13 pure=3 two_part=3 centroid=1 other=6 lowest=0 highest=1
+D04  agrees    golfer_by_height=16 shot=108
+D06  agrees    error=42 row_treatment_once=64 column_treatment_once=64
+D07  agrees    error=12 spacing_row=36 spacing_col=36 thinning_row=36 thinning_col=36 pair_per_block=36
+D09  agrees    error=27 pair_min=1 pair_max=1
+D10  agrees    error=31 pair_max=1 partners_min=12 partners_max=12
+D11  agrees    error=30 row_pair_min=1 row_pair_max=1 col_pair_min=1 col_pair_max=1
+D12  agrees    error=31 once_per_rep=72 pair_max=1
+D13  agrees    error=12 slots_per_rep=35 missing=2 seen_twice=33 seen_once=2
+D14  agrees    error=10 checks=3 check_plots=18 new_once=50 check_once_per_block=18
+E03  agrees    whole=8 sub=20 subsub=60
+E05  agrees    gen_strip=10 nitro_strip=4 crossing=20 sub=36
+E06  agrees    whole=14 sub=48 sample=96
+E07  agrees    whole=2 group=8 variety=168 columns_per_group_plot=1 rows_per_group_plot=15
+E08  agrees    combinations=32 residual=0 groups_same_ABC=8 groups_all_DE=8
+E09  agrees    batch=3 sub=12 batches_constant_AB=8
+E10  agrees    cow=27 within=81
+F04  agrees    lot=29 box=30 prep=30 test=30
+F05  agrees    origin=1 shore=3 origin_shore=3 boulder=8 origin_boulder=8 cage=24 snail=192
+F07  agrees    plate=23 sample=5 error=115
+F08  agrees    worker=5 machine=2 both=10 error=36
+F09  agrees    target=5 judge=3 error=15
+F11  agrees    A=1 B=3 AB=3 within=32
+
+keys: 39 ; agree: 39 
+what the help page says about assignment or selection:
+
+stated partly silent 
+     3     29      7 
+keys with something left open: 38 
+
+R R version 4.5.2 (2025-10-31 ucrt) 
+agridat 1.27 
+datasets 4.5.2 
+ISwR 2.0.12 
+MASS 7.3.66 
+survival 3.8.13 
+carData 3.0.6 
+HSAUR3 1.0.16 
+daewr 1.2.11 
+SASmixed 1.0.5 
+GAD 2.0 
+lme4 2.1.0 
+nlme 3.1.172 
+AMCP 2.0.0 
