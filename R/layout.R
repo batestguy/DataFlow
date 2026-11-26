@@ -37,7 +37,8 @@
 #'   box, in inches.
 #' @param show_method Write how boxes were assigned or sampled (the `method` of
 #'   [flow_assign()], [flow_cluster()] and [flow_select()]) under the row label,
-#'   in italics and brackets? The method is always in the description.
+#'   in italics and brackets? On by default; the method is always in the
+#'   description.
 #' @return A `studydesignflow_layout`: a list of data frames `boxes`, `side`
 #'   (exclusion boxes), `segments`, `brackets` and `row_labels`, plus
 #'   `extent` (xmin, xmax, ymin, ymax) and `size` (natural width and height
@@ -55,7 +56,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                         row_label_width = 16,
                         connector = c("elbow", "straight"),
                         side_format = "{label} (n = {n})", side_gap = 0.3,
-                        show_method = FALSE) {
+                        show_method = TRUE) {
   validate_studydesignflow(x)
   connector <- match.arg(connector)
   if (!isTRUE(show_method) && !isFALSE(show_method)) {

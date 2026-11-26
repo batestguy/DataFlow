@@ -19,7 +19,7 @@ flow_layout(
   connector = c("elbow", "straight"),
   side_format = "{label} (n = {n})",
   side_gap = 0.3,
-  show_method = FALSE
+  show_method = TRUE
 )
 }
 \arguments{
@@ -60,7 +60,8 @@ box, in inches.}
 
 \item{show_method}{Write how boxes were assigned or sampled (the \code{method} of
 \code{\link[=flow_assign]{flow_assign()}}, \code{\link[=flow_cluster]{flow_cluster()}} and \code{\link[=flow_select]{flow_select()}}) under the row label,
-in italics and brackets? The method is always in the description.}
+in italics and brackets? On by default; the method is always in the
+description.}
 }
 \value{
 A \code{studydesignflow_layout}: a list of data frames \code{boxes}, \code{side}

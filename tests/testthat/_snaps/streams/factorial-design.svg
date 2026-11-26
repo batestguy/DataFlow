@@ -121,11 +121,13 @@
 <text x='492.63' y='342.30' style='font-size: 9.00px; font-family: sans;' textLength='45.78px' lengthAdjust='spacingAndGlyphs'>Lost (n = 1)</text>
 <text x='637.25' y='342.30' style='font-size: 9.00px; font-family: sans;' textLength='45.78px' lengthAdjust='spacingAndGlyphs'>Lost (n = 4)</text>
 <text x='10.14' y='85.16' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='41.02px' lengthAdjust='spacingAndGlyphs'>Enrolment</text>
-<text x='10.14' y='173.41' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='19.51px' lengthAdjust='spacingAndGlyphs'>Drug</text>
-<text x='10.14' y='261.66' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='16.01px' lengthAdjust='spacingAndGlyphs'>Diet</text>
+<text x='10.14' y='165.41' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='19.51px' lengthAdjust='spacingAndGlyphs'>Drug</text>
+<text x='10.14' y='253.66' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='16.01px' lengthAdjust='spacingAndGlyphs'>Diet</text>
 <text x='10.14' y='342.30' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='39.02px' lengthAdjust='spacingAndGlyphs'>Follow-up</text>
 <text x='10.14' y='422.94' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='36.53px' lengthAdjust='spacingAndGlyphs'>Outcome</text>
 <text x='10.14' y='511.19' style='font-size: 9.00px; font-weight: bold; font-family: sans;' textLength='63.05px' lengthAdjust='spacingAndGlyphs'>Pooled analysis</text>
+<text x='10.14' y='181.82' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='31.04px' lengthAdjust='spacingAndGlyphs'>(random)</text>
+<text x='10.14' y='270.07' style='font-size: 7.65px; font-style: italic; font-family: sans;' textLength='31.04px' lengthAdjust='spacingAndGlyphs'>(random)</text>
 <text x='0.00' y='48.38' style='font-size: 10.80px; font-family: sans;' textLength='72.65px' lengthAdjust='spacingAndGlyphs'>factorial design</text>
 </g>
 </svg>

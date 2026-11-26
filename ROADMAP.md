@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ 46 core designs drawn, read blind, graded, merged; other 71 after 7a | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0 built and reviewed; 7i built, default for the user to choose | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0 and 7i built, reviewed, merged into `main` (method shown by default); 7a next | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -283,7 +283,7 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7f Shared groups | One group in two analyses | lift "one pool per box per call" | The layout is a tree today: highest risk, do it on its own branch with the stress test extended first |
 | 7g Loops | Repeat until (label, check, improve; retries) | a back arrow in the side margin with its rule and number of rounds | Counts are never recomputed round a loop; description must not loop |
 | 7h Planned and actual | One diagram for protocol and report | `planned =`; "(planned 100; n = 92)" | Data mode fills the actual number |
-| 7i Method in the picture 🟡 (added 2026-11-25, second) | How units were assigned or sampled, shown in the figure and not only in the description | an option on assign, cluster and select | Changes approved pictures: the user sees them before the default is settled |
+| 7i Method in the picture ✅ (added 2026-11-25, second; default on, user 2026-11-26) | How units were assigned or sampled, shown in the figure and not only in the description | `show_method =` on the layout, on by default | Changed four approved pictures (trial, survey, factorial, trial_data); reviewed and accepted |
 
 **Order (user, 2026-11-25):** 7-0 with the description faults, 7i, 7a, then the
 rest. The 71 extended and edge textbook designs are tested after 7a.
@@ -333,6 +333,15 @@ the user approves.
 **10a. Textbook vignettes first.** Regrade all 117 textbook designs with the
 finished package; write ten vignettes, one per family A to J, from the core
 designs graded true; publish the rest as unsupported with the reason.
+
+**Form of the examples (user, 2026-11-26).** One long examples page, not one
+page per family: a table of contents, sections by topic, each example with a
+sentence on the design, clearly commented code, the picture and the
+description, in the manner of the tidyverse, table1 and gtsummary sites.
+About 30 textbook designs, each different, loaded from R datasets so the
+counts come from the data; then about 20 redrawn from published papers (the
+user approves a shortlist; every number traced to the paper). Written after
+the features they need (copies, time, explanation), in the plan's order.
 
 **Gate:** 10b and every redrawing from a published paper wait until 10a has
 the user's approval.
@@ -1042,3 +1051,15 @@ what is still open.
   the built-in examples; in the 60 core textbook flows 2 false problems (D08,
   E04); 323 designs: objects and layouts identical to `main`, descriptions
   differ in 138 as intended. Description fixes have not been read blind again.
+
+### 2026-11-26 — Method shown by default; form of the examples page
+- The user accepted the recommendation: the method (for example "(random)")
+  is shown under the row label by default (`show_method = TRUE`).
+- Four approved pictures changed (trial, survey, factorial, trial_data): each
+  rendered and looked at, then the snapshots replaced. Tests that compare
+  with older layouts now ask for `show_method = FALSE`; the layouts of
+  examples without a method are unchanged.
+- The user set the form of the examples page (milestone 10a, recorded there)
+  and kept the plan's order: features first, then the page.
+- Checked: full test suite; package check (result in the commit message).
+- Open: 7a copies next; the two false problems of `flow_check()` (D08, E04).

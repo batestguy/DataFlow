@@ -194,7 +194,7 @@ drawn <- function(k, size) {
 test_that("show_method writes the method under the row label and no more", {
   for (e in c("trial", "survey", "lab", "review")) {
     d <- flow_example(e)
-    off <- flow_layout(d)
+    off <- flow_layout(d, show_method = FALSE)
     on <- flow_layout(d, show_method = TRUE)
     expect_null(off$row_labels$method)
     expect_equal(on$boxes[c("label", "x", "w", "h")],
@@ -224,7 +224,7 @@ test_that("labels with a method never overlap their neighbours", {
 test_that("a hidden row label can still carry its method", {
   d <- flow_start("A", n = 10) |>
     flow_assign("Arm", c("x", "y"), n = 5, row_label = "")
-  expect_equal(nrow(flow_layout(d)$row_labels), 0)
+  expect_equal(nrow(flow_layout(d, show_method = FALSE)$row_labels), 0)
   on <- flow_layout(d, show_method = TRUE)
   expect_equal(on$row_labels$method, "(random)")
   expect_s3_class(ggplot2::autoplot(d, show_method = TRUE), "ggplot")
@@ -240,7 +240,7 @@ test_that("a long method never stretches boxes or runs into tall labels", {
       flow_assign("Allocation", c("a", "b"), n = 50, method = long) |>
       flow_apply("Another very long row label that wraps onto several lines",
                  "y", n = 50)
-    off <- flow_layout(d, vgap = g)
+    off <- flow_layout(d, vgap = g, show_method = FALSE)
     on <- flow_layout(d, vgap = g, show_method = TRUE)
     expect_equal(on$boxes$h, off$boxes$h)
     rl <- on$row_labels
