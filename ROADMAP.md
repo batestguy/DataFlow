@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ all 117 drawn, read blind and graded (core 2026-11-25, other 71 2026-11-26); user has not seen the pictures of the 71 | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) 7j (one measurement box), 7b (units) and 7c (step details), approved 2026-11-27, merged into `main`; and 7d (physical and data steps), approved 2026-11-27, merged into `main`; 7e linking next | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) 7j (one measurement box), 7b (units), 7c (step details) and 7d (physical and data steps), approved 2026-11-27, merged into `main`; 7e linking next | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -1386,6 +1386,6 @@ what is still open.
   0 errors, 0 warnings, 1 note ("unable to verify current time": the
   machine). Renders redrawn in `dev/m7d/`.
 - Approved by the user (2026-11-27); pictures `dev/m7d/lab_kind.png`,
-  `survey_kind_details.png`, `trial_kind.png`. Merged and pushed; CI result
-  to be recorded. A cross-family review is still advised before the first
+  `survey_kind_details.png`, `trial_kind.png`. Merged (`7534edb`), pushed;
+  CI run 45963540161 green on all 5 platforms. A cross-family review is still advised before the first
   release. Next: 7e linking.
