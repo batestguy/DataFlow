@@ -22,7 +22,8 @@ flow_layout(
   show_method = TRUE,
   copy_format = "the same {n} as above",
   copy_none = "copied from the box above",
-  show_details = TRUE
+  show_details = TRUE,
+  show_kind_key = TRUE
 )
 }
 \arguments{
@@ -92,6 +93,17 @@ When, Where, How), wrapped to the width of the diagram (at least 3
 inches). Boxes keep their size; rows with a marker get a longer gap
 above them where needed, as for the method. The details are always in
 the description (\code{\link[=flow_describe]{flow_describe()}}).}
+
+\item{show_kind_key}{Draw the key of kinds of step under the diagram? On
+by default. Boxes of a step done to data (\code{kind = "data"} on the verbs,
+see \code{\link[=flow_split]{flow_split()}}) are drawn with a dashed edge whatever this says; the
+key, shown when some box is done to data, is a small dashed sample box
+followed by its meaning in words ("Dashed edge: a step done to data"),
+so it does not rely on colour. There is no line for solid edges: boxes
+without a kind are solid too, so steps set to \code{"physical"} are named in
+the description (\code{\link[=flow_describe]{flow_describe()}}) but not in the key. With step
+details, this key comes first, above theirs. Without a data step there
+is no key and nothing changes.}
 }
 \value{
 A \code{studydesignflow_layout}: a list of data frames \code{boxes}, \code{side}
@@ -101,7 +113,13 @@ in inches). When step details are drawn, also \code{key}: one row per line
 of the key (\code{entry} number, \code{text}, \code{face}, \code{size}, left edge \code{x},
 centre \code{y}, measured width \code{w}, and its rectangle \code{xmin} to \code{ymax});
 \code{boxes} and \code{side} then have a \code{detail} column (the box's number, \code{NA}
-for none) and \code{row_labels} the columns \code{detail} and \code{detail_y}.
+for none) and \code{row_labels} the columns \code{detail} and \code{detail_y}. In a
+flow where some step was given a \code{kind}, \code{boxes} and \code{side} have a
+\code{kind} column (\code{"physical"}, \code{"data"}, or \code{NA} for none), and, when the
+key of kinds is drawn, \code{kind_key} has one row per line of it (\code{kind},
+\code{text}, \code{size}, left edge \code{x}, centre \code{y}, width \code{w}, the sample box
+\code{sxmin} to \code{symax} with its \code{linetype}, and the rectangle of the whole
+line \code{xmin} to \code{ymax}).
 }
 \description{
 Turns a \code{studydesignflow} into coordinates, in inches, for every box, arrow,

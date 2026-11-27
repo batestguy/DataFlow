@@ -122,10 +122,11 @@ flow_partition <- function(.flow, stage = "Data split", labels = NULL,
                            n = NULL, note = NULL, by = NULL, group = NULL,
                            time = NULL, from = NULL, row_label = NULL,
                            events = NULL, unit = NULL, count = NULL,
-                           details = NULL) {
+                           details = NULL, kind = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   check_details_arg(details)
+  check_kind_arg(kind)
   if (!is.null(group)) check_string(group, "group")
   if (!is.null(time)) check_string(time, "time")
   x <- split_boxes(.flow, stage, labels, n, note, from,
@@ -160,7 +161,7 @@ flow_partition <- function(.flow, stage = "Data split", labels = NULL,
   x$partition[[as.character(sid)]] <- list(group = group, time = time,
                                           checked = checked,
                                           na_group = na_group)
-  add_details(validate_studydesignflow(x), details)
+  add_kind(add_details(validate_studydesignflow(x), details), kind)
 }
 
 # No group (e.g. patient) may have rows in two sets. Returns the number of

@@ -24,6 +24,8 @@
 #     stored once, and `rows`: per box, the row numbers behind it.
 # * details (only when given, see R/details.R): who, with what, when, where
 #     and how, per step (stage id) or per box.
+# * kind (only when given, see R/kind.R): steps done to physical things or
+#     to data, per step (stage id) or per box.
 
 edge_kinds <- c("arrow", "bracket", "pool", "measure")
 
@@ -164,6 +166,8 @@ validate_studydesignflow <- function(x) {
   check_unit_store(x$data$counts, nd$id, "count columns of boxes")
   # step details (R/details.R), present only when given
   check_details_store(x$details, st$id, nd$id, (sd %||% empty_side())$id)
+  # kinds of step (R/kind.R), present only when given
+  check_kind_store(x$kind, st$id, nd$id, (sd %||% empty_side())$id)
   invisible(x)
 }
 
@@ -240,6 +244,19 @@ print.studydesignflow <- function(x, ...) {
       if (k[2] + k[3] > 0) paste0(k[2] + k[3], " box",
                                   if (k[2] + k[3] != 1) "es"))),
       " (see flow_describe())\n", sep = "")
+  }
+  if (!is.null(x$kind)) {
+    kd <- c(box_kinds(x), side_kinds(x))
+    k <- c(data = sum(kd == "data", na.rm = TRUE),
+           physical = sum(kd == "physical", na.rm = TRUE))
+    cat("  kinds of step: ", and_list(c(
+      if (k[["data"]] > 0) paste0(k[["data"]], " box",
+                                  if (k[["data"]] != 1) "es",
+                                  " done to data (dashed edge)"),
+      if (k[["physical"]] > 0) paste0(k[["physical"]], " box",
+                                      if (k[["physical"]] != 1) "es",
+                                      " done to physical things"))),
+      "\n", sep = "")
   }
   invisible(x)
 }

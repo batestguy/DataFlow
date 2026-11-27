@@ -13,7 +13,8 @@ flow_start(
   count = NULL,
   events = NULL,
   unit = NULL,
-  details = NULL
+  details = NULL,
+  kind = NULL
 )
 }
 \arguments{
@@ -71,6 +72,9 @@ same unit until a step gives another (see \code{\link[=flow_split]{flow_split()}
 
 \item{details}{Optional details of the top row: who, with what, when,
 where and how (see \code{\link[=step_details]{step_details()}}), given as in \code{\link[=flow_split]{flow_split()}}.}
+
+\item{kind}{Optional: was the top row done to physical things
+(\code{"physical"}) or to data (\code{"data"})? Given as in \code{\link[=flow_split]{flow_split()}}.}
 }
 \value{
 A \code{studydesignflow} object.

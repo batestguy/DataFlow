@@ -72,11 +72,13 @@ boxes_overlap <- function(b) {
 }
 
 # Flow boxes and exclusion boxes as one set of rectangles, with the lines of
-# the key of step details when there is one (part 7c).
+# the key of step details (part 7c) and the key of kinds of step (part 7d)
+# when there are.
 all_boxes <- function(lay) {
   cols <- c("xmin", "xmax", "ymin", "ymax")
   rbind(lay$boxes[, cols], if (!is.null(lay$side)) lay$side[, cols],
-        if (!is.null(lay$key)) lay$key[, cols])
+        if (!is.null(lay$key)) lay$key[, cols],
+        if (!is.null(lay$kind_key)) lay$kind_key[, cols])
 }
 
 # The text of the row-label column as rectangles: row labels, methods and

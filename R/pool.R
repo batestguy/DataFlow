@@ -44,10 +44,11 @@
 flow_pool <- function(.flow, stage, label, n = NULL, note = NULL,
                       groups = NULL, over = NULL, from = NULL,
                       row_label = NULL, events = NULL, unit = NULL,
-                      count = NULL, details = NULL) {
+                      count = NULL, details = NULL, kind = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   check_details_arg(details)
+  check_kind_arg(kind)
   if (!is.null(groups)) {
     if (!is.null(over) || !is.null(from)) {
       stop("Give `groups`, or `over`/`from`, not both.", call. = FALSE)
@@ -79,5 +80,5 @@ flow_pool <- function(.flow, stage, label, n = NULL, note = NULL,
                         "all", pick_row_label(row_label, stage),
                         groups = groups, join = "pool", events = events,
                         unit = unit, count = count)
-  add_details(x, details)
+  add_kind(add_details(x, details), kind)
 }

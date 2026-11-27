@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ all 117 drawn, read blind and graded (core 2026-11-25, other 71 2026-11-26); user has not seen the pictures of the 71 | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) 7j (one measurement box), 7b (units) and 7c (step details), approved 2026-11-27, merged into `main`; 7d physical and data steps next | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) 7j (one measurement box), 7b (units) and 7c (step details), approved 2026-11-27, merged into `main`; and 7d (physical and data steps), approved 2026-11-27, merged into `main`; 7e linking next | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -280,7 +280,7 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7a Copies (after 7i) ✅ approved 2026-11-26 | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
 | 7b Units (✅ done, approved 2026-11-27) | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
 | 7c Step details (✅ done, approved 2026-11-27) | Tool or instrument, who, dates, method | `step_details(who, tool, when, where, how)` given to `details =` on every verb and `flow_edit()`; per step, or per box where it differs (user, 2026-11-27); drawn as a numbered key (user, 2026-11-27); always in the description | Long text; layout height |
-| 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
+| 7d Physical and data steps (✅ done, approved 2026-11-27) | A step is done to things or to data | `kind =` per step, per box where it differs; data boxes get a dashed edge, lines stay solid; key explains dashed only (user, 2026-11-27) | Never colour alone; dashed already means gap in grids |
 | 7e Linking | Two sources joined record by record | `flow_link()`: linked box plus unmatched from each side; from data by key | Read GUILD first; one-to-many links; matching errors are typed |
 | 7f Shared groups | One group in two analyses | lift "one pool per box per call" | The layout is a tree today: highest risk, do it on its own branch with the stress test extended first |
 | 7g Loops | Repeat until (label, check, improve; retries) | a back arrow in the side margin with its rule and number of rounds | Counts are never recomputed round a loop; description must not loop |
@@ -1356,3 +1356,36 @@ what is still open.
 - Approved by the user (2026-11-27); pictures `dev/m7c/survey_details.png`,
   `trial_details.png`, `D06_details.png`, `try.png`. Merged (`d8b81d0`),
   pushed; CI run 45954732138 green on all 5 platforms. Next: 7d.
+
+### 2026-11-27 — Part 7d: physical and data steps built (not yet approved)
+- Decided by the user (2026-11-27), from picture previews: a data step is
+  drawn with a dashed box edge (lines stay solid); `kind =` is set per step
+  with per-box overrides, the same rule as `details =`; without kinds every
+  diagram is unchanged and has no key. After the review, the user chose to
+  drop the key line for solid edges: unmarked boxes are solid too, so
+  "solid = physical things" would call them physical. Physical steps are
+  named in the description only.
+- Built: `R/kind.R` (store, resolution, key, description), `kind =` on all
+  11 box-making verbs and `flow_edit()` (NA removes), `show_kind_key` on
+  the layout, dashed edges in the renderer, `print()` line, 165 test
+  expectations in `tests/testthat/test-kind.R`. Fold grids refuse `kind`;
+  `flow_check()` unchanged.
+- Checked by the builder: 323 of 323 earlier designs identical to `main`
+  (`dev/m7d/reg.R`, `cmp.R`); full tests 0 fail, 13,402 pass; package check
+  0 errors, 0 warnings, 1 machine note; stress (`dev/m7d/stress.R`, seed
+  20261122) 400 designs, 0 bad layouts; renders `dev/m7d/trial_kind.png`,
+  `survey_kind_details.png`, `lab_kind.png` looked at.
+- Independent review (same model family): no blocking fault; its own
+  comparison with `main` of plot data, `print()`, layout size and saved PDF
+  size for 7 examples found them identical. Fixed: the over-claiming solid
+  key line (above); "1 entries" in an error message. Not changed: a box
+  cannot opt out of its step's kind; a repeated label in `flow_edit(box =)`
+  sets every matching box (as for units and details).
+- Re-checked after the fixes: 323 of 323 earlier designs identical; stress
+  400 designs, 0 bad layouts; full tests 0 fail, 13,403 pass; package check
+  0 errors, 0 warnings, 1 note ("unable to verify current time": the
+  machine). Renders redrawn in `dev/m7d/`.
+- Approved by the user (2026-11-27); pictures `dev/m7d/lab_kind.png`,
+  `survey_kind_details.png`, `trial_kind.png`. Merged and pushed; CI result
+  to be recorded. A cross-family review is still advised before the first
+  release. Next: 7e linking.
