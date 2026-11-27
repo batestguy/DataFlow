@@ -29,6 +29,10 @@
 #' people), or fewer with no exclusion drawn, including a copy with fewer than
 #' the box it copies.
 #'
+#' An outcome drawn once for several branches ([flow_outcome()]) is a
+#' measurement, not a pool: its count may be of all the branches together or
+#' that of each branch, and any other count gives a note, never a problem.
+#'
 #' Sampling steps ([flow_cluster()], [flow_select()]) and summary boxes are not
 #' compared, except that a selection larger than its source is reported. Missing
 #' counts and counts that are not plain numbers cannot be compared; the number
@@ -310,6 +314,25 @@ flow_check <- function(x) {
       total <- sum(lft)
       if (is.na(N(id)) || is.na(total)) {
         unknown <- unknown + 1L
+        next
+      }
+      if (any(ed$kind[ed$to == id] == "measure")) {
+        # an outcome measured in every branch is not a pool: its count may
+        # be of all the branches together or of each branch
+        made <- made + 1L
+        if (!differs(N(id), total) || !any(differs(lft, N(id)))) next
+        if (N(id) > total) {
+          report("note", stage, box, quoted(id), " has ", show_count(N(id)),
+                 ", more than the ", show_count(total), " in the branches it ",
+                 "is measured in. Fine if the unit changes; the label should ",
+                 "say so.", kind = "more")
+        } else {
+          report("note", stage, box, quoted(id), " has ", show_count(N(id)),
+                 ", neither the ", show_count(total), " in the branches it is ",
+                 "measured in together nor the count of each branch. Fine if ",
+                 "not every unit was measured; the label should say so.",
+                 kind = "measure")
+        }
         next
       }
       cp <- if (type == "pool") pool_units(x, src, s) else NULL

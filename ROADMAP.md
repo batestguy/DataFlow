@@ -287,7 +287,7 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7h Planned and actual | One diagram for protocol and report | `planned =`; "(planned 100; n = 92)" | Data mode fills the actual number |
 | 7i Method in the picture ✅ (added 2026-11-25, second; default on, user 2026-11-26) | How units were assigned or sampled, shown in the figure and not only in the description | `show_method =` on the layout, on by default | Changed four approved pictures (trial, survey, factorial, trial_data); reviewed and accepted |
 
-| 7j One measurement box (added 2026-11-26 by the user, next) | When the same outcome is measured at the end of every branch, draw it once: one box, with arrows from every branch pointing into it, instead of the same box repeated under each branch (seen in D06: eight "Decrease in volume" boxes) | an option of `flow_outcome()`; converging arrows as in pools, but a measurement, not a pooling of units (own edge kind, described as "measured in every branch", not counted as a pool by `flow_check()`) | Not for designs where the measurement itself differs: repeated measurements of the same units (visits, periods, ages) and several outcomes on the same units (MANOVA) need a different picture: which units, how many times or how many outcomes. Recorded here; designed with 7b units and milestone 9 (time). The lab reference photo draws "600 each" under every branch: keep that possible |
+| 7j One measurement box (added 2026-11-26 by the user, next) | When the same outcome is measured at the end of every branch, draw it once: one box, with arrows from every branch pointing into it, instead of the same box repeated under each branch (seen in D06: eight "Decrease in volume" boxes) | automatic in `flow_outcome()` (user, 2026-11-26: "the only time it shouldn't go to [one box] are repeated measurements and MANOVA"); repeated measurements detected from copies above, several outcomes declared by the user; branches with their own different counts kept separate until the user has seen pictures; converging arrows as in pools, but a measurement, not a pooling of units (own edge kind, described as "measured in every branch", not counted as a pool by `flow_check()`) | Not for designs where the measurement itself differs: repeated measurements of the same units (visits, periods, ages) and several outcomes on the same units (MANOVA) need a different picture: which units, how many times or how many outcomes. Recorded here; designed with 7b units and milestone 9 (time). The lab reference photo draws "600 each" under every branch: keep that possible |
 
 **Order (user, 2026-11-25):** 7-0 with the description faults, 7i, 7a, then the
 rest. The 71 extended and edge textbook designs are tested after 7a.
@@ -516,6 +516,19 @@ since the data may not reflect the whole design.
 - Where a bracket joins boxes that have exclusion boxes below them, the join
   is drawn as a plain horizontal line under the exclusion boxes (no end
   ticks).
+- One measurement box (`flow_outcome()`, part 7j): repeated measurements are
+  recognised only from copies (`flow_copy()`). Visits or periods drawn as
+  ordinary splits are joined into one box; give `join = FALSE` for them.
+  A pool of one copy with a split child of the sibling copy is also joined
+  by mistake (start, copy c1/c2, split c2 into p/q, pool c1 + p, outcome:
+  joins the pool and q).
+- In data mode, branches join only when their computed counts happen to be
+  equal (arms of 20 and 20 join as one box of 40; 20 and 21 do not).
+- `flow_check()` accepts a joined count equal to the total or to any one
+  branch, without saying which it took.
+- The textbook scripts in `notes/` were graded with the pictures drawn before
+  part 7j (one outcome box per branch); run today, some of them draw one
+  shared box instead. The grades stand for the old pictures.
 
 ## Open risks
 
@@ -1140,3 +1153,46 @@ what is still open.
   the repeated and several-outcome cases are recorded there for 7b and
   milestone 9.
 - The user said to begin; milestone 6b work (the 71 designs) merged.
+
+### 2026-11-26 — Part 7j built, two decisions taken, not merged
+- `flow_outcome(join = NULL)`: one measurement box joined from every branch
+  (edge kind "measure"), automatic; kept separate when the branches are
+  copies of the same units (repeated measurements, `measured_copies()`), or
+  differ in count, events or note; `join = FALSE` for several outcomes
+  (MANOVA), `join = TRUE` to force. Description and `flow_check()` know the
+  new kind.
+- Checked by the builder (not yet by the reviewer): new tests 96 pass; full
+  suite 13,000 pass, 1 fail (the lab picture snapshot, left for the user);
+  check 1 error (the same snapshot); with joining off, 323 designs identical
+  to `main`; 69 joins in them all follow the rule; stress 800 designs, 0
+  overlaps. D06 and the lab picture looked at.
+- User decisions (2026-11-26), not yet applied in code:
+  1. The lab example keeps one box per branch, as in the photo
+     (`join = FALSE` in `flow_example("lab")`); the lab snapshot then stays
+     as approved.
+  2. A typed count keeps branches separate: on one shared box it would read
+     as a total, while a count typed once for several branches means "each".
+     Joining happens when no count is given, or when counts are computed from
+     data (then the shared box shows the total). One line in
+     `outcome_joins()` (`R/verbs.R`); tests and descriptions to follow.
+- Open: apply the two decisions; independent review (started, see
+  handover); README lab text unchanged; then merge, push, CI.
+
+### 2026-11-27 — Part 7j: the two decisions applied, review findings fixed
+- Lab example: `join = FALSE`, one box per branch as in the photo (also in
+  README and the first `flow_outcome()` example); the lab snapshot passes
+  unchanged. The test helper now builds the joined lab (`lab_joined()`).
+- A typed count keeps branches separate unless `join = TRUE` (one line in
+  `outcome_joins()`). Deviation from the handover note: with `join = TRUE`
+  a typed count still joins (drawn as given) instead of being an error, so
+  a total can be shown on purpose. Docs say so under `n` and in Details.
+- Known limitations added: repeated measures detected from copies only; the
+  pool-of-copy false join; data-mode joins only on equal counts;
+  `flow_check()` accepting total or one branch; `notes/` textbook grades
+  were made with the pictures from before 7j (scripts not pinned).
+- Checked: full tests about 13,000 pass, 0 fail; renders looked at
+  (`dev/m7j/*_final.png`: lab, D06, data-mode trial 20+20 joined as 40,
+  20+21 separate, typed count separate). Package check 0 errors, 0
+  warnings, 0 notes (after restoring the help for `note`, lost when `n`
+  got its own help text).
+- Open: user approval of the pictures; then commit, merge, push, CI.

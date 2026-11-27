@@ -1,3 +1,16 @@
+# The lab example with its last row joined into one box (part 7j);
+# flow_example("lab") keeps one box per branch, as in the hand-drawn photo.
+lab_joined <- function() {
+  flow_start("Cultures", n = 100) |>
+    flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = c(50, 50)) |>
+    flow_split("Culture type", list("Type A", "Type B"), n = 50) |>
+    flow_split("Batch", c("Batch 1", "Batch 2"), n = 25) |>
+    flow_split("Cell culture composition", c("A", "B", "C")) |>
+    flow_apply("Condition", "9 conditions each", over = "Experiment ID") |>
+    flow_apply("Task", "2 tasks each\n(per condition)") |>
+    flow_outcome("Number of trials", "600 each")
+}
+
 # Irregular designs that once produced wrong pictures (from review of
 # milestone 1). Each should lay out with no box overlaps and no line passing
 # through a box it does not belong to.

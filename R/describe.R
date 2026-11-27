@@ -8,7 +8,9 @@
 #'
 #' Boxes that share a label in the same row are told apart by the box they
 #' sit under, e.g. "Batch 1 under Type A". Several top boxes are described
-#' as "2 boxes side by side"; pools as "X and Y are combined into Z". For a
+#' as "2 boxes side by side"; pools as "X and Y are combined into Z"; an
+#' outcome drawn once for several branches (see [flow_outcome()]) as "Z is
+#' measured in every branch, drawn as one box joined from ...". For a
 #' flow with data, a last sentence names the data frame(s) the counts were
 #' computed from.
 #'
@@ -100,6 +102,9 @@ flow_describe <- function(x) {
                         "copies of the same units")
                })
       }, ""), collapse = "; ")
+    } else if (type == "outcome" &&
+               any(ed$kind[ed$to %in% ids] == "measure")) {
+      body <- describe_measure(x, s, ids, srcs, say, name, whole_row)
     } else {
       body <- describe_attach(x, s, ids, srcs, say, name, whole_row)
       if (type == "outcome") body <- paste0("the outcome is ", body)
@@ -169,6 +174,47 @@ describe_copy <- function(x, ids, srcs, say, name, whole_row) {
   left <- ifelse(parents %in% sd$parent, " all the units left in ",
                  " all the units in ")
   paste(paste0(kid_text, left, name(parents)), collapse = "; ")
+}
+
+# An outcome drawn once for several branches (flow_outcome()): "Decrease in
+# volume is measured in every branch, drawn as one box joined from the 8
+# boxes in the Solution row", or "... measured after each of X and Y, ...".
+# One clause per box; the boxes of one call are a single box.
+describe_measure <- function(x, s, ids, srcs, say, name, whole_row) {
+  nd <- x$nodes
+  ed <- x$edges
+  st <- x$stages
+  # the end boxes before this stage: boxes above it with no box below them
+  above <- nd$id[match(nd$stage, st$id) < s]
+  ends <- setdiff(above, ed$from[ed$to %in% above])
+  parts <- vapply(seq_along(ids), function(i) {
+    id <- ids[i]
+    src <- srcs[[i]]
+    if (length(src) == 1) return(paste0("the outcome is ", say(id), ", after ",
+                                        name(src)))
+    row <- whole_row(src)
+    from_text <- if (!is.na(row)) {
+      paste0("the ", length(src), " boxes in the ", row, " row")
+    } else {
+      paste0("the ", length(src), " boxes ", and_list(name(src)))
+    }
+    if (setequal(src, ends)) {
+      where <- " is measured in every branch"
+    } else {
+      where <- paste0(" is measured after each of ", and_list(name(src)))
+      from_text <- "them"
+    }
+    computed <- has_data(x) && !is.null(box_rows(x, id)) &&
+      !id %in% edited_ids(x, "nodes") && !is.na(nd$n[nd$id == id]) &&
+      identical(nd$n[nd$id == id], format_n(count_rows(x, box_rows(x, id))))
+    paste0(say(id), where, ", drawn as one box joined from ", from_text,
+           if (computed) "; its count is of all these branches together",
+           if (measured_copies(x, src)) {
+             paste0("; the branches are copies of the same units, so each ",
+                    "unit is measured in more than one of them")
+           })
+  }, "")
+  paste(parts, collapse = "; ")
 }
 
 # "randomly assigned to", "assigned by minimisation to", "assigned to"

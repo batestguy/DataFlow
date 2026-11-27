@@ -162,7 +162,7 @@ test_that("boxes made without data have no rows; counts below stay blank", {
   d <- flow_start("All", data = people) |>
     flow_split("Arm", c("X", "Y"), n = 6) |>
     flow_apply("Treated", "Treated") |>
-    flow_outcome("Out", "600 trials", n = 600)
+    flow_outcome("Out", "600 trials", n = 600, join = FALSE)
   expect_equal(d$nodes$n, c("12", "6", "6", NA, NA, "600", "600"))
   expect_error(flow_split(d, "S", by = "site"), "made without data")
   expect_error(flow_data(d, "X"), "no rows behind it")
@@ -261,7 +261,8 @@ test_that("flows without data are unchanged from main (layouts as data)", {
   skip_on_ci()
   ref <- readRDS(test_path("fixtures", "typed_layouts_main.rds"))
   for (nm in names(ref)) {
-    lay <- unclass(flow_layout(flow_example(nm), show_method = FALSE))
+    x <- flow_example(nm)
+    lay <- unclass(flow_layout(x, show_method = FALSE))
     # identical, except that lines drawn twice on main are now drawn once
     expect_identical(lay[names(lay) != "segments"],
                      ref[[nm]][names(ref[[nm]]) != "segments"], label = nm)

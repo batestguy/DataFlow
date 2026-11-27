@@ -12,7 +12,8 @@
 #     single-parent nodes, the lowest common ancestor of its sources for
 #     brackets and pools). NA for the top boxes (all on the first stage), and
 #     for a pool whose sources come from different starting streams.
-# * edges: from, to, kind ("arrow", "bracket" or "pool").
+# * edges: from, to, kind ("arrow", "bracket", "pool" or "measure": an
+#     outcome measured in every branch, drawn once, see flow_outcome()).
 # * side: exclusion side boxes. Each sits on its own "exclude" stage row,
 #     to the right of the line leaving its parent box. Side boxes never
 #     change `leaves`: the flow continues below the parent.
@@ -21,6 +22,8 @@
 # * leaves: ids of the nodes the next verb attaches to by default.
 # * data (only when counts come from data, see R/data.R): the data frames,
 #     stored once, and `rows`: per box, the row numbers behind it.
+
+edge_kinds <- c("arrow", "bracket", "pool", "measure")
 
 stage_types <- c(
   "start", "select", "cluster", "split", "assign",
@@ -53,8 +56,10 @@ empty_side <- function() {
 #'
 #' Checks structure only: every stage has a known type, there is at least
 #' one top box and every top box is on the first stage, every other box is
-#' reached by an arrow, bracket or pool line, every edge points at real
-#' boxes, and pools have at least two sources. Counts are never checked.
+#' reached by an arrow, bracket, pool or measurement line, every edge points
+#' at real boxes and is of a known kind, pools have at least two sources, and
+#' an outcome measured in every branch (see [flow_outcome()]) is joined from at
+#' least two boxes. Counts are never checked.
 #'
 #' @param x A `studydesignflow` object.
 #' @return `x`, invisibly. Signals an error describing the first problem found.
@@ -83,6 +88,19 @@ validate_studydesignflow <- function(x) {
   if (!all(c(ed$from, ed$to) %in% nd$id)) {
     stop("Some arrows point to or from a box that does not exist.",
          call. = FALSE)
+  }
+  bad_kind <- setdiff(ed$kind, edge_kinds)
+  if (length(bad_kind) > 0) {
+    stop("Unknown kind of line: ", paste(bad_kind, collapse = ", "), ".",
+         call. = FALSE)
+  }
+  for (id in unique(ed$to[ed$kind == "measure"])) {
+    if (sum(ed$to == id) < 2 || any(ed$kind[ed$to == id] != "measure") ||
+        st$type[match(nd$stage[nd$id == id], st$id)] != "outcome") {
+      stop("A box measured in every branch must be an outcome box joined ",
+           "from at least two boxes (box \"", nd$label[nd$id == id], "\").",
+           call. = FALSE)
+    }
   }
   root <- nd$id[nd$stage == st$id[1]]
   if (length(root) == 0) {

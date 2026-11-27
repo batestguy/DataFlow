@@ -15,6 +15,8 @@ validate_studydesignflow(x)
 \description{
 Checks structure only: every stage has a known type, there is at least
 one top box and every top box is on the first stage, every other box is
-reached by an arrow, bracket or pool line, every edge points at real
-boxes, and pools have at least two sources. Counts are never checked.
+reached by an arrow, bracket, pool or measurement line, every edge points
+at real boxes and is of a known kind, pools have at least two sources, and
+an outcome measured in every branch (see \code{\link[=flow_outcome]{flow_outcome()}}) is joined from at
+least two boxes. Counts are never checked.
 }

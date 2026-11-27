@@ -75,7 +75,7 @@ flow_example <- function(name = c("lab", "trial", "survey", "review",
       flow_split("Cell culture composition", c("A", "B", "C")) |>
       flow_apply("Condition", "9 conditions each", over = "Experiment ID") |>
       flow_apply("Task", "2 tasks each\n(per condition)") |>
-      flow_outcome("Number of trials", "600 each"),
+      flow_outcome("Number of trials", "600 each", join = FALSE),
     trial = flow_start("Assessed for eligibility", n = 412,
                        stage = "Enrolment") |>
       flow_exclude("Excluded", n = 112,
