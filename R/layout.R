@@ -52,10 +52,26 @@
 #'   line, though then nothing in the picture says that the boxes are copies.
 #' @param copy_none The line for a copied box whose count is missing or
 #'   differs from what is left in the box above.
+#' @param show_details Draw step details (see [step_details()]) as a numbered
+#'   key? On by default. A step with details gets a marker such as "\[1\]"
+#'   under its row label (under the method, if shown; in the row-label column
+#'   on its own when the row has no label), and a box with details of its own
+#'   gets one after its label, as in "Village B \[3\]". Numbers run from top
+#'   to bottom and, in a row, from left to right, the step before its boxes.
+#'   The key under the diagram, aligned with the row labels, lists each
+#'   entry as "\[1\] Households" followed by one line per field (Who, Tool,
+#'   When, Where, How), wrapped to the width of the diagram (at least 3
+#'   inches). Boxes keep their size; rows with a marker get a longer gap
+#'   above them where needed, as for the method. The details are always in
+#'   the description ([flow_describe()]).
 #' @return A `studydesignflow_layout`: a list of data frames `boxes`, `side`
 #'   (exclusion boxes), `segments`, `brackets` and `row_labels`, plus
 #'   `extent` (xmin, xmax, ymin, ymax) and `size` (natural width and height
-#'   in inches).
+#'   in inches). When step details are drawn, also `key`: one row per line
+#'   of the key (`entry` number, `text`, `face`, `size`, left edge `x`,
+#'   centre `y`, measured width `w`, and its rectangle `xmin` to `ymax`);
+#'   `boxes` and `side` then have a `detail` column (the box's number, `NA`
+#'   for none) and `row_labels` the columns `detail` and `detail_y`.
 #' @export
 #' @examples
 #' lay <- flow_start("Cultures", n = 100) |>
@@ -71,17 +87,46 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                         side_format = "{label} (n = {n})", side_gap = 0.3,
                         show_method = TRUE,
                         copy_format = "the same {n} as above",
-                        copy_none = "copied from the box above") {
+                        copy_none = "copied from the box above",
+                        show_details = TRUE) {
   validate_studydesignflow(x)
   connector <- match.arg(connector)
   if (!isTRUE(show_method) && !isFALSE(show_method)) {
     stop("`show_method` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (!isTRUE(show_details) && !isFALSE(show_details)) {
+    stop("`show_details` must be TRUE or FALSE.", call. = FALSE)
+  }
+  # step details as a numbered key (R/details.R): the numbers follow the
+  # left-to-right order of a first layout with the same settings
+  marks <- if (show_details && !is.null(x$details)) {
+    detail_marks(x, function(x2) {
+      flow_layout(x2, count_format = count_format, base_size = base_size,
+                  family = family, hgap = hgap, vgap = vgap,
+                  group_gap = group_gap, pad_x = pad_x, pad_y = pad_y,
+                  min_width = min_width, row_label_width = row_label_width,
+                  connector = connector, side_format = side_format,
+                  side_gap = side_gap, show_method = show_method,
+                  copy_format = copy_format, copy_none = copy_none,
+                  show_details = FALSE)
+    })
   }
   st <- x$stages
   units <- box_units(x)
   nd <- copy_notes(x, copy_format, copy_none, units)
   ed <- x$edges
   sd <- x$side %||% empty_side()
+  # labels as given; with markers, the drawn text has "Village B [3]"
+  box_label <- nd$label
+  side_label <- sd$label
+  if (!is.null(marks)) {
+    mark_of <- function(ids, m) {
+      k <- unname(m[as.character(ids)])
+      ifelse(is.na(k), "", paste0(" [", k, "]"))
+    }
+    nd$label <- paste0(nd$label, mark_of(nd$id, marks$boxes))
+    sd$label <- paste0(sd$label, mark_of(sd$id, marks$side))
+  }
   rs <- x$reasons %||% empty_reasons()
   # what each count counts, NA for none (R/units.R)
   unit <- unname(units[as.character(nd$id)])
@@ -128,6 +173,12 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       function(s) paste(strwrap(s, row_label_width + 2), collapse = "\n"), ""
     )
   }
+  # the marker of a step with details, under its row label and method
+  detail_text <- rep("", nrow(st))
+  if (!is.null(marks)) {
+    detail_text[match(as.integer(names(marks$steps)), st$id)] <-
+      paste0("[", marks$steps, "]")
+  }
 
   # exclusion boxes: heading (with count) then one line per reason
   side_text <- vapply(seq_len(nrow(sd)), function(i) {
@@ -154,7 +205,10 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       side = text_width(side_text, base_size, measure_family, "plain"),
       side_note = ifelse(side_has_note,
                          text_width(ifelse(side_has_note, sd$note, ""),
-                                    note_size, measure_family, "italic"), 0)
+                                    note_size, measure_family, "italic"), 0),
+      detail = if (!is.null(marks)) {
+        text_width(detail_text, note_size, measure_family, "plain")
+      }
     )
   })
   n_lines <- function(s) lengths(strsplit(s, "\n", fixed = TRUE))
@@ -184,13 +238,18 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                  label_in(n_lines(rl_wrapped), base_size))
   mt_h <- ifelse(method_text == "", 0,
                  label_in(n_lines(method_text), note_size) + 0.06)
+  # the detail marker, with a gap above it when there is text above it
+  dt_gap <- ifelse(rl_h + mt_h > 0, 0.06, 0)
+  dt_h <- ifelse(detail_text == "", 0, label_in(1, note_size) + dt_gap)
   row_top <- -c(0, cumsum(row_h + vgap))[seq_len(nrow(st))]
-  # a label with a method must not run into the labels of the rows around it:
-  # the gap above the lower row is made longer, the boxes keep their height
-  block <- rl_h + mt_h
+  # a label with a method (or detail marker) must not run into the labels of
+  # the rows around it: the gap above the lower row is made longer, the boxes
+  # keep their height
+  block <- rl_h + mt_h + dt_h
   for (r in seq_len(nrow(st))[-1]) {
     above <- seq_len(r - 1)
-    above <- above[block[above] > 0 & (mt_h[above] > 0 | mt_h[r] > 0)]
+    above <- above[block[above] > 0 & (mt_h[above] + dt_h[above] > 0 |
+                                         mt_h[r] + dt_h[r] > 0)]
     if (block[r] == 0 || length(above) == 0) next
     top <- min((row_top - row_h / 2)[above] - block[above] / 2) - 0.05
     short <- (row_top[r] - row_h[r] / 2 + block[r] / 2) - top
@@ -402,7 +461,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   type <- st$type[row]
   boxes <- data.frame(
     id = nd$id, stage = st$name[row], type = type, row = row,
-    label = nd$label, n = nd$n, note = nd$note, text = text,
+    label = box_label, n = nd$n, note = nd$note, text = text,
     x = xpos, y = y, w = w, h = h,
     xmin = xpos - w / 2, xmax = xpos + w / 2,
     ymin = y - h / 2, ymax = y + h / 2,
@@ -418,7 +477,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   side_y <- row_y[side_row]
   side <- data.frame(
     id = sd$id, parent = sd$parent, stage = st$name[side_row],
-    row = side_row, label = sd$label, n = sd$n, note = sd$note,
+    row = side_row, label = side_label, n = sd$n, note = sd$note,
     text = side_text, x = side_x, y = side_y, w = side_w, h = side_h,
     xmin = side_x - side_w / 2, xmax = side_x + side_w / 2,
     ymin = side_y - side_h / 2, ymax = side_y + side_h / 2,
@@ -539,18 +598,27 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
 
   # --- row labels and extent ---------------------------------------------
   label_gap <- 0.25
-  has_rl <- rl_wrapped != "" | method_text != ""
+  has_rl <- rl_wrapped != "" | method_text != "" | detail_text != ""
   rl_w <- pmax(ifelse(rl_wrapped == "", 0, widths$row),
                ifelse(method_text == "", 0, widths$method))
+  if (!is.null(marks)) {
+    rl_w <- pmax(rl_w, ifelse(detail_text == "", 0, widths$detail))
+  }
   rl_x <- min(boxes$xmin) - label_gap - max(c(0, rl_w[has_rl]))
   row_labels <- data.frame(
     stage = st$name[has_rl], label = rl_wrapped[has_rl],
-    x = rep(rl_x, sum(has_rl)), y = (row_y + mt_h / 2)[has_rl],
+    x = rep(rl_x, sum(has_rl)), y = (row_y + mt_h / 2 + dt_h / 2)[has_rl],
     w = rl_w[has_rl], stringsAsFactors = FALSE
   )
   if (show_method) {
     row_labels$method <- ifelse(method_text == "", NA, method_text)[has_rl]
-    row_labels$method_y <- (row_y - rl_h / 2 - 0.03)[has_rl]
+    row_labels$method_y <- (row_y - rl_h / 2 - 0.03 + dt_h / 2)[has_rl]
+  }
+  if (!is.null(marks)) {
+    row_labels$detail <- ifelse(detail_text == "", NA, detail_text)[has_rl]
+    row_labels$detail_y <- (row_y - (rl_h + mt_h) / 2 - dt_gap / 2)[has_rl]
+    boxes$detail <- unname(marks$boxes[as.character(boxes$id)])
+    side$detail <- unname(marks$side[as.character(side$id)])
   }
   margin <- 0.1
   xmin <- (if (any(has_rl)) rl_x else min(boxes$xmin)) - margin
@@ -561,17 +629,28 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   ymin <- min(ymin, (row_y - block / 2 - 0.03)[block > 0])
   ymax <- max(ymax, (row_y + block / 2 + 0.03)[block > 0])
 
-  structure(
-    list(
-      boxes = boxes, side = side, segments = segments, brackets = brackets,
-      row_labels = row_labels,
-      extent = c(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-      size = c(width = xmax - xmin, height = ymax - ymin),
-      params = list(base_size = base_size, family = family,
-                    note_size = note_size)
-    ),
-    class = "studydesignflow_layout"
+  out <- list(
+    boxes = boxes, side = side, segments = segments, brackets = brackets,
+    row_labels = row_labels,
+    extent = c(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+    size = c(width = xmax - xmin, height = ymax - ymin),
+    params = list(base_size = base_size, family = family,
+                  note_size = note_size)
   )
+  if (!is.null(marks)) {
+    # the key under the diagram, left-aligned with the row labels, wrapped to
+    # the diagram's width (at least 3 inches)
+    key_x <- xmin + margin
+    width <- max(3, max(c(boxes$xmax, side$xmax)) - key_x)
+    key <- detail_key(x, marks, key_x, ymin - 0.1, width, note_size,
+                      measure_family)
+    xmax <- max(xmax, max(key$xmax) + margin)
+    ymin <- min(key$ymin) - margin
+    out$extent <- c(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)
+    out$size <- c(width = xmax - xmin, height = ymax - ymin)
+    out$key <- key
+  }
+  structure(out, class = "studydesignflow_layout")
 }
 
 #' @export

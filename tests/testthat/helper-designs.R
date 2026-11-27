@@ -71,10 +71,32 @@ boxes_overlap <- function(b) {
   hits
 }
 
-# Flow boxes and exclusion boxes as one set of rectangles.
+# Flow boxes and exclusion boxes as one set of rectangles, with the lines of
+# the key of step details when there is one (part 7c).
 all_boxes <- function(lay) {
   cols <- c("xmin", "xmax", "ymin", "ymax")
-  rbind(lay$boxes[, cols], if (!is.null(lay$side)) lay$side[, cols])
+  rbind(lay$boxes[, cols], if (!is.null(lay$side)) lay$side[, cols],
+        if (!is.null(lay$key)) lay$key[, cols])
+}
+
+# The text of the row-label column as rectangles: row labels, methods and
+# the markers of step details, with the heights the layout gives them.
+label_rects <- function(lay) {
+  rl <- lay$row_labels
+  size <- lay$params$base_size
+  note <- lay$params$note_size
+  lines <- function(s) lengths(strsplit(s, "\n", fixed = TRUE))
+  h <- function(k, sz) (1.4453 * (k - 1) + 0.92) * sz / 72
+  one <- function(text, y, sz) {
+    keep <- !is.na(text) & text != ""
+    if (!any(keep)) return(NULL)
+    data.frame(xmin = rl$x[keep], xmax = rl$x[keep] + rl$w[keep],
+               ymin = y[keep] - h(lines(text[keep]), sz) / 2,
+               ymax = y[keep] + h(lines(text[keep]), sz) / 2)
+  }
+  rbind(one(rl$label, rl$y, size),
+        if (!is.null(rl$method)) one(rl$method, rl$method_y, note),
+        if (!is.null(rl$detail)) one(rl$detail, rl$detail_y, note))
 }
 
 # Trial-shaped designs with exclusion boxes in awkward places.

@@ -23,7 +23,11 @@ Boxes that share a label in the same row are told apart by the box they
 sit under, e.g. "Batch 1 under Type A". Several top boxes are described
 as "2 boxes side by side"; pools as "X and Y are combined into Z"; an
 outcome drawn once for several branches (see \code{\link[=flow_outcome]{flow_outcome()}}) as "Z is
-measured in every branch, drawn as one box joined from ...". For a
+measured in every branch, drawn as one box joined from ...". Step details
+(see \code{\link[=step_details]{step_details()}}) follow the sentence of their step, e.g. "Done by
+trained enumerators, with tablet questionnaire (CSPro), March to May 2025,
+in Kaduna State; how: two visits per household.", and "For Village B:
+done with paper forms." for a box with its own. For a
 flow with data, a last sentence names the data frame(s) the counts were
 computed from.
 }

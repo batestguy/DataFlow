@@ -10,7 +10,11 @@
 #' sit under, e.g. "Batch 1 under Type A". Several top boxes are described
 #' as "2 boxes side by side"; pools as "X and Y are combined into Z"; an
 #' outcome drawn once for several branches (see [flow_outcome()]) as "Z is
-#' measured in every branch, drawn as one box joined from ...". For a
+#' measured in every branch, drawn as one box joined from ...". Step details
+#' (see [step_details()]) follow the sentence of their step, e.g. "Done by
+#' trained enumerators, with tablet questionnaire (CSPro), March to May 2025,
+#' in Kaduna State; how: two visits per household.", and "For Village B:
+#' done with paper forms." for a box with its own. For a
 #' flow with data, a last sentence names the data frame(s) the counts were
 #' computed from.
 #'
@@ -67,6 +71,8 @@ flow_describe <- function(x) {
   sentences <- paste0("Flow diagram with ", nrow(st), " stage",
                       if (nrow(st) != 1) "s", ", read from top to bottom. ",
                       "It starts with ", start, ".")
+  # who, with what, when, where and how (R/details.R), after each step
+  sentences <- c(sentences, describe_details(x, st$id[1], name, flat))
   for (s in seq_len(nrow(st))[-1]) {
     ids <- nd$id[nd$stage == st$id[s]]
     type <- st$type[s]
@@ -74,7 +80,8 @@ flow_describe <- function(x) {
     if (type == "exclude") {
       body <- describe_exclude(x, st$id[s], name, flat, units)
       sentences <- c(sentences, paste0(
-        if (st$row_label[s] != "") paste0(st$name[s], ": "), body, "."))
+        if (st$row_label[s] != "") paste0(st$name[s], ": "), body, "."),
+        describe_details(x, st$id[s], name, flat))
       next
     }
     head <- st$name[s]
@@ -118,7 +125,8 @@ flow_describe <- function(x) {
                      "stand for are not drawn one by one")
     }
     body <- paste0(body, unit_change(units, ids, srcs))
-    sentences <- c(sentences, paste0(head, ": ", body, "."))
+    sentences <- c(sentences, paste0(head, ": ", body, "."),
+                   describe_details(x, st$id[s], name, flat))
   }
   if (has_data(x)) sentences <- c(sentences, describe_data(x))
   structure(paste(sentences, collapse = " "), class = "studydesignflow_description")

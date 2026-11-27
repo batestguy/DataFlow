@@ -121,9 +121,11 @@ warn_events <- function(x, ids) {
 flow_partition <- function(.flow, stage = "Data split", labels = NULL,
                            n = NULL, note = NULL, by = NULL, group = NULL,
                            time = NULL, from = NULL, row_label = NULL,
-                           events = NULL, unit = NULL, count = NULL) {
+                           events = NULL, unit = NULL, count = NULL,
+                           details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
+  check_details_arg(details)
   if (!is.null(group)) check_string(group, "group")
   if (!is.null(time)) check_string(time, "time")
   x <- split_boxes(.flow, stage, labels, n, note, from,
@@ -158,7 +160,7 @@ flow_partition <- function(.flow, stage = "Data split", labels = NULL,
   x$partition[[as.character(sid)]] <- list(group = group, time = time,
                                           checked = checked,
                                           na_group = na_group)
-  validate_studydesignflow(x)
+  add_details(validate_studydesignflow(x), details)
 }
 
 # No group (e.g. patient) may have rows in two sets. Returns the number of

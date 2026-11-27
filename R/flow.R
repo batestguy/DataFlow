@@ -22,6 +22,8 @@
 # * leaves: ids of the nodes the next verb attaches to by default.
 # * data (only when counts come from data, see R/data.R): the data frames,
 #     stored once, and `rows`: per box, the row numbers behind it.
+# * details (only when given, see R/details.R): who, with what, when, where
+#     and how, per step (stage id) or per box.
 
 edge_kinds <- c("arrow", "bracket", "pool", "measure")
 
@@ -160,6 +162,8 @@ validate_studydesignflow <- function(x) {
   check_unit_store(x$side_units, (sd %||% empty_side())$id,
                    "units of exclusion boxes")
   check_unit_store(x$data$counts, nd$id, "count columns of boxes")
+  # step details (R/details.R), present only when given
+  check_details_store(x$details, st$id, nd$id, (sd %||% empty_side())$id)
   invisible(x)
 }
 
@@ -228,6 +232,14 @@ print.studydesignflow <- function(x, ...) {
     shown <- gsub("[[:space:]]*\n[[:space:]]*", " ", shown)
     cat(sprintf("  %-9s %s: %s\n", paste0("[", st$type[i], "]"),
                 st$name[i], paste(shown, collapse = ", ")))
+  }
+  if (!is.null(x$details)) {
+    k <- lengths(x$details[c("steps", "boxes", "side")])
+    cat("  step details: ", and_list(c(
+      if (k[1] > 0) paste0(k[1], " step", if (k[1] != 1) "s"),
+      if (k[2] + k[3] > 0) paste0(k[2] + k[3], " box",
+                                  if (k[2] + k[3] != 1) "es"))),
+      " (see flow_describe())\n", sep = "")
   }
   invisible(x)
 }

@@ -207,6 +207,8 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   `"villages"`: one value, or one per label. The box then reads
 #'   "(40 villages)" instead of "(n = 40)", and the boxes below take the
 #'   same unit until a step gives another (see [flow_split()]).
+#' @param details Optional details of the top row: who, with what, when,
+#'   where and how (see [step_details()]), given as in [flow_split()].
 #' @return A `studydesignflow` object.
 #' @export
 #' @examples
@@ -229,7 +231,8 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   flow_pool("Analysis", "Analysed together", n = 352)
 flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
                        data = NULL, count = NULL, events = NULL,
-                       unit = NULL) {
+                       unit = NULL, details = NULL) {
+  check_details_arg(details)
   if (!is.character(label) || length(label) == 0 || anyNA(label) ||
       any(label == "")) {
     stop("`label` must be text and not empty.", call. = FALSE)
@@ -298,7 +301,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
     x$data$events_na <- count_missing_outcome(x)
   }
   if (!is.null(unit_vals)) x <- set_units(x, a$ids, unit_vals)
-  validate_studydesignflow(x)
+  add_details(validate_studydesignflow(x), details)
 }
 
 #' Split every current box into several
@@ -368,6 +371,18 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #'   counting as the box above does. It does not set `unit`: give `unit` too
 #'   when the count column changes, so the picture says what is counted and
 #'   [flow_check()] does not compare the counts with those above.
+#' @param details Optional details of this step: who did it, with what tool,
+#'   when, where and how (see [step_details()]). One `step_details()` is for
+#'   the whole step (one row of the diagram). For boxes whose details differ,
+#'   give a list: either one entry per new box, in the order [flow_nodes()]
+#'   lists them (`step_details()`, or `NULL` for none), or entries named by
+#'   the labels of new boxes, e.g.
+#'   `list(step = step_details(who = "enumerators"), "Village B" =
+#'   step_details(tool = "paper forms"))`, where the name `step` stands for
+#'   the whole step and a label names every new box with that label. For
+#'   [flow_exclude()] the new boxes are its exclusion boxes. Details are
+#'   drawn as a numbered key under the diagram (see [flow_layout()]) and
+#'   always given in [flow_describe()]; change them with [flow_edit()].
 #' @return The updated `studydesignflow`.
 #' @export
 #' @examples
@@ -381,14 +396,16 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 flow_split <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                        display = "all", from = NULL, row_label = NULL,
                        summary = "{k} {stage}", by = NULL, events = NULL,
-                       unit = NULL, count = NULL) {
+                       unit = NULL, count = NULL, details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
-  split_boxes(.flow, stage, labels, n, note, from,
-              pick_row_label(row_label, stage), "split", display,
-              summary = summary, by = by, events = events, unit = unit,
-              count = count)
+  check_details_arg(details)
+  x <- split_boxes(.flow, stage, labels, n, note, from,
+                   pick_row_label(row_label, stage), "split", display,
+                   summary = summary, by = by, events = events, unit = unit,
+                   count = count)
+  add_details(x, details)
 }
 
 # Shared engine for one-to-many steps (split, assign, cluster).
@@ -772,13 +789,15 @@ group_over <- function(x, targets, over) {
 flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
                        over = NULL, display = "all", from = NULL,
                        row_label = NULL, events = NULL, unit = NULL,
-                       count = NULL) {
+                       count = NULL, details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
-  attach_per_group(.flow, stage, label, n, note, over, from, "apply", display,
-                   pick_row_label(row_label, stage), events = events,
-                   unit = unit, count = count)
+  check_details_arg(details)
+  x <- attach_per_group(.flow, stage, label, n, note, over, from, "apply",
+                        display, pick_row_label(row_label, stage),
+                        events = events, unit = unit, count = count)
+  add_details(x, details)
 }
 
 #' Add the outcome or measurement at the end of each branch
@@ -858,7 +877,7 @@ flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
 flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
                          display = "all", from = NULL, row_label = NULL,
                          events = NULL, join = NULL, unit = NULL,
-                         count = NULL) {
+                         count = NULL, details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
@@ -866,6 +885,7 @@ flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
     stop("`join` must be NULL, TRUE or FALSE.", call. = FALSE)
   }
   check_count_col(.flow, count)
+  check_details_arg(details)
   groups <- NULL
   if (!isFALSE(join)) {
     targets <- resolve_targets(.flow, from)
@@ -880,11 +900,12 @@ flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
       if (!is.null(unit)) unit <- unit[1]
     }
   }
-  attach_per_group(.flow, stage, label, n, note, NULL,
-                   if (is.null(groups)) from, "outcome",
-                   display, pick_row_label(row_label, stage),
-                   groups = groups, join = "measure", events = events,
-                   unit = unit, count = count)
+  x <- attach_per_group(.flow, stage, label, n, note, NULL,
+                        if (is.null(groups)) from, "outcome",
+                        display, pick_row_label(row_label, stage),
+                        groups = groups, join = "measure", events = events,
+                        unit = unit, count = count)
+  add_details(x, details)
 }
 
 # Whether flow_outcome() draws one shared box for `targets` (see its Details).
