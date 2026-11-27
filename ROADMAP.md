@@ -1354,4 +1354,5 @@ what is still open.
   verify current time": the machine could not reach a time server; not
   about the package).
 - Approved by the user (2026-11-27); pictures `dev/m7c/survey_details.png`,
-  `trial_details.png`, `D06_details.png`, `try.png`. Merged and pushed.
+  `trial_details.png`, `D06_details.png`, `try.png`. Merged (`d8b81d0`),
+  pushed; CI run 45954732138 green on all 5 platforms. Next: 7d.
