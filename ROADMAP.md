@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ all 117 drawn, read blind and graded (core 2026-11-25, other 71 2026-11-26); user has not seen the pictures of the 71 | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) and 7j (one measurement box, approved 2026-11-27) merged into `main`; 7b units built on branch `m7b`, not yet approved | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) 7j (one measurement box) and 7b (units), both approved 2026-11-27, merged into `main`; 7c step details next | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -278,7 +278,7 @@ correctly. Names below are proposals, settled in the design of each part.
 |---|---|---|---|
 | 7-0 Number check 🟡 (first; moved from milestone 8 on 2026-11-25) | Numbers that do not add up, reasons that do not sum, splits larger than their parent | `flow_check()`, run by the user; reports, never edits or blocks | Designed with 7a and 7b: copies and changes of unit must not be reported |
 | 7a Copies (after 7i) ✅ approved 2026-11-26 | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
-| 7b Units (🟡 built 2026-11-27, not yet approved) | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
+| 7b Units (✅ done, approved 2026-11-27) | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
 | 7c Step details | Tool or instrument, who, dates, method | `details =` with fixed fields after Datasheets and Croissant; drawn as a note or a numbered key; always in the description | Long text; layout height |
 | 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
 | 7e Linking | Two sources joined record by record | `flow_link()`: linked box plus unmatched from each side; from data by key | Read GUILD first; one-to-many links; matching errors are typed |
@@ -1268,5 +1268,6 @@ what is still open.
 - Checked after the fixes: 323 of 323 earlier designs identical to `main`
   (objects, both layouts, descriptions); full tests pass, 0 fail; package
   check 0 errors, 0 warnings, 0 notes.
-- Open: the user has not seen the pictures (`dev/m7b/f01_units.png`,
-  `survey_units.png`, `data_count_household.png`); then commit, merge, push.
+- Approved by the user (2026-11-27); committed `8b2aefe`, merged into
+  `main` `1294a09`, pushed. CI run 45946059422 green on all 5 platforms.
+- Next: 7c step details.
