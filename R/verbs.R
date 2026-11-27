@@ -728,19 +728,172 @@ flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
 
 #' Add the outcome or measurement at the end of each branch
 #'
+#' Adds the outcome or measurement taken after the current end boxes (or the
+#' boxes in `from`). When the same measurement ends every branch, it is drawn
+#' once: one box, with a line from each branch converging into it, instead of
+#' the same box repeated under every branch. The description says that it is
+#' measured in every branch; it is not a pooling of units, so [flow_check()]
+#' does not expect its count to add up as in [flow_pool()].
+#'
+#' With `join = NULL` (the default) the branches are joined when all of these
+#' hold:
+#' * there are at least two boxes to measure;
+#' * no count is typed in `n`: a count typed once for several branches means
+#'   "each", while on one shared box it would read as the total, so a typed
+#'   count keeps one box per branch (give `join = TRUE` to join anyway, with
+#'   the count you mean);
+#' * every branch would get the same box: one `label`, and one value of
+#'   `events` and `note` (in a flow with data, the counts and events computed
+#'   for each branch are the same too). Branches with their own counts are
+#'   kept apart, because one box cannot say which count belongs to which
+#'   branch;
+#' * the branches are not copies of the same units ([flow_copy()]): when two
+#'   of the boxes to measure come from different copies of one box, the same
+#'   units are measured in several branches (repeated measurements), and
+#'   each branch keeps its own box.
+#'
+#' Several outcomes measured on the same units (as analysed by MANOVA)
+#' cannot be told from a label: give `join = FALSE` for them, and for any
+#' design whose branches should keep their own box. Repeated measurements
+#' and several outcomes on the same units are kept separate for now; a
+#' picture made for them (which units, how many times, how many outcomes) is
+#' planned.
+#'
+#' The joined box's count: in a flow with data, a missing `n` is computed
+#' from all the rows of the branches together, so branches are joined only
+#' when their computed counts are equal (two arms of 20 join as one box of
+#' 40; arms of 20 and 21 keep their own boxes). With `join = TRUE`, a typed
+#' `n` is drawn exactly as given, so type the count you mean (all branches
+#' together, or text such as "8 each").
+#'
 #' @inheritParams flow_apply
+#' @param n,note Optional count and note: one value, or one per box. In a
+#'   flow with data (see [flow_start()]), a missing `n` is computed from the
+#'   rows of each box; boxes made without data have no rows, so the count
+#'   below them stays blank. A typed `n` always wins (e.g. "600 trials" is
+#'   not a number of rows), and keeps one box per branch unless
+#'   `join = TRUE`.
+#' @param join Draw one shared box for all branches? `NULL` (the default)
+#'   decides as described in Details; `FALSE` always draws one box per
+#'   branch; `TRUE` always joins, also for copies of the same units (the
+#'   description then says that each unit is measured in several branches),
+#'   and is an error when the branches would get different labels, counts,
+#'   events or notes.
 #' @export
 #' @examples
+#' # one box per branch
+#' flow_start("Cultures", n = 100) |>
+#'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
+#'   flow_outcome("Number of trials", "600 each", join = FALSE)
+#'
+#' # the same measurement in every branch: one shared box
 #' flow_start("Cultures", n = 100) |>
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_outcome("Number of trials", "600 each")
+#'
+#' # a typed count means "each": one box per branch
+#' flow_start("Patients", n = 40) |>
+#'   flow_split("Arm", c("Drug", "Placebo"), n = 20) |>
+#'   flow_outcome("Analysis", "Analysed", n = 20)
+#'
+#' # copies of the same units (repeated measurements): kept separate
+#' flow_start("Boys", n = 10) |>
+#'   flow_copy("Shoe material", c("Material A", "Material B")) |>
+#'   flow_outcome("Measured", "Wear")
 flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
                          display = "all", from = NULL, row_label = NULL,
-                         events = NULL) {
+                         events = NULL, join = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
-  attach_per_group(.flow, stage, label, n, note, NULL, from, "outcome",
+  if (!is.null(join) && !isTRUE(join) && !isFALSE(join)) {
+    stop("`join` must be NULL, TRUE or FALSE.", call. = FALSE)
+  }
+  groups <- NULL
+  if (!isFALSE(join)) {
+    targets <- resolve_targets(.flow, from)
+    if (outcome_joins(.flow, targets, label, n, note, events, join)) {
+      groups <- list(targets)
+      # every branch gets the same box: one value of each
+      label <- label[1]
+      if (!is.null(n)) n <- n[1]
+      if (!is.null(note)) note <- note[1]
+      if (!is.null(events)) events <- events[1]
+    }
+  }
+  attach_per_group(.flow, stage, label, n, note, NULL,
+                   if (is.null(groups)) from, "outcome",
                    display, pick_row_label(row_label, stage),
-                   events = events)
+                   groups = groups, join = "measure", events = events)
+}
+
+# Whether flow_outcome() draws one shared box for `targets` (see its Details).
+# Every branch must get the same box: one label, count, events and note; in a
+# flow with data the counts and events computed per branch count too.
+# `join = TRUE` joins copies of the same units as well, and is an error when
+# the boxes would differ.
+outcome_joins <- function(x, targets, label, n, note, events, join) {
+  k <- length(targets)
+  if (k < 2) return(FALSE)
+  # a typed count means "each": joined only on request (user, 2026-11-26)
+  if (is.null(join) && !is.null(n)) return(FALSE)
+  if (!is.character(label) || anyNA(label) || any(label == "")) {
+    return(FALSE)  # attach_per_group() gives the error
+  }
+  # values that do not fit the boxes are left to attach_per_group()'s errors
+  fits <- function(v) is.null(v) || (!is.list(v) && length(v) %in% c(1, k))
+  if (!all(vapply(list(label, n, note, events), fits, NA))) return(FALSE)
+  distinct <- function(v) length(unique(v)) > 1
+  per_branch <- function(f) {
+    vapply(targets, function(t) f(left_rows(x, t)), character(1))
+  }
+  n_vals <- if (!is.null(n)) format_n(n) else if (has_data(x)) {
+    per_branch(function(r) format_n(count_rows(x, r)))
+  }
+  ev_vals <- if (!is.null(events)) format_n(events) else
+    if (has_data(x) && !is.null(x$data$events)) {
+      per_branch(function(r) {
+        if (is.null(r)) NA_character_
+        else format_n(count_events(x, r)[["events"]])
+      })
+    }
+  differ <- c(label = distinct(label), count = distinct(n_vals),
+              events = distinct(ev_vals),
+              note = distinct(format_note(note)))
+  if (any(differ)) {
+    if (isTRUE(join)) {
+      stop("join = TRUE draws one box for all branches, but the branches ",
+           "would get different ", and_list(names(differ)[differ]),
+           ". Give one value, or use join = FALSE.", call. = FALSE)
+    }
+    return(FALSE)
+  }
+  isTRUE(join) || !measured_copies(x, targets)
+}
+
+# TRUE when some of `targets` hold the same units because they come from
+# different copies of one box (flow_copy()): there are two targets a and b
+# and two copies c and c' of the same box, with c upstream of a but not of b,
+# and c' upstream of b but not of a (upstream = along the drawn lines,
+# including the box itself). Copies above both of them, or a split below a
+# copy, do not count: a split shares the units out, so its branches hold
+# different units.
+measured_copies <- function(x, targets) {
+  nd <- x$nodes
+  copies <- nd$id[nd$stage %in% x$stages$id[x$stages$type == "copy"]]
+  if (length(copies) < 2) return(FALSE)
+  parent <- stats::setNames(x$edges$from[match(copies, x$edges$to)], copies)
+  up <- lapply(targets, function(t) intersect(c(t, node_upstream(x, t)),
+                                              copies))
+  for (i in seq_along(up)[-length(up)]) {
+    for (j in seq.int(i + 1, length(up))) {
+      a <- setdiff(up[[i]], up[[j]])
+      b <- setdiff(up[[j]], up[[i]])
+      if (length(a) && length(b) &&
+          any(parent[as.character(a)] %in% parent[as.character(b)])) {
+        return(TRUE)
+      }
+    }
+  }
+  FALSE
 }

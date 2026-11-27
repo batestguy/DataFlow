@@ -46,6 +46,10 @@ more than the one above (fine if the unit changes, as from households to
 people), or fewer with no exclusion drawn, including a copy with fewer than
 the box it copies.
 
+An outcome drawn once for several branches (\code{\link[=flow_outcome]{flow_outcome()}}) is a
+measurement, not a pool: its count may be of all the branches together or
+that of each branch, and any other count gives a note, never a problem.
+
 Sampling steps (\code{\link[=flow_cluster]{flow_cluster()}}, \code{\link[=flow_select]{flow_select()}}) and summary boxes are not
 compared, except that a selection larger than its source is reported. Missing
 counts and counts that are not plain numbers cannot be compared; the number

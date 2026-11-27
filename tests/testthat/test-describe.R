@@ -19,6 +19,11 @@ test_that("the lab design is described in plain sentences", {
       "the Task row."
     )
   )
+  # joined, the same last row is described as measured in every branch
+  expect_match(unclass(flow_describe(lab_joined())),
+               paste("Number of trials: 600 each is measured in every branch,",
+                     "drawn as one box joined from the 2 boxes in the Task row."),
+               fixed = TRUE)
 })
 
 test_that("notes and differing labels are described", {
@@ -82,7 +87,7 @@ test_that("units are assigned, not the box they come from", {
 
 test_that("one text for several boxes says each", {
   d <- flow_start("Field") |> flow_split("Block", c("B1", "B2")) |>
-    flow_outcome("Measured", "Hills", n = 36)
+    flow_outcome("Measured", "Hills", n = 36, join = FALSE)
   expect_match(flow_describe(d),
                "Hills (n = 36 each), for each of the 2 boxes in the Block row",
                fixed = TRUE)
@@ -106,7 +111,10 @@ test_that("the first row is called by its name, or top", {
   expect_match(flow_describe(a), "side by side in the Sampled apart row:")
   expect_match(flow_describe(a), "2 boxes in the Sampled apart row")
   b <- flow_start(c("Cases", "Controls"), n = c(2, 3)) |>
-    flow_outcome("Recorded", "Exposure")
+    flow_outcome("Recorded", "Exposure", join = FALSE)
   expect_match(flow_describe(b), "for each of the 2 boxes in the top row")
+  b2 <- flow_start(c("Cases", "Controls"), n = c(2, 3)) |>
+    flow_outcome("Recorded", "Exposure")
+  expect_match(flow_describe(b2), "joined from the 2 boxes in the top row")
   expect_no_match(flow_describe(b), "Start row")
 })

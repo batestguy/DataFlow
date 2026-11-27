@@ -118,6 +118,8 @@ test_that("flow_nodes lists boxes and leaves", {
   expect_equal(nrow(n), 27)
   expect_equal(sum(n$leaf), 2)
   expect_equal(n$label[n$leaf], c("600 each", "600 each"))
+  n <- flow_nodes(lab_joined())
+  expect_equal(n$label[n$leaf], "600 each")
 })
 
 test_that("decimal and large counts are not rounded", {

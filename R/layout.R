@@ -8,7 +8,8 @@
 #'
 #' Boxes are sized from their text. Each box is centred over the boxes that
 #' follow it; a box joined by a bracket is centred under the boxes it joins,
-#' and a pooled box under the centres of its sources. Several starting
+#' and a pooled box, or an outcome measured in every branch (see
+#' [flow_outcome()]), under the centres of its sources. Several starting
 #' streams sit side by side, `group_gap` apart. Rows sit at fixed heights, one
 #' row per stage.
 #'
@@ -300,8 +301,8 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   # under them, once the sources have positions in `pos`.
   place_joined <- function(m, pos, acc) {
     src <- as.character(ed$from[ed$to == m])
-    if (ed$kind[match(m, ed$to)] == "pool") {
-      # pool lines leave the sources' centres
+    if (ed$kind[match(m, ed$to)] %in% c("pool", "measure")) {
+      # pool and measurement lines leave the sources' centres
       left <- min(pos[src])
       right <- max(pos[src])
     } else {
@@ -496,20 +497,22 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
       add_seg(mb$x, yk, mb$x, mb$ymax, TRUE, "bracket")
     }
   }
-  # pools: converging lines, one down from each source's centre to a shared
-  # horizontal line (below any exclusion rows under the sources), then one
-  # arrow into the top of the pooled box
-  for (m in unique(ed$to[ed$kind == "pool"])) {
+  # pools, and outcomes measured in every branch: converging lines, one down
+  # from each source's centre to a shared horizontal line (below any
+  # exclusion rows under the sources), then one arrow into the top of the
+  # pooled or measured box
+  for (m in unique(ed$to[ed$kind %in% c("pool", "measure")])) {
+    kind <- ed$kind[match(m, ed$to)]
     sb <- b(ed$from[ed$to == m])
     mb <- b(m)
     trunk_row <- bracket_trunk[[as.character(m)]]
     yb <- if (is.null(trunk_row)) min(sb$ymin) - vgap / 2 else
       row_bottom[trunk_row] - vgap / 2
     for (i in seq_len(nrow(sb))) {
-      add_seg(sb$x[i], sb$ymin[i], sb$x[i], yb, FALSE, "pool")
+      add_seg(sb$x[i], sb$ymin[i], sb$x[i], yb, FALSE, kind)
     }
-    add_seg(min(c(sb$x, mb$x)), yb, max(c(sb$x, mb$x)), yb, FALSE, "pool")
-    add_seg(mb$x, yb, mb$x, mb$ymax, TRUE, "pool")
+    add_seg(min(c(sb$x, mb$x)), yb, max(c(sb$x, mb$x)), yb, FALSE, kind)
+    add_seg(mb$x, yb, mb$x, mb$ymax, TRUE, kind)
   }
   # exclusion boxes: the parent's line continues down to the box's middle
   # (if nothing else draws it), then an arrow runs right into the box

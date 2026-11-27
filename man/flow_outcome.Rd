@@ -13,7 +13,8 @@ flow_outcome(
   display = "all",
   from = NULL,
   row_label = NULL,
-  events = NULL
+  events = NULL,
+  join = NULL
 )
 }
 \arguments{
@@ -23,11 +24,12 @@ flow_outcome(
 
 \item{label}{Text for the new box(es): one value, or one per group.}
 
-\item{n, note}{Optional count and note: one value, or one per group. In a
+\item{n, note}{Optional count and note: one value, or one per box. In a
 flow with data (see \code{\link[=flow_start]{flow_start()}}), a missing \code{n} is computed from the
-rows of each group; boxes made without data have no rows, so the count
+rows of each box; boxes made without data have no rows, so the count
 below them stays blank. A typed \code{n} always wins (e.g. "600 trials" is
-not a number of rows).}
+not a number of rows), and keeps one box per branch unless
+\code{join = TRUE}.}
 
 \item{display}{\code{"all"} draws every box. \code{"summary"} draws one box under
 each current box standing for all of its boxes in this stage, labelled
@@ -44,12 +46,74 @@ labelled above it).}
 recycled like \code{n}, drawn as "(n = 412; events = 37)". In a flow started
 with \code{flow_start(events = ~ ...)} they are computed from the data
 instead; typed values win and are marked as typed.}
+
+\item{join}{Draw one shared box for all branches? \code{NULL} (the default)
+decides as described in Details; \code{FALSE} always draws one box per
+branch; \code{TRUE} always joins, also for copies of the same units (the
+description then says that each unit is measured in several branches),
+and is an error when the branches would get different labels, counts,
+events or notes.}
 }
 \description{
-Add the outcome or measurement at the end of each branch
+Adds the outcome or measurement taken after the current end boxes (or the
+boxes in \code{from}). When the same measurement ends every branch, it is drawn
+once: one box, with a line from each branch converging into it, instead of
+the same box repeated under every branch. The description says that it is
+measured in every branch; it is not a pooling of units, so \code{\link[=flow_check]{flow_check()}}
+does not expect its count to add up as in \code{\link[=flow_pool]{flow_pool()}}.
+}
+\details{
+With \code{join = NULL} (the default) the branches are joined when all of these
+hold:
+\itemize{
+\item there are at least two boxes to measure;
+\item no count is typed in \code{n}: a count typed once for several branches means
+"each", while on one shared box it would read as the total, so a typed
+count keeps one box per branch (give \code{join = TRUE} to join anyway, with
+the count you mean);
+\item every branch would get the same box: one \code{label}, and one value of
+\code{events} and \code{note} (in a flow with data, the counts and events computed
+for each branch are the same too). Branches with their own counts are
+kept apart, because one box cannot say which count belongs to which
+branch;
+\item the branches are not copies of the same units (\code{\link[=flow_copy]{flow_copy()}}): when two
+of the boxes to measure come from different copies of one box, the same
+units are measured in several branches (repeated measurements), and
+each branch keeps its own box.
+}
+
+Several outcomes measured on the same units (as analysed by MANOVA)
+cannot be told from a label: give \code{join = FALSE} for them, and for any
+design whose branches should keep their own box. Repeated measurements
+and several outcomes on the same units are kept separate for now; a
+picture made for them (which units, how many times, how many outcomes) is
+planned.
+
+The joined box's count: in a flow with data, a missing \code{n} is computed
+from all the rows of the branches together, so branches are joined only
+when their computed counts are equal (two arms of 20 join as one box of
+40; arms of 20 and 21 keep their own boxes). With \code{join = TRUE}, a typed
+\code{n} is drawn exactly as given, so type the count you mean (all branches
+together, or text such as "8 each").
 }
 \examples{
+# one box per branch
+flow_start("Cultures", n = 100) |>
+  flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
+  flow_outcome("Number of trials", "600 each", join = FALSE)
+
+# the same measurement in every branch: one shared box
 flow_start("Cultures", n = 100) |>
   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
   flow_outcome("Number of trials", "600 each")
+
+# a typed count means "each": one box per branch
+flow_start("Patients", n = 40) |>
+  flow_split("Arm", c("Drug", "Placebo"), n = 20) |>
+  flow_outcome("Analysis", "Analysed", n = 20)
+
+# copies of the same units (repeated measurements): kept separate
+flow_start("Boys", n = 10) |>
+  flow_copy("Shoe material", c("Material A", "Material B")) |>
+  flow_outcome("Measured", "Wear")
 }

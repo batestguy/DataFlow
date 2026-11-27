@@ -55,7 +55,7 @@ design <- flow_start("Cultures", n = 100) |>
   flow_split("Cell culture composition", c("A", "B", "C")) |>
   flow_apply("Condition", "9 conditions each", over = "Experiment ID") |>
   flow_apply("Task", "2 tasks each\n(per condition)") |>
-  flow_outcome("Number of trials", "600 each")
+  flow_outcome("Number of trials", "600 each", join = FALSE)
 
 plot(design)                       # draw it
 flow_save(design, "design.pdf")    # save at its natural size
