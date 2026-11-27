@@ -31,16 +31,17 @@ flow_cluster <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                          method = NULL, display = "summary",
                          summary = "{k} clusters selected", from = NULL,
                          row_label = NULL, by = NULL, unit = NULL,
-                         count = NULL, details = NULL) {
+                         count = NULL, details = NULL, kind = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
   check_details_arg(details)
+  check_kind_arg(kind)
   x <- split_boxes(.flow, stage, labels, n, note, from,
                    pick_row_label(row_label, stage), "cluster", display,
                    method = check_method(method), summary = summary, by = by,
                    unit = unit, count = count)
-  add_details(x, details)
+  add_kind(add_details(x, details), kind)
 }
 
 #' Select units within each current box
@@ -73,14 +74,15 @@ flow_cluster <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
 flow_select <- function(.flow, stage, label, n = NULL, note = NULL,
                         method = NULL, from = NULL, row_label = NULL,
                         where = NULL, unit = NULL, count = NULL,
-                        details = NULL) {
+                        details = NULL, kind = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   where <- tryCatch(where, error = function(e) bad_condition("where", e))
   check_details_arg(details)
+  check_kind_arg(kind)
   x <- attach_per_group(.flow, stage, label, n, note, NULL, from, "select",
                         "all", pick_row_label(row_label, stage),
                         method = check_method(method), where = where,
                         unit = unit, count = count)
-  add_details(x, details)
+  add_kind(add_details(x, details), kind)
 }

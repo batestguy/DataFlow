@@ -209,6 +209,8 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   same unit until a step gives another (see [flow_split()]).
 #' @param details Optional details of the top row: who, with what, when,
 #'   where and how (see [step_details()]), given as in [flow_split()].
+#' @param kind Optional: was the top row done to physical things
+#'   (`"physical"`) or to data (`"data"`)? Given as in [flow_split()].
 #' @return A `studydesignflow` object.
 #' @export
 #' @examples
@@ -231,8 +233,9 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   flow_pool("Analysis", "Analysed together", n = 352)
 flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
                        data = NULL, count = NULL, events = NULL,
-                       unit = NULL, details = NULL) {
+                       unit = NULL, details = NULL, kind = NULL) {
   check_details_arg(details)
+  check_kind_arg(kind)
   if (!is.character(label) || length(label) == 0 || anyNA(label) ||
       any(label == "")) {
     stop("`label` must be text and not empty.", call. = FALSE)
@@ -301,7 +304,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
     x$data$events_na <- count_missing_outcome(x)
   }
   if (!is.null(unit_vals)) x <- set_units(x, a$ids, unit_vals)
-  add_details(validate_studydesignflow(x), details)
+  add_kind(add_details(validate_studydesignflow(x), details), kind)
 }
 
 #' Split every current box into several
@@ -383,6 +386,18 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #'   [flow_exclude()] the new boxes are its exclusion boxes. Details are
 #'   drawn as a numbered key under the diagram (see [flow_layout()]) and
 #'   always given in [flow_describe()]; change them with [flow_edit()].
+#' @param kind Optional: was this step done to physical things
+#'   (`"physical"`: animals, samples, people) or to data (`"data"`: cleaning,
+#'   coding, merging records)? Given like `details`: one value for the whole
+#'   step, or a list (or character vector) with one entry per new box
+#'   (`NULL` or `NA` for none) or entries named by box label, with the name
+#'   `step` for the whole step, e.g. `list(step = "data", "Site B" =
+#'   "physical")`. A box's own kind wins over its step's; a box never takes
+#'   the kind of the box above it. Boxes of a step done to data are drawn
+#'   with a dashed edge, and a key under the diagram says what the edges
+#'   mean (see `show_kind_key` in [flow_layout()]); [flow_describe()] names
+#'   the steps. `NULL` (the default) sets nothing, and a flow without kinds
+#'   is drawn as before. Change it later with [flow_edit()].
 #' @return The updated `studydesignflow`.
 #' @export
 #' @examples
@@ -396,16 +411,18 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 flow_split <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                        display = "all", from = NULL, row_label = NULL,
                        summary = "{k} {stage}", by = NULL, events = NULL,
-                       unit = NULL, count = NULL, details = NULL) {
+                       unit = NULL, count = NULL, details = NULL,
+                       kind = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
   check_details_arg(details)
+  check_kind_arg(kind)
   x <- split_boxes(.flow, stage, labels, n, note, from,
                    pick_row_label(row_label, stage), "split", display,
                    summary = summary, by = by, events = events, unit = unit,
                    count = count)
-  add_details(x, details)
+  add_kind(add_details(x, details), kind)
 }
 
 # Shared engine for one-to-many steps (split, assign, cluster).
@@ -789,15 +806,16 @@ group_over <- function(x, targets, over) {
 flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
                        over = NULL, display = "all", from = NULL,
                        row_label = NULL, events = NULL, unit = NULL,
-                       count = NULL, details = NULL) {
+                       count = NULL, details = NULL, kind = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
   check_details_arg(details)
+  check_kind_arg(kind)
   x <- attach_per_group(.flow, stage, label, n, note, over, from, "apply",
                         display, pick_row_label(row_label, stage),
                         events = events, unit = unit, count = count)
-  add_details(x, details)
+  add_kind(add_details(x, details), kind)
 }
 
 #' Add the outcome or measurement at the end of each branch
@@ -877,7 +895,7 @@ flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
 flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
                          display = "all", from = NULL, row_label = NULL,
                          events = NULL, join = NULL, unit = NULL,
-                         count = NULL, details = NULL) {
+                         count = NULL, details = NULL, kind = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
@@ -886,6 +904,7 @@ flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
   }
   check_count_col(.flow, count)
   check_details_arg(details)
+  check_kind_arg(kind)
   groups <- NULL
   if (!isFALSE(join)) {
     targets <- resolve_targets(.flow, from)
@@ -905,7 +924,7 @@ flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
                         display, pick_row_label(row_label, stage),
                         groups = groups, join = "measure", events = events,
                         unit = unit, count = count)
-  add_details(x, details)
+  add_kind(add_details(x, details), kind)
 }
 
 # Whether flow_outcome() draws one shared box for `targets` (see its Details).

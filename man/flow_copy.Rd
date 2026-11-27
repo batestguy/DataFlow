@@ -16,7 +16,8 @@ flow_copy(
   by = NULL,
   unit = NULL,
   count = NULL,
-  details = NULL
+  details = NULL,
+  kind = NULL
 )
 }
 \arguments{
@@ -84,6 +85,18 @@ the whole step and a label names every new box with that label. For
 \code{\link[=flow_exclude]{flow_exclude()}} the new boxes are its exclusion boxes. Details are
 drawn as a numbered key under the diagram (see \code{\link[=flow_layout]{flow_layout()}}) and
 always given in \code{\link[=flow_describe]{flow_describe()}}; change them with \code{\link[=flow_edit]{flow_edit()}}.}
+
+\item{kind}{Optional: was this step done to physical things
+(\code{"physical"}: animals, samples, people) or to data (\code{"data"}: cleaning,
+coding, merging records)? Given like \code{details}: one value for the whole
+step, or a list (or character vector) with one entry per new box
+(\code{NULL} or \code{NA} for none) or entries named by box label, with the name
+\code{step} for the whole step, e.g. \code{list(step = "data", "Site B" = "physical")}. A box's own kind wins over its step's; a box never takes
+the kind of the box above it. Boxes of a step done to data are drawn
+with a dashed edge, and a key under the diagram says what the edges
+mean (see \code{show_kind_key} in \code{\link[=flow_layout]{flow_layout()}}); \code{\link[=flow_describe]{flow_describe()}} names
+the steps. \code{NULL} (the default) sets nothing, and a flow without kinds
+is drawn as before. Change it later with \code{\link[=flow_edit]{flow_edit()}}.}
 }
 \value{
 The updated \code{studydesignflow}.

@@ -64,6 +64,16 @@
 #'   inches). Boxes keep their size; rows with a marker get a longer gap
 #'   above them where needed, as for the method. The details are always in
 #'   the description ([flow_describe()]).
+#' @param show_kind_key Draw the key of kinds of step under the diagram? On
+#'   by default. Boxes of a step done to data (`kind = "data"` on the verbs,
+#'   see [flow_split()]) are drawn with a dashed edge whatever this says; the
+#'   key, shown when some box is done to data, is a small dashed sample box
+#'   followed by its meaning in words ("Dashed edge: a step done to data"),
+#'   so it does not rely on colour. There is no line for solid edges: boxes
+#'   without a kind are solid too, so steps set to `"physical"` are named in
+#'   the description ([flow_describe()]) but not in the key. With step
+#'   details, this key comes first, above theirs. Without a data step there
+#'   is no key and nothing changes.
 #' @return A `studydesignflow_layout`: a list of data frames `boxes`, `side`
 #'   (exclusion boxes), `segments`, `brackets` and `row_labels`, plus
 #'   `extent` (xmin, xmax, ymin, ymax) and `size` (natural width and height
@@ -71,7 +81,13 @@
 #'   of the key (`entry` number, `text`, `face`, `size`, left edge `x`,
 #'   centre `y`, measured width `w`, and its rectangle `xmin` to `ymax`);
 #'   `boxes` and `side` then have a `detail` column (the box's number, `NA`
-#'   for none) and `row_labels` the columns `detail` and `detail_y`.
+#'   for none) and `row_labels` the columns `detail` and `detail_y`. In a
+#'   flow where some step was given a `kind`, `boxes` and `side` have a
+#'   `kind` column (`"physical"`, `"data"`, or `NA` for none), and, when the
+#'   key of kinds is drawn, `kind_key` has one row per line of it (`kind`,
+#'   `text`, `size`, left edge `x`, centre `y`, width `w`, the sample box
+#'   `sxmin` to `symax` with its `linetype`, and the rectangle of the whole
+#'   line `xmin` to `ymax`).
 #' @export
 #' @examples
 #' lay <- flow_start("Cultures", n = 100) |>
@@ -88,7 +104,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                         show_method = TRUE,
                         copy_format = "the same {n} as above",
                         copy_none = "copied from the box above",
-                        show_details = TRUE) {
+                        show_details = TRUE, show_kind_key = TRUE) {
   validate_studydesignflow(x)
   connector <- match.arg(connector)
   if (!isTRUE(show_method) && !isFALSE(show_method)) {
@@ -96,6 +112,9 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   }
   if (!isTRUE(show_details) && !isFALSE(show_details)) {
     stop("`show_details` must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (!isTRUE(show_kind_key) && !isFALSE(show_kind_key)) {
+    stop("`show_kind_key` must be TRUE or FALSE.", call. = FALSE)
   }
   # step details as a numbered key (R/details.R): the numbers follow the
   # left-to-right order of a first layout with the same settings
@@ -108,7 +127,7 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
                   connector = connector, side_format = side_format,
                   side_gap = side_gap, show_method = show_method,
                   copy_format = copy_format, copy_none = copy_none,
-                  show_details = FALSE)
+                  show_details = FALSE, show_kind_key = FALSE)
     })
   }
   st <- x$stages
@@ -620,6 +639,11 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     boxes$detail <- unname(marks$boxes[as.character(boxes$id)])
     side$detail <- unname(marks$side[as.character(side$id)])
   }
+  # kinds of step (R/kind.R): data steps are drawn with a dashed edge
+  if (!is.null(x$kind)) {
+    boxes$kind <- unname(box_kinds(x)[as.character(boxes$id)])
+    side$kind <- unname(side_kinds(x)[as.character(side$id)])
+  }
   margin <- 0.1
   xmin <- (if (any(has_rl)) rl_x else min(boxes$xmin)) - margin
   xmax <- max(c(boxes$xmax, side$xmax)) + margin
@@ -637,6 +661,19 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     params = list(base_size = base_size, family = family,
                   note_size = note_size)
   )
+  # the key of kinds of step, under the diagram (above the key of details),
+  # left-aligned with the row labels
+  kkey <- if (show_kind_key && !is.null(x$kind)) {
+    kind_key(c(boxes$kind, side$kind), xmin + margin, ymin - 0.1, note_size,
+             measure_family)
+  }
+  if (!is.null(kkey)) {
+    xmax <- max(xmax, max(kkey$xmax) + margin)
+    ymin <- min(kkey$ymin) - margin
+    out$extent <- c(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax)
+    out$size <- c(width = xmax - xmin, height = ymax - ymin)
+    out$kind_key <- kkey
+  }
   if (!is.null(marks)) {
     # the key under the diagram, left-aligned with the row labels, wrapped to
     # the diagram's width (at least 3 inches)

@@ -13,7 +13,8 @@
 #'
 #' @param object,x A `studydesignflow` object.
 #' @param ... Passed to [flow_layout()] (e.g. `count_format`, `base_size`,
-#'   `hgap`, `vgap`, `connector`, `show_method`, `show_details`).
+#'   `hgap`, `vgap`, `connector`, `show_method`, `show_details`,
+#'   `show_kind_key`).
 #' @param fill,colour Box fill and border colour.
 #' @param outcome_fill Fill for outcome boxes at the end of each branch.
 #' @param linewidth Line width for boxes and connectors.
@@ -40,6 +41,20 @@ autoplot.studydesignflow <- function(object, ..., fill = "white", colour = "blac
   }
   bx <- lay$boxes
   bx$fill <- ifelse(bx$type == "outcome", outcome_fill, fill)
+  # kinds of step (R/kind.R): boxes of a step done to data have a dashed
+  # edge; without kinds the boxes are drawn exactly as before
+  edge <- function(k) ifelse(!is.na(k) & k == "data", "dashed", "solid")
+  rect_layer <- function(data, fill) {
+    xy <- ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax,
+                       ymin = .data$ymin, ymax = .data$ymax)
+    if (!"kind" %in% names(data)) {
+      ggplot2::geom_rect(data = data, xy, fill = fill, colour = colour,
+                         linewidth = linewidth)
+    } else {
+      ggplot2::geom_rect(data = data, xy, fill = fill, colour = colour,
+                         linewidth = linewidth, linetype = edge(data$kind))
+    }
+  }
   sg <- lay$segments
   ex <- lay$extent
   ps <- lay$params
@@ -65,12 +80,7 @@ autoplot.studydesignflow <- function(object, ..., fill = "white", colour = "blac
       ggplot2::aes(x = .data$x, y = .data$y, group = .data$group),
       linewidth = linewidth, colour = colour
     ) +
-    ggplot2::geom_rect(
-      data = bx,
-      ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin,
-                   ymax = .data$ymax),
-      fill = bx$fill, colour = colour, linewidth = linewidth
-    ) +
+    rect_layer(bx, bx$fill) +
     ggplot2::geom_text(
       data = bx,
       ggplot2::aes(x = .data$x, y = .data$text_y, label = .data$text),
@@ -80,12 +90,7 @@ autoplot.studydesignflow <- function(object, ..., fill = "white", colour = "blac
   sb <- lay$side
   if (nrow(sb) > 0) {
     p <- p +
-      ggplot2::geom_rect(
-        data = sb,
-        ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = .data$ymin,
-                     ymax = .data$ymax),
-        fill = fill, colour = colour, linewidth = linewidth
-      ) +
+      rect_layer(sb, fill) +
       ggplot2::geom_text(
         data = sb,
         ggplot2::aes(x = .data$text_x, y = .data$text_y, label = .data$text),
@@ -138,6 +143,25 @@ autoplot.studydesignflow <- function(object, ..., fill = "white", colour = "blac
       size = ps$note_size, size.unit = "pt", family = ps$family,
       hjust = 0, colour = colour
     )
+  }
+  # the key of kinds of step: a sample box with a solid or dashed edge, then
+  # its meaning in words
+  kk <- lay$kind_key
+  if (!is.null(kk)) {
+    p <- p +
+      ggplot2::geom_rect(
+        data = kk,
+        ggplot2::aes(xmin = .data$sxmin, xmax = .data$sxmax,
+                     ymin = .data$symin, ymax = .data$symax),
+        fill = fill, colour = colour, linewidth = linewidth,
+        linetype = kk$linetype
+      ) +
+      ggplot2::geom_text(
+        data = kk,
+        ggplot2::aes(x = .data$x, y = .data$y, label = .data$text),
+        size = kk$size, size.unit = "pt", family = ps$family,
+        hjust = 0, colour = colour
+      )
   }
   if (!is.null(lay$key)) {
     p <- p + ggplot2::geom_text(

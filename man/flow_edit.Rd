@@ -15,7 +15,8 @@ flow_edit(
   excluded = FALSE,
   events = NULL,
   unit = NULL,
-  details = NULL
+  details = NULL,
+  kind = NULL
 )
 }
 \arguments{
@@ -31,8 +32,8 @@ matches several boxes, give one value only (or use ids). \code{NULL} leaves it u
 note. Counts are drawn as given, like typed counts.}
 
 \item{stage, row_label}{To change a step instead of boxes: the stage name,
-and its new row label (\code{""} hides it). With \code{stage}, give \code{row_label},
-\code{details}, or both.}
+and its new row label (\code{""} hides it). With \code{stage}, give one or more
+of \code{row_label}, \code{details} and \code{kind}.}
 
 \item{excluded}{If \code{TRUE}, \code{box} names exclusion boxes.}
 
@@ -49,6 +50,12 @@ the unit of the box above again; \code{""} gives it none.}
 With \code{box}: one for all chosen boxes, or a list with one per box; a box's
 own details are for where it differs from its step. \code{NA} removes the
 details (of the step, or of the boxes).}
+
+\item{kind}{Whether a step or box was done to physical things
+(\code{"physical"}) or to data (\code{"data"}; see \code{\link[=flow_split]{flow_split()}}). With \code{stage}:
+one value for that step. With \code{box}: one value for all chosen boxes, or
+one per box; a box's own kind is for where it differs from its step.
+\code{NA} removes the kind (of the step, or of the boxes).}
 }
 \value{
 The updated \code{studydesignflow}.

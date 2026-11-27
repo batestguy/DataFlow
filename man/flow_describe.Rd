@@ -27,7 +27,10 @@ measured in every branch, drawn as one box joined from ...". Step details
 (see \code{\link[=step_details]{step_details()}}) follow the sentence of their step, e.g. "Done by
 trained enumerators, with tablet questionnaire (CSPro), March to May 2025,
 in Kaduna State; how: two visits per household.", and "For Village B:
-done with paper forms." for a box with its own. For a
+done with paper forms." for a box with its own. Kinds of step (\verb{kind =}
+on the verbs) are named after the steps, e.g. "Steps done to data (drawn
+with a dashed edge): Cleaning; Linkage.", with boxes whose own kind
+differs from their step's listed after. For a
 flow with data, a last sentence names the data frame(s) the counts were
 computed from.
 }
