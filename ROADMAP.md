@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ all 117 drawn, read blind and graded (core 2026-11-25, other 71 2026-11-26); user has not seen the pictures of the 71 | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) and 7j (one measurement box, approved 2026-11-27) merged into `main`; 7b units next in order | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) and 7j (one measurement box, approved 2026-11-27) merged into `main`; 7b units built on branch `m7b`, not yet approved | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -278,7 +278,7 @@ correctly. Names below are proposals, settled in the design of each part.
 |---|---|---|---|
 | 7-0 Number check 🟡 (first; moved from milestone 8 on 2026-11-25) | Numbers that do not add up, reasons that do not sum, splits larger than their parent | `flow_check()`, run by the user; reports, never edits or blocks | Designed with 7a and 7b: copies and changes of unit must not be reported |
 | 7a Copies (after 7i) ✅ approved 2026-11-26 | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
-| 7b Units | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
+| 7b Units (🟡 built 2026-11-27, not yet approved) | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
 | 7c Step details | Tool or instrument, who, dates, method | `details =` with fixed fields after Datasheets and Croissant; drawn as a note or a numbered key; always in the description | Long text; layout height |
 | 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
 | 7e Linking | Two sources joined record by record | `flow_link()`: linked box plus unmatched from each side; from data by key | Read GUILD first; one-to-many links; matching errors are typed |
@@ -448,11 +448,24 @@ since the data may not reflect the whole design.
 ## Known limitations (current)
 
 - Typed counts are drawn as typed; `flow_check()` reports what does not add
-  up, but a clean report does not show the numbers are right. Until copies
-  (7a) and units (7b) exist it reports correct designs as problems when a
-  split holds the same units several times or counts another unit (textbook
-  designs D08 and E04). After an exclusion, a next box that counts fewer of
-  another unit is also reported as a problem. Fold grids are not checked.
+  up, but a clean report does not show the numbers are right. It skips
+  comparisons across a change of unit only when the units are given
+  (`unit =`, part 7b); without them it still reports correct designs whose
+  boxes count another unit (textbook designs D08 and E04, written before
+  7b), and after an exclusion a next box that counts fewer of another unit
+  is reported as a problem. Fold grids are not checked.
+- Units (part 7b) are used as given: no singular or plural ("1 sites"),
+  no translation. A box with a unit under a box without one counts as a
+  change of unit, so `flow_check()` does not compare them. A box joined
+  from boxes of different units (pool, bracket, outcome) has no unit unless
+  given one; an outcome keeps one box per branch when the branches' units
+  differ. A pool of sources that count different columns (data mode)
+  counts the flow-level `count`, or rows. A custom `count_format` without
+  "n = {n}" or `{unit}` drops the unit. A step's unit is inherited by every
+  step below until changed, so forgetting `unit =` at a change of quantity
+  labels the new count with the old unit. An exclusion box in data mode counts as the box it hangs off
+  (`flow_exclude()` has `unit =` but no `count =`). `flow_from_data()` has
+  one `count` for the whole flow, and fold grids have no units.
 - A note whose lines start in lower case is described as one wrapped
   sentence, so a list of lower-case items on lines of their own is read
   without commas. In data mode counts are computed, but only for steps given
@@ -511,8 +524,9 @@ since the data may not reflect the whole design.
   7.5 x 10.2 in); journals scale figures, or use a smaller `base_size`.
 - Exclusion boxes always sit to the right of the line they hang off. Long
   reasons are not wrapped, so many wide exclusion boxes make wide diagrams.
-- Reasons are listed with an ASCII "- " and a fixed "(n = ...)"; they do not
-  follow `count_format` or `side_format`.
+- Reasons are listed with an ASCII "- " and a fixed "(n = ...)" (or
+  "(5 households)" with a unit); they do not follow `count_format` or
+  `side_format`.
 - Where a bracket joins boxes that have exclusion boxes below them, the join
   is drawn as a plain horizontal line under the exclusion boxes (no end
   ticks).
@@ -1199,3 +1213,60 @@ what is still open.
   `db8ac5f` with 6b, pushed. CI run 45939805071 green on all 5 platforms.
   Today's small changes after the review were not reviewed again.
 - Next: 7b units.
+
+### 2026-11-27 — Part 7b: units built (not yet approved)
+- What changed: `unit =` on every verb that makes boxes (`flow_start`,
+  `flow_split`, `flow_assign`, `flow_cluster`, `flow_select`, `flow_apply`,
+  `flow_outcome`, `flow_pool`, `flow_copy`, `flow_partition`,
+  `flow_exclude`) and in `flow_edit()`; recycled like `n`. New file
+  `R/units.R`. Units are stored only when given (`x$units`, `x$side_units`,
+  named by box id) and resolved when read (`box_units()`, `side_units()`):
+  a box without its own takes the unit of the box above; joined boxes take
+  their sources' unit when all agree; `""` stops a unit. Boxes read
+  "(50 cultures)", exclusion boxes "Refused (12 households)" with reasons
+  "- Declined (5 households)", copies "the same 30 casks as above", events
+  "(412 patients; events = 37)". In user formats `"n = {n}"` becomes
+  `"{n} {unit}"`, and `{unit}` is a placeholder. `flow_nodes()` gets a
+  `unit` column only when units are used. Descriptions use the units and
+  add "; counted in casks" where a stage changes from one given unit to
+  another. `flow_check()` skips (does not report or count) comparisons
+  across a change of unit. Data mode: `count =` on the same verbs (not
+  `flow_exclude()`) names the column whose distinct values a step counts,
+  inherited down (`x$data$counts`, `box_count_cols()`); `count_rows()`,
+  `count_events()` and `warn_shared_ids()` take the column; described as
+  "from the Village row on, of distinct values of `household`".
+- Checked: the 323-design capture (`dev/m7b/reg.R`, `dev/m7b/cmp.R`; `main`
+  captured from a worktree) is identical on `main` and `m7b` for all 323
+  designs in all four parts (object, elbow layout, straight layout,
+  description). Full tests 13,084 pass, 0 fail, 0 warnings; no snapshot
+  changed. New `tests/testthat/test-units.R` (78 expectations). Stress test
+  with random units (`dev/m7b/stress.R`, seed 20261122): 400 designs, 1,375
+  units given, 0 overlaps and 0 lines through boxes. Data-mode counts
+  checked against base R (9 and 11 households, 20 and 25 adults). Renders
+  looked at: `dev/m7b/f01_units.png`, `survey_units.png`,
+  `trial_nounits.png`, `data_count_household.png` (`dev/m7b/render.R`).
+  F01 with units checks clean (1 comparison); without units it gives the
+  same 2 notes as on `main` (they are notes, not problems).
+  `flow_check()` output identical on `main` and `m7b` for 324 designs
+  without units (`dev/m7b/check_cap.R`; 60 have findings). Package check:
+  0 errors, 0 warnings, 0 notes (`dev/m7b/check.log`).
+- Open: user approval of the pictures and descriptions; independent review;
+  the textbook scripts in `notes/` do not yet use units; commit, merge,
+  push, CI.
+
+### 2026-11-27 — Part 7b: review findings fixed
+- Independent review (same model family): no blocking fault; core
+  inheritance and data-mode `count =` confirmed by its own fuzz test (150
+  data flows, 524 steps, every count equal to a base-R recount, 0 false
+  problems in `flow_check()`). Four things to fix, all fixed with tests: a
+  stray carriage-return byte in `R/check.R` (would have rewritten the file's
+  line endings in git); outcomes joined across branches with different
+  inherited units (now kept apart; `join = TRUE` is an error); a copy in a
+  new unit called "the same ... as above"; `flow_edit(stage =, unit =)`
+  ignoring box fields (now an error). The `count` help now says to give
+  `unit` too when the count column changes; limitations updated.
+- Checked after the fixes: 323 of 323 earlier designs identical to `main`
+  (objects, both layouts, descriptions); full tests pass, 0 fail; package
+  check 0 errors, 0 warnings, 0 notes.
+- Open: the user has not seen the pictures (`dev/m7b/f01_units.png`,
+  `survey_units.png`, `data_count_household.png`); then commit, merge, push.

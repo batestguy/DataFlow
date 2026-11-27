@@ -50,6 +50,12 @@ An outcome drawn once for several branches (\code{\link[=flow_outcome]{flow_outc
 measurement, not a pool: its count may be of all the branches together or
 that of each branch, and any other count gives a note, never a problem.
 
+Counts are never compared across a change of unit: where a box counts
+something else than the box above it (\verb{unit =} on the verbs, see
+\code{\link[=flow_split]{flow_split()}}), such as casks under deliveries, the two are not compared,
+and that comparison is not counted as made or as not possible. A box with
+a unit under a box without one is a change of unit too.
+
 Sampling steps (\code{\link[=flow_cluster]{flow_cluster()}}, \code{\link[=flow_select]{flow_select()}}) and summary boxes are not
 compared, except that a selection larger than its source is reported. Missing
 counts and counts that are not plain numbers cannot be compared; the number

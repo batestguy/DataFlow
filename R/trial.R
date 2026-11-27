@@ -24,13 +24,14 @@
 flow_assign <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                         method = "random", from = NULL, row_label = NULL,
                         display = "all", summary = "{k} {stage}",
-                        by = NULL) {
+                        by = NULL, unit = NULL, count = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
   split_boxes(.flow, stage, labels, n, note, from,
               pick_row_label(row_label, stage), "assign", display,
-              method = check_method(method), summary = summary, by = by)
+              method = check_method(method), summary = summary, by = by,
+              unit = unit, count = count)
 }
 
 # A method as stored on the stage: NA for none.
@@ -71,6 +72,12 @@ check_method <- function(method) {
 #' @param where For a flow with data (see [flow_start()]): a one-sided
 #'   formula, e.g. `~ is.na(outcome)`, for an exclusion box without reasons.
 #'   Matching rows leave the flow; the count is computed.
+#' @param unit Optional text saying what the count of each exclusion box
+#'   counts, e.g. `"households"`: one value, or one per box. By default an
+#'   exclusion box takes the unit of the box it hangs off. With a unit the
+#'   box reads "Excluded (12 households)" and its reasons "- Refused
+#'   (5 households)". In a flow with data, an exclusion box counts as the box
+#'   it hangs off does.
 #' @section Counts from data: In a flow with data, `reasons` may instead be
 #'   a named list of one-sided formulas, e.g.
 #'   `list("Under 18" = ~ age < 18, "Declined" = ~ consent == "no")`,
@@ -98,7 +105,7 @@ check_method <- function(method) {
 #'   flow_split("Randomisation", "Randomised", n = 300)
 flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
                          note = NULL, stage = NULL, from = NULL,
-                         where = NULL) {
+                         where = NULL, unit = NULL) {
   check_flow(.flow)
   targets <- resolve_targets(.flow, from)
   if (!all(targets %in% .flow$leaves)) {
@@ -133,6 +140,7 @@ flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
   }
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")
+  unit_vals <- if (!is.null(unit)) recycle_values(format_unit(unit), k, "unit")
   reason_list <- if (is.list(reasons)) {
     if (length(reasons) != k) {
       stop("`reasons` is a list of ", length(reasons), " but there are ", k,
@@ -191,6 +199,7 @@ flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
       }
     }
   }
+  if (!is.null(unit_vals)) x <- set_units(x, ids, unit_vals, "side_units")
   validate_studydesignflow(x)
 }
 
@@ -216,9 +225,12 @@ exclude_from_data <- function(x, targets, n, reasons, where,
     }
   }
   rows <- rows_of_targets(x, targets, "An exclusion computed from data")
+  cols <- box_count_cols(x)
   out <- list(n = numeric(), rows = list(), reasons = NULL)
   for (i in seq_along(targets)) {
     r <- rows[[i]]
+    # counted as the box it hangs off counts
+    col <- cols[[as.character(targets[i])]]
     if (formula_reasons) {
       first <- integer(length(r))
       for (j in seq_along(reasons)) {
@@ -227,7 +239,7 @@ exclude_from_data <- function(x, targets, n, reasons, where,
       }
       gone <- r[first > 0L]
       counts <- vapply(seq_along(reasons), function(j) {
-        count_rows(x, r[first == j])
+        count_rows(x, r[first == j], col)
       }, numeric(1))
       out$reasons[[i]] <- data.frame(label = nm, n = format_n(counts),
                                      stringsAsFactors = FALSE)
@@ -236,8 +248,9 @@ exclude_from_data <- function(x, targets, n, reasons, where,
     }
     warn_shared_ids(x, list(gone, setdiff(r, gone)), paste0(
       "the rows excluded under \"",
-      x$nodes$label[x$nodes$id == targets[i]], "\" and those that continue"))
-    out$n[i] <- count_rows(x, gone)
+      x$nodes$label[x$nodes$id == targets[i]], "\" and those that continue"),
+      col)
+    out$n[i] <- count_rows(x, gone, col)
     out$rows[[i]] <- gone
   }
   out

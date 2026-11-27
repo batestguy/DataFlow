@@ -11,7 +11,8 @@ flow_start(
   stage = NULL,
   data = NULL,
   count = NULL,
-  events = NULL
+  events = NULL,
+  unit = NULL
 )
 }
 \arguments{
@@ -44,7 +45,9 @@ patients, when there is one row per visit). Rows with a missing value
 in that column are not counted. If one value has rows in two boxes made
 from the same box (e.g. a patient with visits in two arms, or with some
 visits excluded and others not), the counts of those boxes add up to
-more than the box above; studydesignflow warns when this happens.}
+more than the box above; studydesignflow warns when this happens. A
+later step can count another column with its own \verb{count =} (see
+\code{\link[=flow_split]{flow_split()}}).}
 
 \item{events}{Outcome events, shown with the count of each box as
 "(n = 412; events = 37)", as asked for prediction-model studies
@@ -59,6 +62,11 @@ when some are left in its end boxes (exclude them, e.g. with
 label. Exclusion boxes do not show events. \code{count_format = "{label}: n = {n}; {events} with and {non_events} without the outcome"} shows both numbers, as TRIPOD+AI
 item 20a asks (typed: \code{n} minus events; with \code{count}, a unit with rows
 of both kinds is counted in both).}
+
+\item{unit}{Optional text saying what the count counts, e.g.
+\code{"villages"}: one value, or one per label. The box then reads
+"(40 villages)" instead of "(n = 40)", and the boxes below take the
+same unit until a step gives another (see \code{\link[=flow_split]{flow_split()}}).}
 }
 \value{
 A \code{studydesignflow} object.
@@ -75,6 +83,11 @@ continues on a later row. \code{\link[=flow_pool]{flow_pool()}} joins streams.
 }
 \examples{
 flow_start("Cultures", n = 100)
+
+# what each number counts
+flow_start("Villages sampled", n = 40, unit = "villages") |>
+  flow_select("Households", "20 per village", n = 800,
+              unit = "households")
 
 # counts from a data frame
 people <- data.frame(id = 1:6, age = c(17, 25, 40, 33, 15, 52))

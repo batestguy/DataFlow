@@ -15,7 +15,9 @@ flow_partition(
   time = NULL,
   from = NULL,
   row_label = NULL,
-  events = NULL
+  events = NULL,
+  unit = NULL,
+  count = NULL
 )
 }
 \arguments{
@@ -52,6 +54,24 @@ labelled above it).}
 \item{events}{Optional typed numbers of outcome events per new box,
 recycled like \code{n}. In a flow started with \verb{events =} as a formula they
 are computed instead; typed values win and are marked as typed.}
+
+\item{unit}{Optional text saying what the counts of the new boxes count,
+e.g. \code{"households"}: one value for all, or one per box, recycled like
+\code{n}. A box with a unit reads "(800 households)" instead of
+"(n = 800)"; in a \code{count_format} or \code{side_format} of \code{\link[=flow_layout]{flow_layout()}},
+\code{"n = {n}"} becomes \code{"{n} {unit}"}, and \code{{unit}} may be used directly.
+The unit is used as given (no singular or plural). Boxes without a unit
+of their own take that of the box above them; a box joined from several
+boxes takes theirs if they all agree. \code{""} stops a unit from above.
+\code{\link[=flow_check]{flow_check()}} does not compare counts across a change of unit.}
+
+\item{count}{For a flow with data (see \code{\link[=flow_start]{flow_start()}}): a column whose
+distinct non-missing values the computed counts of this step count, e.g.
+\code{count = "household"} when the rows are people. Boxes below count the
+same column until a step gives another. \code{NULL} (the default) keeps
+counting as the box above does. It does not set \code{unit}: give \code{unit} too
+when the count column changes, so the picture says what is counted and
+\code{\link[=flow_check]{flow_check()}} does not compare the counts with those above.}
 }
 \value{
 The updated \code{studydesignflow}.

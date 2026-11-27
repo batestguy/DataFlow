@@ -155,6 +155,11 @@ validate_studydesignflow <- function(x) {
     stop("Every exclusion reason must belong to an exclusion box.",
          call. = FALSE)
   }
+  # units and count columns (R/units.R), present only when given
+  check_unit_store(x$units, nd$id, "units of boxes")
+  check_unit_store(x$side_units, (sd %||% empty_side())$id,
+                   "units of exclusion boxes")
+  check_unit_store(x$data$counts, nd$id, "count columns of boxes")
   invisible(x)
 }
 
@@ -166,7 +171,9 @@ validate_studydesignflow <- function(x) {
 #' @return A data frame with one row per box: `id`, `stage` (the stage name),
 #'   `label`, `n`, `note`, `leaf` (`TRUE` if the next verb will attach to
 #'   it by default), `n_edited` (`TRUE` if its count was changed with
-#'   [flow_edit()]), and `events` (outcome events, if any).
+#'   [flow_edit()]), and `events` (outcome events, if any). In a flow where
+#'   some step was given a `unit`, also `unit`: what each box's count counts,
+#'   its own or taken from the box above (`NA` for none).
 #' @export
 #' @examples
 #' flow_start("Participants", n = 120) |>
@@ -175,7 +182,7 @@ validate_studydesignflow <- function(x) {
 flow_nodes <- function(x) {
   validate_studydesignflow(x)
   nd <- x$nodes
-  data.frame(
+  out <- data.frame(
     id = nd$id,
     stage = x$stages$name[match(nd$stage, x$stages$id)],
     label = nd$label,
@@ -187,6 +194,8 @@ flow_nodes <- function(x) {
       unname(x$events[as.character(nd$id)]),
     stringsAsFactors = FALSE
   )
+  if (!is.null(x$units)) out$unit <- unname(box_units(x)[as.character(nd$id)])
+  out
 }
 
 #' @export

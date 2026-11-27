@@ -127,11 +127,13 @@ eval_condition <- function(x, ids, f, arg, keep_na = FALSE) {
 }
 
 # The count shown for a set of rows: rows, or distinct non-missing values of
-# the count column. NULL rows (no data behind the box) give NA.
-count_rows <- function(x, ids) {
+# the count column `col` (by default the flow's; a box's own is given by
+# box_count_cols(), NA meaning rows). NULL rows (no data behind the box)
+# give NA.
+count_rows <- function(x, ids, col = x$data$count) {
   if (is.null(ids)) return(NA_real_)
-  if (is.null(x$data$count)) return(length(ids))
-  v <- data_values(x, ids, x$data$count)
+  if (is.null(col) || is.na(col)) return(length(ids))
+  v <- data_values(x, ids, col)
   length(unique(v[!is.na(v)]))
 }
 
@@ -140,13 +142,14 @@ left_rows <- function(x, id) x$data$rows$left[[as.character(id)]]
 
 # Record the rows behind new boxes (NULL for none).
 set_rows <- function(x, ids, rows) {
+  cols <- if (!is.null(x$data$events)) box_count_cols(x)
   for (i in seq_along(ids)) {
     key <- as.character(ids[i])
     x$data$rows$box[key] <- list(rows[[i]])
     x$data$rows$left[key] <- list(rows[[i]])
     # outcome events among the rows, when flow_start(events =) was given
     if (!is.null(x$data$events) && !is.null(rows[[i]])) {
-      ev <- count_events(x, rows[[i]])
+      ev <- count_events(x, rows[[i]], cols[[key]])
       x$events[key] <- format_n(ev[["events"]])
       x$non_events[key] <- format_n(ev[["non_events"]])
     }
@@ -271,10 +274,21 @@ describe_data <- function(x) {
   } else {
     ""
   }
+  # count columns given to steps (`count =`): "from the Households row on"
+  steps <- if (!is.null(dd$counts)) {
+    st_of <- x$nodes$stage[match(as.integer(names(dd$counts)), x$nodes$id)]
+    key <- unique(data.frame(stage = st_of, col = unname(dd$counts)))
+    key <- key[order(match(key$stage, x$stages$id)), ]
+    paste0(if (!is.null(dd$count)) "; " else ", ",
+           and_list(paste0("from the ",
+                           x$stages$name[match(key$stage, x$stages$id)],
+                           " row on, of distinct values of `", key$col, "`")))
+  }
   paste0("Counts were computed from the data frame",
          if (length(each) > 1) "s", " ", and_list(each),
          if (!is.null(dd$count)) paste0(", as numbers of distinct values of `",
                                         dd$count, "`"),
+         steps,
          if (nrow(tc) > 0) paste0(", except ", nrow(tc), " typed by hand: ",
                                   and_list(paste0(flat(tc$label), " (",
                                                   tc$what, " = ", tc$n,
@@ -351,9 +365,8 @@ flow_from_data <- function(data, levels, label = "All", count = NULL,
 # several boxes made from one box (sibling boxes, or an exclusion box and the
 # rows that continue). Their counts then add up to more than the box above.
 # Warn, so the arithmetic is not silently off.
-warn_shared_ids <- function(x, sets, what) {
-  col <- x$data$count
-  if (is.null(col) || length(sets) < 2) return(invisible())
+warn_shared_ids <- function(x, sets, what, col = x$data$count) {
+  if (is.null(col) || is.na(col) || length(sets) < 2) return(invisible())
   vals <- lapply(sets, function(r) {
     v <- data_values(x, r, col)
     unique(as.character(v[!is.na(v)]))

@@ -51,9 +51,10 @@
 #'   flow_nodes()
 flow_copy <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                       from = NULL, row_label = NULL, events = NULL,
-                      by = NULL) {
+                      by = NULL, unit = NULL, count = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
+  check_count_col(.flow, count)
   targets <- resolve_targets(.flow, from)
   st_of <- match(.flow$nodes$stage[match(targets, .flow$nodes$id)],
                  .flow$stages$id)
@@ -63,7 +64,8 @@ flow_copy <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
          "below it.", call. = FALSE)
   }
   if (!is.null(by)) {
-    sp <- split_by(.flow, targets, by, labels, "all", n, warn_shared = FALSE)
+    sp <- split_by(.flow, targets, by, labels, "all", n, warn_shared = FALSE,
+                   count = count)
     targets <- targets[sp$keep]
     labels <- sp$labels[sp$keep]
     n <- sp$n[sp$keep]
@@ -84,15 +86,21 @@ flow_copy <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
            "rows have its rows, and their counts are computed.", call. = FALSE)
     }
     if (is.null(n)) {
+      cols <- if (has_data(.flow)) box_count_cols(.flow)
       n <- lapply(seq_along(targets), function(i) {
-        if (isTRUE(with_rows[i])) format_n(count_rows(.flow, rows[[i]]))
-        else left_count_text(.flow, targets[i])
+        if (isTRUE(with_rows[i])) {
+          col <- count %||% cols[[as.character(targets[i])]]
+          format_n(count_rows(.flow, rows[[i]], col))
+        } else {
+          left_count_text(.flow, targets[i])
+        }
       })
     }
     child_rows <- if (has_data(.flow)) rep(rows, k)
   }
   x <- split_boxes(.flow, stage, labels, n, note, targets,
-                   pick_row_label(row_label, stage), "copy", "all")
+                   pick_row_label(row_label, stage), "copy", "all",
+                   unit = unit, count = count)
   ids <- x$nodes$id[x$nodes$stage == max(x$stages$id)]
   if (has_data(x)) x <- set_rows(x, ids, child_rows)
   # typed events after the rows, so that typed values win

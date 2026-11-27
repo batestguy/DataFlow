@@ -14,11 +14,11 @@
 # Numbers of rows (or `count` units) among `rows` with and without the
 # event. Rows where the outcome is missing (the formula gives NA) are
 # neither: they count in n only.
-count_events <- function(x, rows) {
+count_events <- function(x, rows, col = x$data$count) {
   if (length(rows) == 0) return(c(events = 0, non_events = 0))
   v <- eval_condition(x, rows, x$data$events, "events", keep_na = TRUE)
-  c(events = count_rows(x, rows[!is.na(v) & v]),
-    non_events = count_rows(x, rows[!is.na(v) & !v]))
+  c(events = count_rows(x, rows[!is.na(v) & v], col),
+    non_events = count_rows(x, rows[!is.na(v) & !v], col))
 }
 
 # Rows of all data frames whose outcome is missing under `events`.
@@ -121,14 +121,14 @@ warn_events <- function(x, ids) {
 flow_partition <- function(.flow, stage = "Data split", labels = NULL,
                            n = NULL, note = NULL, by = NULL, group = NULL,
                            time = NULL, from = NULL, row_label = NULL,
-                           events = NULL) {
+                           events = NULL, unit = NULL, count = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   if (!is.null(group)) check_string(group, "group")
   if (!is.null(time)) check_string(time, "time")
   x <- split_boxes(.flow, stage, labels, n, note, from,
                    pick_row_label(row_label, stage), "partition", "all",
-                   by = by, events = events)
+                   by = by, events = events, unit = unit, count = count)
   sid <- max(x$stages$id)
   ids <- x$nodes$id[x$nodes$stage == sid]
   checked <- has_data(x) && !is.null(by)

@@ -43,7 +43,8 @@
 #'   flow_pool("Pooled", "Pooled over diet", n = 100, over = "Drug")
 flow_pool <- function(.flow, stage, label, n = NULL, note = NULL,
                       groups = NULL, over = NULL, from = NULL,
-                      row_label = NULL, events = NULL) {
+                      row_label = NULL, events = NULL, unit = NULL,
+                      count = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   if (!is.null(groups)) {
@@ -75,5 +76,6 @@ flow_pool <- function(.flow, stage, label, n = NULL, note = NULL,
   }
   attach_per_group(.flow, stage, label, n, note, over, NULL, "pool", "all",
                    pick_row_label(row_label, stage), groups = groups,
-                   join = "pool", events = events)
+                   join = "pool", events = events, unit = unit,
+                   count = count)
 }
