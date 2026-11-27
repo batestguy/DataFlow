@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ all 117 drawn, read blind and graded (core 2026-11-25, other 71 2026-11-26); user has not seen the pictures of the 71 | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i and 7a (copies, approved 2026-11-26) merged into `main`; 7b units next in order | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) and 7j (one measurement box, approved 2026-11-27) merged into `main`; 7b units next in order | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -287,7 +287,7 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7h Planned and actual | One diagram for protocol and report | `planned =`; "(planned 100; n = 92)" | Data mode fills the actual number |
 | 7i Method in the picture ✅ (added 2026-11-25, second; default on, user 2026-11-26) | How units were assigned or sampled, shown in the figure and not only in the description | `show_method =` on the layout, on by default | Changed four approved pictures (trial, survey, factorial, trial_data); reviewed and accepted |
 
-| 7j One measurement box (added 2026-11-26 by the user, next) | When the same outcome is measured at the end of every branch, draw it once: one box, with arrows from every branch pointing into it, instead of the same box repeated under each branch (seen in D06: eight "Decrease in volume" boxes) | automatic in `flow_outcome()` (user, 2026-11-26: "the only time it shouldn't go to [one box] are repeated measurements and MANOVA"); repeated measurements detected from copies above, several outcomes declared by the user; branches with their own different counts kept separate until the user has seen pictures; converging arrows as in pools, but a measurement, not a pooling of units (own edge kind, described as "measured in every branch", not counted as a pool by `flow_check()`) | Not for designs where the measurement itself differs: repeated measurements of the same units (visits, periods, ages) and several outcomes on the same units (MANOVA) need a different picture: which units, how many times or how many outcomes. Recorded here; designed with 7b units and milestone 9 (time). The lab reference photo draws "600 each" under every branch: keep that possible |
+| 7j One measurement box (added 2026-11-26 by the user; ✅ done, approved 2026-11-27) | When the same outcome is measured at the end of every branch, draw it once: one box, with arrows from every branch pointing into it, instead of the same box repeated under each branch (seen in D06: eight "Decrease in volume" boxes) | automatic in `flow_outcome()` (user, 2026-11-26: "the only time it shouldn't go to [one box] are repeated measurements and MANOVA"); repeated measurements detected from copies above, several outcomes declared by the user; branches with their own different counts kept separate until the user has seen pictures; converging arrows as in pools, but a measurement, not a pooling of units (own edge kind, described as "measured in every branch", not counted as a pool by `flow_check()`) | Not for designs where the measurement itself differs: repeated measurements of the same units (visits, periods, ages) and several outcomes on the same units (MANOVA) need a different picture: which units, how many times or how many outcomes. Recorded here; designed with 7b units and milestone 9 (time). The lab reference photo draws "600 each" under every branch: keep that possible |
 
 **Order (user, 2026-11-25):** 7-0 with the description faults, 7i, 7a, then the
 rest. The 71 extended and edge textbook designs are tested after 7a.
@@ -1195,4 +1195,7 @@ what is still open.
   20+21 separate, typed count separate). Package check 0 errors, 0
   warnings, 0 notes (after restoring the help for `note`, lost when `n`
   got its own help text).
-- Open: user approval of the pictures; then commit, merge, push, CI.
+- Approved by the user (2026-11-27); committed `cd7b4c1`, merged into `main`
+  `db8ac5f` with 6b, pushed. CI run 45939805071 green on all 5 platforms.
+  Today's small changes after the review were not reviewed again.
+- Next: 7b units.
