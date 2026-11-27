@@ -18,7 +18,10 @@
 #'   and `{n}` are replaced; used only for boxes that have a count. Outcome
 #'   events (see [flow_start()]) are added to the count as
 #'   "(n = 412; events = 37)", or placed where `{events}` appears if the
-#'   format has it.
+#'   format has it. For a box with a unit (`unit =` on the verbs, see
+#'   [flow_split()]), `"n = {n}"` reads `"{n} {unit}"`, as in
+#'   "(50 cultures)"; `{unit}` is replaced by the unit, or by nothing for a
+#'   box without one.
 #' @param base_size Font size of box text, in points.
 #' @param family Font family (`""` is the device default sans-serif).
 #' @param hgap,vgap Horizontal gap between boxes and vertical gap between
@@ -33,7 +36,8 @@
 #' @param connector `"elbow"` (right-angled lines, the default) or
 #'   `"straight"` (one straight arrow per box).
 #' @param side_format How an exclusion box's heading and count are combined,
-#'   as in `count_format`. Reasons are listed below it, one per line.
+#'   as in `count_format`. Reasons are listed below it, one per line, with
+#'   their counts as "(n = 5)", or "(5 households)" for a box with a unit.
 #' @param side_gap Length of the arrow from the flow line to an exclusion
 #'   box, in inches.
 #' @param show_method Write how boxes were assigned or sampled (the `method` of
@@ -42,7 +46,8 @@
 #'   description.
 #' @param copy_format The line in italics marking a box made by
 #'   [flow_copy()], which receives all the units of the box above. `{n}` is
-#'   replaced by the box's count. Used only when that count is what is left in
+#'   replaced by the box's count (followed by its unit, if it has one). Used
+#'   only when that count is what is left in
 #'   the box above; otherwise `copy_none` is used. Either may be `NA` for no
 #'   line, though then nothing in the picture says that the boxes are copies.
 #' @param copy_none The line for a copied box whose count is missing or
@@ -73,10 +78,14 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
     stop("`show_method` must be TRUE or FALSE.", call. = FALSE)
   }
   st <- x$stages
-  nd <- copy_notes(x, copy_format, copy_none)
+  units <- box_units(x)
+  nd <- copy_notes(x, copy_format, copy_none, units)
   ed <- x$edges
   sd <- x$side %||% empty_side()
   rs <- x$reasons %||% empty_reasons()
+  # what each count counts, NA for none (R/units.R)
+  unit <- unname(units[as.character(nd$id)])
+  s_unit <- unname(side_units(x, units)[as.character(sd$id)])
   # Height of `k` lines of text. Lines are drawn 1.4453 times the font size
   # apart (R's 1.2 times the size, times the line height of 1.2), so 1.2 per
   # line is too little from five lines on.
@@ -97,13 +106,12 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   text <- ifelse(
     is.na(nd$n), nd$label,
     vapply(seq_len(nrow(nd)), function(i) {
-      out <- gsub("{label}", nd$label[i], count_format, fixed = TRUE)
-      gsub("{n}", nd$n[i], out, fixed = TRUE)
+      fill_count(count_format, nd$label[i], nd$n[i], unit[i])
     }, character(1))
   )
   if (!is.null(x$events) || grepl("{events}", count_format, fixed = TRUE) ||
       grepl("{non_events}", count_format, fixed = TRUE)) {
-    text <- box_text_events(nd, x$events, count_format, x$non_events)
+    text <- box_text_events(nd, x$events, count_format, x$non_events, unit)
   }
   has_note <- !is.na(nd$note)
   note_size <- base_size * 0.85
@@ -124,11 +132,13 @@ flow_layout <- function(x, count_format = "{label}\n(n = {n})",
   # exclusion boxes: heading (with count) then one line per reason
   side_text <- vapply(seq_len(nrow(sd)), function(i) {
     head <- if (is.na(sd$n[i])) sd$label[i] else {
-      out <- gsub("{label}", sd$label[i], side_format, fixed = TRUE)
-      gsub("{n}", sd$n[i], out, fixed = TRUE)
+      fill_count(side_format, sd$label[i], sd$n[i], s_unit[i])
     }
     r <- rs[rs$side == sd$id[i], ]
-    lines <- ifelse(is.na(r$n), r$label, paste0(r$label, " (n = ", r$n, ")"))
+    lines <- ifelse(is.na(r$n), r$label,
+                    paste0(r$label, " (", if (is.na(s_unit[i])) "n = ",
+                           r$n, if (!is.na(s_unit[i])) paste0(" ", s_unit[i]),
+                           ")"))
     paste(c(head, if (length(lines)) paste0("- ", lines)), collapse = "\n")
   }, character(1))
   side_has_note <- !is.na(sd$note)
@@ -684,7 +694,8 @@ merge_segments <- function(sg, eps = 1e-9) {
 # Box text when some boxes have outcome events: "(n = 412; events = 37)" with
 # the default format, "(events = 37)" for a box without a count, or the
 # events placed at `{events}` in a format that has it.
-box_text_events <- function(nd, events, count_format, non_events = NULL) {
+box_text_events <- function(nd, events, count_format, non_events = NULL,
+                            units = rep(NA_character_, nrow(nd))) {
   ev <- if (is.null(events)) rep(NA_character_, nrow(nd)) else
     unname(events[as.character(nd$id)])
   # rows without the event: computed from data, or n - events when typed
@@ -699,18 +710,27 @@ box_text_events <- function(nd, events, count_format, non_events = NULL) {
   vapply(seq_len(nrow(nd)), function(i) {
     n <- nd$n[i]
     e <- ev[i]
+    u <- units[i]
     if (is.na(n) && (is.na(e) || own)) return(nd$label[i])
     fmt <- count_format
+    # a box with a unit: "n = {n}" reads "{n} {unit}" (see fill_count())
+    if (!is.na(u)) fmt <- gsub("n = {n}", "{n} {unit}", fmt, fixed = TRUE)
     if (!own && !is.na(e)) {
       if (is.na(n)) return(paste0(nd$label[i], "
 (events = ", e, ")"))
-      n <- paste0(n, "; events = ", e)
+      # after the unit: "(412 patients; events = 37)"
+      if (!is.na(u) && grepl("{unit}", fmt, fixed = TRUE)) {
+        u <- paste0(u, "; events = ", e)
+      } else {
+        n <- paste0(n, "; events = ", e)
+      }
     }
     out <- gsub("{label}", nd$label[i], fmt, fixed = TRUE)
     out <- gsub("{n}", if (is.na(n)) "" else n, out, fixed = TRUE)
     out <- gsub("{non_events}", if (is.na(ne[i])) "" else ne[i], out,
                 fixed = TRUE)
-    gsub("{events}", if (is.na(e)) "" else e, out, fixed = TRUE)
+    out <- gsub("{events}", if (is.na(e)) "" else e, out, fixed = TRUE)
+    gsub("{unit}", if (is.na(u)) "" else u, out, fixed = TRUE)
   }, character(1))
 }
 
@@ -723,7 +743,7 @@ non_events_known <- function(non_events, ids) {
 
 # Boxes made by flow_copy() get a first note line saying they hold the same
 # units as the box above ("the same 1,960 as above").
-copy_notes <- function(x, copy_format, copy_none) {
+copy_notes <- function(x, copy_format, copy_none, units = box_units(x)) {
   nd <- x$nodes
   for (a in list(list(copy_format, "copy_format"), list(copy_none, "copy_none"))) {
     if (length(a[[1]]) != 1 || !(is.na(a[[1]]) || is.character(a[[1]]))) {
@@ -736,6 +756,11 @@ copy_notes <- function(x, copy_format, copy_none) {
   parent <- x$edges$from[match(nd$id, x$edges$to)]
   same <- vapply(seq_len(nrow(nd)), function(i) {
     if (!is_copy[i] || is.na(nd$n[i])) return(FALSE)
+    # a copy counted in another unit is not "the same" units as above
+    if (!identical(unname(units[as.character(nd$id[i])]),
+                   unname(units[as.character(parent[i])]))) {
+      return(FALSE)
+    }
     above <- left_count_text(x, parent[i])
     if (is.na(above)) return(FALSE)
     v <- parse_count(c(nd$n[i], above))
@@ -743,7 +768,9 @@ copy_notes <- function(x, copy_format, copy_none) {
   }, logical(1))
   line <- rep(copy_none, nrow(nd))
   if (!is.na(copy_format)) {
-    line[same] <- vapply(nd$n[same], function(v) {
+    u <- unname(units[as.character(nd$id[same])])
+    v <- ifelse(is.na(u), nd$n[same], paste(nd$n[same], u))
+    line[same] <- vapply(v, function(v) {
       gsub("{n}", v, copy_format, fixed = TRUE)
     }, character(1), USE.NAMES = FALSE)
   } else {

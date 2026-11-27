@@ -13,7 +13,8 @@ flow_edit(
   stage = NULL,
   row_label = NULL,
   excluded = FALSE,
-  events = NULL
+  events = NULL,
+  unit = NULL
 )
 }
 \arguments{
@@ -35,6 +36,11 @@ its new row label (\code{""} hides it).}
 
 \item{events}{New number of outcome events (see \code{\link[=flow_start]{flow_start()}}), marked
 as typed like an edited count. Not for exclusion boxes.}
+
+\item{unit}{New unit (what the count counts, see \code{\link[=flow_split]{flow_split()}}): one
+value for all chosen boxes, or one per box. Boxes below that have no unit
+of their own take the new one. \code{NA} removes a box's own unit, so it takes
+the unit of the box above again; \code{""} gives it none.}
 }
 \value{
 The updated \code{studydesignflow}.

@@ -13,7 +13,9 @@ flow_nodes(x)
 A data frame with one row per box: \code{id}, \code{stage} (the stage name),
 \code{label}, \code{n}, \code{note}, \code{leaf} (\code{TRUE} if the next verb will attach to
 it by default), \code{n_edited} (\code{TRUE} if its count was changed with
-\code{\link[=flow_edit]{flow_edit()}}), and \code{events} (outcome events, if any).
+\code{\link[=flow_edit]{flow_edit()}}), and \code{events} (outcome events, if any). In a flow where
+some step was given a \code{unit}, also \code{unit}: what each box's count counts,
+its own or taken from the box above (\code{NA} for none).
 }
 \description{
 Useful for finding the ids to pass to the \code{from} argument of the verbs.

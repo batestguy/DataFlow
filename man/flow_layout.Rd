@@ -31,7 +31,10 @@ flow_layout(
 and \code{{n}} are replaced; used only for boxes that have a count. Outcome
 events (see \code{\link[=flow_start]{flow_start()}}) are added to the count as
 "(n = 412; events = 37)", or placed where \code{{events}} appears if the
-format has it.}
+format has it. For a box with a unit (\verb{unit =} on the verbs, see
+\code{\link[=flow_split]{flow_split()}}), \code{"n = {n}"} reads \code{"{n} {unit}"}, as in
+"(50 cultures)"; \code{{unit}} is replaced by the unit, or by nothing for a
+box without one.}
 
 \item{base_size}{Font size of box text, in points.}
 
@@ -55,7 +58,8 @@ wrapped onto several lines.}
 \code{"straight"} (one straight arrow per box).}
 
 \item{side_format}{How an exclusion box's heading and count are combined,
-as in \code{count_format}. Reasons are listed below it, one per line.}
+as in \code{count_format}. Reasons are listed below it, one per line, with
+their counts as "(n = 5)", or "(5 households)" for a box with a unit.}
 
 \item{side_gap}{Length of the arrow from the flow line to an exclusion
 box, in inches.}
@@ -67,7 +71,8 @@ description.}
 
 \item{copy_format}{The line in italics marking a box made by
 \code{\link[=flow_copy]{flow_copy()}}, which receives all the units of the box above. \code{{n}} is
-replaced by the box's count. Used only when that count is what is left in
+replaced by the box's count (followed by its unit, if it has one). Used
+only when that count is what is left in
 the box above; otherwise \code{copy_none} is used. Either may be \code{NA} for no
 line, though then nothing in the picture says that the boxes are copies.}
 

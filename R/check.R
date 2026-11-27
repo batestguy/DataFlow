@@ -33,6 +33,12 @@
 #' measurement, not a pool: its count may be of all the branches together or
 #' that of each branch, and any other count gives a note, never a problem.
 #'
+#' Counts are never compared across a change of unit: where a box counts
+#' something else than the box above it (`unit =` on the verbs, see
+#' [flow_split()]), such as casks under deliveries, the two are not compared,
+#' and that comparison is not counted as made or as not possible. A box with
+#' a unit under a box without one is a change of unit too.
+#'
 #' Sampling steps ([flow_cluster()], [flow_select()]) and summary boxes are not
 #' compared, except that a selection larger than its source is reported. Missing
 #' counts and counts that are not plain numbers cannot be compared; the number
@@ -78,6 +84,15 @@ flow_check <- function(x) {
   N <- function(id) unname(n_of[as.character(id)])
   E <- function(id) unname(ev_of[as.character(id)])
   row_of <- function(stage) match(stage, st$id)
+  # units (see flow_split()): counts are never compared across a change of
+  # unit, including from no unit to one; such comparisons are skipped
+  units <- box_units(x)
+  s_units <- side_units(x, units)
+  same_unit <- function(ids, sides = integer()) {
+    u <- c(units[as.character(ids)], s_units[as.character(sides)])
+    length(unique(ifelse(is.na(u), "", u))) <= 1
+  }
+  cols <- if (has_data(x)) box_count_cols(x)
 
   found <- list()
   made <- 0L
@@ -93,12 +108,16 @@ flow_check <- function(x) {
   computed_box <- function(id) {
     if (!has_data(x) || id %in% edited_ids(x, "nodes")) return(FALSE)
     r <- box_rows(x, id)
-    !is.null(r) && identical(nd$n[nd$id == id], format_n(count_rows(x, r)))
+    !is.null(r) && identical(nd$n[nd$id == id],
+                             format_n(count_rows(x, r, cols[[as.character(id)]])))
   }
   computed_side <- function(id) {
     if (!has_data(x) || id %in% edited_ids(x, "side")) return(FALSE)
     r <- x$data$rows$side[[as.character(id)]]
-    !is.null(r) && identical(sd$n[sd$id == id], format_n(count_rows(x, r)))
+    parent <- sd$parent[sd$id == id]
+    !is.null(r) && identical(sd$n[sd$id == id],
+                             format_n(count_rows(x, r,
+                                                 cols[[as.character(parent)]])))
   }
   # outcome events that were typed or edited, not computed from data
   typed_event <- function(ids) {
@@ -110,7 +129,7 @@ flow_check <- function(x) {
     r <- box_rows(x, id)
     !is.null(r) && !is.null(x$data$events) &&
       identical(unname(x$events[as.character(id)]),
-                format_n(count_events(x, r)[["events"]]))
+                format_n(count_events(x, r, cols[[as.character(id)]])[["events"]]))
   }
   all_computed <- function(boxes, sides = integer()) {
     has_data(x) && all(vapply(boxes, computed_box, NA)) &&
@@ -165,7 +184,8 @@ flow_check <- function(x) {
       }
     }
     r_next <- row_of(sd$stage[i]) + 1
-    if (!all_computed(sd$parent[i], sides_of(sd$parent[i], r_next))) {
+    if (same_unit(sd$parent[i], sides_of(sd$parent[i], r_next)) &&
+        !all_computed(sd$parent[i], sides_of(sd$parent[i], r_next))) {
       lft <- left_in(sd$parent[i], r_next)
       if (is.na(lft)) {
         unknown <- unknown + 1L
@@ -207,7 +227,7 @@ flow_check <- function(x) {
         id <- ids[i]
         p <- srcs[[i]]
         sides <- sides_of(p, s)
-        if (all_computed(c(p, id), sides)) next
+        if (!same_unit(c(p, id), sides) || all_computed(c(p, id), sides)) next
         lft <- left_in(p, s)
         if (is.na(lft) || is.na(N(id))) {
           unknown <- unknown + 1L
@@ -232,6 +252,7 @@ flow_check <- function(x) {
       for (p in unique(unlist(srcs))) {
         kids <- ids[vapply(srcs, function(z) p %in% z, NA)]
         sides <- sides_of(p, s)
+        if (!same_unit(c(p, kids), sides)) next
         lft <- left_in(p, s)
         kn <- N(kids)
         copies <- length(kids) > 1 && !anyNA(c(kn, lft)) &&
@@ -309,7 +330,9 @@ flow_check <- function(x) {
       src <- srcs[[i]]
       box <- nice[[as.character(id)]]
       sides <- unlist(lapply(src, sides_of, r = s))
-      if (all_computed(c(id, src), sides)) next
+      if (!same_unit(c(id, src), sides) || all_computed(c(id, src), sides)) {
+        next
+      }
       lft <- vapply(src, left_in, 1, r = s)
       total <- sum(lft)
       if (is.na(N(id)) || is.na(total)) {

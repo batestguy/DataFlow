@@ -12,7 +12,8 @@ flow_exclude(
   note = NULL,
   stage = NULL,
   from = NULL,
-  where = NULL
+  where = NULL,
+  unit = NULL
 )
 }
 \arguments{
@@ -39,6 +40,13 @@ instead of all of them. Only end boxes can take an exclusion box.}
 \item{where}{For a flow with data (see \code{\link[=flow_start]{flow_start()}}): a one-sided
 formula, e.g. \code{~ is.na(outcome)}, for an exclusion box without reasons.
 Matching rows leave the flow; the count is computed.}
+
+\item{unit}{Optional text saying what the count of each exclusion box
+counts, e.g. \code{"households"}: one value, or one per box. By default an
+exclusion box takes the unit of the box it hangs off. With a unit the
+box reads "Excluded (12 households)" and its reasons "- Refused
+(5 households)". In a flow with data, an exclusion box counts as the box
+it hangs off does.}
 }
 \description{
 Draws a box to the right of the line leaving each current end box (or each

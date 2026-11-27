@@ -200,11 +200,22 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   in that column are not counted. If one value has rows in two boxes made
 #'   from the same box (e.g. a patient with visits in two arms, or with some
 #'   visits excluded and others not), the counts of those boxes add up to
-#'   more than the box above; studydesignflow warns when this happens.
+#'   more than the box above; studydesignflow warns when this happens. A
+#'   later step can count another column with its own `count =` (see
+#'   [flow_split()]).
+#' @param unit Optional text saying what the count counts, e.g.
+#'   `"villages"`: one value, or one per label. The box then reads
+#'   "(40 villages)" instead of "(n = 40)", and the boxes below take the
+#'   same unit until a step gives another (see [flow_split()]).
 #' @return A `studydesignflow` object.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100)
+#'
+#' # what each number counts
+#' flow_start("Villages sampled", n = 40, unit = "villages") |>
+#'   flow_select("Households", "20 per village", n = 800,
+#'               unit = "households")
 #'
 #' # counts from a data frame
 #' people <- data.frame(id = 1:6, age = c(17, 25, 40, 33, 15, 52))
@@ -217,7 +228,8 @@ replace_leaves <- function(leaves, targets, new_by_target) {
 #'   flow_exclude("Excluded", n = 8, from = "Cases") |>
 #'   flow_pool("Analysis", "Analysed together", n = 352)
 flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
-                       data = NULL, count = NULL, events = NULL) {
+                       data = NULL, count = NULL, events = NULL,
+                       unit = NULL) {
   if (!is.character(label) || length(label) == 0 || anyNA(label) ||
       any(label == "")) {
     stop("`label` must be text and not empty.", call. = FALSE)
@@ -254,6 +266,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
   }
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")
+  unit_vals <- if (!is.null(unit)) recycle_values(format_unit(unit), k, "unit")
   x <- new_studydesignflow(
     stages = data.frame(id = integer(), name = character(),
                         row_label = character(), type = character(),
@@ -284,6 +297,7 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
   if (!is.null(x$data$events)) {
     x$data$events_na <- count_missing_outcome(x)
   }
+  if (!is.null(unit_vals)) x <- set_units(x, a$ids, unit_vals)
   validate_studydesignflow(x)
 }
 
@@ -338,32 +352,55 @@ flow_start <- function(label, n = NULL, note = NULL, stage = NULL,
 #'   being split.
 #'   Without `by`, new boxes have no rows behind them, so automatic counts
 #'   below them stay blank.
+#' @param unit Optional text saying what the counts of the new boxes count,
+#'   e.g. `"households"`: one value for all, or one per box, recycled like
+#'   `n`. A box with a unit reads "(800 households)" instead of
+#'   "(n = 800)"; in a `count_format` or `side_format` of [flow_layout()],
+#'   `"n = {n}"` becomes `"{n} {unit}"`, and `{unit}` may be used directly.
+#'   The unit is used as given (no singular or plural). Boxes without a unit
+#'   of their own take that of the box above them; a box joined from several
+#'   boxes takes theirs if they all agree. `""` stops a unit from above.
+#'   [flow_check()] does not compare counts across a change of unit.
+#' @param count For a flow with data (see [flow_start()]): a column whose
+#'   distinct non-missing values the computed counts of this step count, e.g.
+#'   `count = "household"` when the rows are people. Boxes below count the
+#'   same column until a step gives another. `NULL` (the default) keeps
+#'   counting as the box above does. It does not set `unit`: give `unit` too
+#'   when the count column changes, so the picture says what is counted and
+#'   [flow_check()] does not compare the counts with those above.
 #' @return The updated `studydesignflow`.
 #' @export
 #' @examples
 #' flow_start("Cultures", n = 100) |>
 #'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50) |>
 #'   flow_split("Culture type", list("Type A", "Type B"), n = 50)
+#'
+#' # what each number counts
+#' flow_start("Cultures", n = 100, unit = "cultures") |>
+#'   flow_split("Experiment ID", c("Ex. 1", "Ex. 2"), n = 50)
 flow_split <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                        display = "all", from = NULL, row_label = NULL,
-                       summary = "{k} {stage}", by = NULL, events = NULL) {
+                       summary = "{k} {stage}", by = NULL, events = NULL,
+                       unit = NULL, count = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
   split_boxes(.flow, stage, labels, n, note, from,
               pick_row_label(row_label, stage), "split", display,
-              summary = summary, by = by, events = events)
+              summary = summary, by = by, events = events, unit = unit,
+              count = count)
 }
 
 # Shared engine for one-to-many steps (split, assign, cluster).
 split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
                         display, method = NA_character_,
                         summary = "{k} {stage}", by = NULL,
-                        events = NULL) {
+                        events = NULL, unit = NULL, count = NULL) {
+  check_count_col(.flow, count)
   targets <- resolve_targets(.flow, from)
   child_rows <- NULL
   if (!is.null(by)) {
-    sp <- split_by(.flow, targets, by, labels, display, n)
+    sp <- split_by(.flow, targets, by, labels, display, n, count = count)
     # boxes with no rows (and no labels) are not split; they stay end boxes
     targets <- targets[sp$keep]
     labels <- sp$labels[sp$keep]
@@ -413,6 +450,9 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
   total <- sum(lengths(per_target))
   n_vals <- per_box_values(n, format_n, per_target, "n", per)
   note_vals <- per_box_values(note, format_note, per_target, "note", per)
+  unit_vals <- if (!is.null(unit)) {
+    per_box_values(unit, format_unit, per_target, "unit", per)
+  }
 
   s <- add_stage(.flow, stage, row_label, type, display, method = method)
   x <- s$x
@@ -421,6 +461,8 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
   x <- add_edges(a$x, anchors, a$ids, "arrow")
   x$leaves <- replace_leaves(x$leaves, targets,
                              split(a$ids, factor(anchors, levels = targets)))
+  if (!is.null(unit_vals)) x <- set_units(x, a$ids, unit_vals)
+  x <- set_count_col(x, a$ids, count)
   if (!is.null(child_rows)) x <- set_rows(x, a$ids, child_rows)
   if (!is.null(events)) {
     x <- set_events(x, a$ids, events, per = per, per_target = per_target)
@@ -432,9 +474,10 @@ split_boxes <- function(.flow, stage, labels, n, note, from, row_label, type,
 # being split, one box per value present in its rows (factor level order, or
 # sorted), or with display = "summary" one box standing for them all.
 split_by <- function(x, targets, by, labels, display, n,
-                     warn_shared = TRUE) {
+                     warn_shared = TRUE, count = NULL) {
   need_data(x, "by")
   check_string(by, "by")
+  cols <- box_count_cols(x)
   if (!is.null(n)) {
     stop("Give `n` or `by`, not both: with `by`, counts are computed.",
          call. = FALSE)
@@ -506,16 +549,18 @@ split_by <- function(x, targets, by, labels, display, n,
            box, "\" hold ", sum(lengths(sub)), " rows, not ", length(r),
            ". Please report this.", call. = FALSE)
     }
+    # the column the new boxes count: the step's own, or the box's above
+    col <- count %||% cols[[as.character(targets[i])]]
     if (warn_shared) warn_shared_ids(x, sub, paste0("the boxes made by `by = \"", by,
-                                   "\"` under \"", box, "\""))
+                                   "\"` under \"", box, "\""), col)
     if (display == "summary") {
       # {k}: the values drawn, planned ones included
       out$labels[[i]] <- length(lv)
-      out$n[[i]] <- count_rows(x, r)
+      out$n[[i]] <- count_rows(x, r, col)
       out$rows[[i]] <- list(r)
     } else {
       out$labels[[i]] <- disp %||% lv
-      out$n[[i]] <- vapply(sub, function(z) count_rows(x, z), numeric(1))
+      out$n[[i]] <- vapply(sub, function(z) count_rows(x, z, col), numeric(1))
       out$rows[[i]] <- sub
     }
   }
@@ -586,7 +631,8 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
                              display, row_label = stage,
                              method = NA_character_, groups = NULL,
                              join = "bracket", where = NULL,
-                             events = NULL) {
+                             events = NULL, unit = NULL, count = NULL) {
+  check_count_col(x, count)
   if (!is.null(groups)) {
     targets <- unlist(groups)
   } else {
@@ -613,12 +659,16 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
   labels <- recycle_values(label, k, "label")
   n_vals <- recycle_values(format_n(n), k, "n")
   note_vals <- recycle_values(format_note(note), k, "note")
+  unit_vals <- if (!is.null(unit)) recycle_values(format_unit(unit), k, "unit")
   group_rows <- NULL
   if (has_data(x)) {
     group_rows <- data_group_rows(x, groups, type, n, where)
     if (is.null(n)) {
-      n_vals <- format_n(vapply(group_rows, function(r) count_rows(x, r),
-                                numeric(1)))
+      cols <- box_count_cols(x)
+      n_vals <- format_n(vapply(seq_len(k), function(i) {
+        count_rows(x, group_rows[[i]], new_count_col(x, count, groups[[i]],
+                                                     cols))
+      }, numeric(1)))
     }
   } else if (!is.null(where)) {
     need_data(x, "where")
@@ -631,12 +681,15 @@ attach_per_group <- function(x, stage, label, n, note, over, from, type,
                  over %||% NA_character_, method = method)
   a <- add_nodes(s$x, s$id, labels, n_vals, note_vals, anchors)
   x <- a$x
-  if (!is.null(group_rows)) x <- set_rows(x, a$ids, group_rows)
-  if (!is.null(events)) x <- set_events(x, a$ids, events)
   for (i in seq_len(k)) {
     kind <- if (length(groups[[i]]) == 1) "arrow" else join
     x <- add_edges(x, groups[[i]], rep(a$ids[i], length(groups[[i]])), kind)
   }
+  # after the lines, so the new boxes count what the boxes above them count
+  if (!is.null(unit_vals)) x <- set_units(x, a$ids, unit_vals)
+  x <- set_count_col(x, a$ids, count)
+  if (!is.null(group_rows)) x <- set_rows(x, a$ids, group_rows)
+  if (!is.null(events)) x <- set_events(x, a$ids, events)
   # each group's boxes are replaced by the one new box, at the first position
   new_by_target <- vector("list", length(targets))
   for (i in seq_len(k)) {
@@ -718,12 +771,14 @@ group_over <- function(x, targets, over) {
 #'   flow_apply("Condition", "9 conditions each", over = "Experiment ID")
 flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
                        over = NULL, display = "all", from = NULL,
-                       row_label = NULL, events = NULL) {
+                       row_label = NULL, events = NULL, unit = NULL,
+                       count = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
   attach_per_group(.flow, stage, label, n, note, over, from, "apply", display,
-                   pick_row_label(row_label, stage), events = events)
+                   pick_row_label(row_label, stage), events = events,
+                   unit = unit, count = count)
 }
 
 #' Add the outcome or measurement at the end of each branch
@@ -802,37 +857,43 @@ flow_apply <- function(.flow, stage, label, n = NULL, note = NULL,
 #'   flow_outcome("Measured", "Wear")
 flow_outcome <- function(.flow, stage, label, n = NULL, note = NULL,
                          display = "all", from = NULL, row_label = NULL,
-                         events = NULL, join = NULL) {
+                         events = NULL, join = NULL, unit = NULL,
+                         count = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display)
   if (!is.null(join) && !isTRUE(join) && !isFALSE(join)) {
     stop("`join` must be NULL, TRUE or FALSE.", call. = FALSE)
   }
+  check_count_col(.flow, count)
   groups <- NULL
   if (!isFALSE(join)) {
     targets <- resolve_targets(.flow, from)
-    if (outcome_joins(.flow, targets, label, n, note, events, join)) {
+    if (outcome_joins(.flow, targets, label, n, note, events, join,
+                      unit = unit, count = count)) {
       groups <- list(targets)
       # every branch gets the same box: one value of each
       label <- label[1]
       if (!is.null(n)) n <- n[1]
       if (!is.null(note)) note <- note[1]
       if (!is.null(events)) events <- events[1]
+      if (!is.null(unit)) unit <- unit[1]
     }
   }
   attach_per_group(.flow, stage, label, n, note, NULL,
                    if (is.null(groups)) from, "outcome",
                    display, pick_row_label(row_label, stage),
-                   groups = groups, join = "measure", events = events)
+                   groups = groups, join = "measure", events = events,
+                   unit = unit, count = count)
 }
 
 # Whether flow_outcome() draws one shared box for `targets` (see its Details).
-# Every branch must get the same box: one label, count, events and note; in a
-# flow with data the counts and events computed per branch count too.
-# `join = TRUE` joins copies of the same units as well, and is an error when
-# the boxes would differ.
-outcome_joins <- function(x, targets, label, n, note, events, join) {
+# Every branch must get the same box: one label, count, events, note and
+# unit; in a flow with data the counts and events computed per branch count
+# too. `join = TRUE` joins copies of the same units as well, and is an error
+# when the boxes would differ.
+outcome_joins <- function(x, targets, label, n, note, events, join,
+                          unit = NULL, count = NULL) {
   k <- length(targets)
   if (k < 2) return(FALSE)
   # a typed count means "each": joined only on request (user, 2026-11-26)
@@ -842,24 +903,35 @@ outcome_joins <- function(x, targets, label, n, note, events, join) {
   }
   # values that do not fit the boxes are left to attach_per_group()'s errors
   fits <- function(v) is.null(v) || (!is.list(v) && length(v) %in% c(1, k))
-  if (!all(vapply(list(label, n, note, events), fits, NA))) return(FALSE)
+  if (!all(vapply(list(label, n, note, events, unit), fits, NA))) {
+    return(FALSE)
+  }
   distinct <- function(v) length(unique(v)) > 1
   per_branch <- function(f) {
     vapply(targets, function(t) f(left_rows(x, t)), character(1))
   }
+  # counted as the joined box would count
+  col <- if (has_data(x)) new_count_col(x, count, targets)
   n_vals <- if (!is.null(n)) format_n(n) else if (has_data(x)) {
-    per_branch(function(r) format_n(count_rows(x, r)))
+    per_branch(function(r) format_n(count_rows(x, r, col)))
   }
   ev_vals <- if (!is.null(events)) format_n(events) else
     if (has_data(x) && !is.null(x$data$events)) {
       per_branch(function(r) {
         if (is.null(r)) NA_character_
-        else format_n(count_events(x, r)[["events"]])
+        else format_n(count_events(x, r, col)[["events"]])
       })
     }
   differ <- c(label = distinct(label), count = distinct(n_vals),
               events = distinct(ev_vals),
               note = distinct(format_note(note)))
+  if (!is.null(unit)) {
+    differ <- c(differ, unit = distinct(format_unit(unit)))
+  } else {
+    # units inherited from the branches: one box cannot hold flasks and plates
+    u <- box_units(x)[as.character(targets)]
+    differ <- c(differ, unit = distinct(ifelse(is.na(u), "", u)))
+  }
   if (any(differ)) {
     if (isTRUE(join)) {
       stop("join = TRUE draws one box for all branches, but the branches ",

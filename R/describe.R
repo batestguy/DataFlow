@@ -30,13 +30,17 @@ flow_describe <- function(x) {
   ed <- x$edges
   flat <- function(s) gsub("[[:space:]]*\n[[:space:]]*", " ", s)
   nice <- unique_names(x, flat)
+  units <- box_units(x)
   # each = TRUE: the same text stands for several boxes, so "n = 36 each"
+  # ("36 cultures each" with a unit)
   say <- function(id, each = FALSE) {
     i <- match(id, nd$id)
     out <- flat(nd$label[i])
     ev <- if (is.null(x$events)) NA else x$events[as.character(id)]
-    extra <- c(if (!is.na(nd$n[i])) paste0("n = ", nd$n[i],
-                                           if (each) " each"),
+    extra <- c(if (!is.na(nd$n[i])) {
+                 paste0(count_words(nd$n[i], units[[as.character(id)]]),
+                        if (each) " each")
+               },
                if (!is.na(ev)) paste0("events = ", ev, if (each) " each"),
                if (!is.na(nd$note[i])) flat_note(nd$note[i]))
     if (length(extra)) paste0(out, " (", paste(extra, collapse = "; "), ")")
@@ -68,7 +72,7 @@ flow_describe <- function(x) {
     type <- st$type[s]
     srcs <- lapply(ids, function(i) ed$from[ed$to == i])
     if (type == "exclude") {
-      body <- describe_exclude(x, st$id[s], name, flat)
+      body <- describe_exclude(x, st$id[s], name, flat, units)
       sentences <- c(sentences, paste0(
         if (st$row_label[s] != "") paste0(st$name[s], ": "), body, "."))
       next
@@ -113,6 +117,7 @@ flow_describe <- function(x) {
       body <- paste0(body, "; these are summary boxes, and the boxes they ",
                      "stand for are not drawn one by one")
     }
+    body <- paste0(body, unit_change(units, ids, srcs))
     sentences <- c(sentences, paste0(head, ": ", body, "."))
   }
   if (has_data(x)) sentences <- c(sentences, describe_data(x))
@@ -206,7 +211,9 @@ describe_measure <- function(x, s, ids, srcs, say, name, whole_row) {
     }
     computed <- has_data(x) && !is.null(box_rows(x, id)) &&
       !id %in% edited_ids(x, "nodes") && !is.na(nd$n[nd$id == id]) &&
-      identical(nd$n[nd$id == id], format_n(count_rows(x, box_rows(x, id))))
+      identical(nd$n[nd$id == id],
+                format_n(count_rows(x, box_rows(x, id),
+                                    box_count_cols(x)[[as.character(id)]])))
     paste0(say(id), where, ", drawn as one box joined from ", from_text,
            if (computed) "; its count is of all these branches together",
            if (measured_copies(x, src)) {
@@ -226,11 +233,13 @@ assign_verb <- function(method) {
 
 # "Excluded (n = 112) after Assessed for eligibility: Declined (n = 31) and
 # Other reasons (n = 13)", one clause per exclusion box.
-describe_exclude <- function(x, stage_id, name, flat) {
+describe_exclude <- function(x, stage_id, name, flat, units = box_units(x)) {
+  s_units <- side_units(x, units)
   sd <- x$side[x$side$stage == stage_id, ]
   rs <- x$reasons %||% empty_reasons()
   parts <- vapply(seq_len(nrow(sd)), function(i) {
-    extra <- c(if (!is.na(sd$n[i])) paste0("n = ", sd$n[i]),
+    u <- s_units[[as.character(sd$id[i])]]
+    extra <- c(if (!is.na(sd$n[i])) count_words(sd$n[i], u),
                if (!is.na(sd$note[i])) flat_note(sd$note[i]))
     head <- paste0(flat(sd$label[i]),
                    if (length(extra)) paste0(" (", paste(extra, collapse = "; "),
@@ -239,7 +248,7 @@ describe_exclude <- function(x, stage_id, name, flat) {
     r <- rs[rs$side == sd$id[i], ]
     if (nrow(r) == 0) return(head)
     why <- ifelse(is.na(r$n), flat(r$label),
-                  paste0(flat(r$label), " (n = ", r$n, ")"))
+                  paste0(flat(r$label), " (", count_words(r$n, u), ")"))
     paste0(head, ": ", and_list(why))
   }, character(1))
   paste(parts, collapse = "; ")
@@ -314,6 +323,24 @@ unique_names <- function(x, flat) {
     out[as.character(ids)] <- names_s
   }
   out
+}
+
+# "; counted in casks" when the boxes of a stage count something else than
+# the boxes they come from (see `unit =` in flow_split()), which had a unit:
+# under boxes without one, the counts already say what they count.
+unit_change <- function(units, ids, srcs) {
+  new <- vapply(seq_along(ids), function(i) {
+    u <- units[[as.character(ids[i])]]
+    above <- unique(units[as.character(srcs[[i]])])
+    if (is.na(u) || all(is.na(above)) ||
+        (length(above) == 1 && identical(above, u))) {
+      NA_character_
+    } else {
+      u
+    }
+  }, "")
+  new <- unique(new[!is.na(new)])
+  if (length(new) == 0) "" else paste0("; counted in ", and_list(new))
 }
 
 #' @export
