@@ -13,7 +13,8 @@ flow_exclude(
   stage = NULL,
   from = NULL,
   where = NULL,
-  unit = NULL
+  unit = NULL,
+  details = NULL
 )
 }
 \arguments{
@@ -47,6 +48,18 @@ exclusion box takes the unit of the box it hangs off. With a unit the
 box reads "Excluded (12 households)" and its reasons "- Refused
 (5 households)". In a flow with data, an exclusion box counts as the box
 it hangs off does.}
+
+\item{details}{Optional details of this step: who did it, with what tool,
+when, where and how (see \code{\link[=step_details]{step_details()}}). One \code{step_details()} is for
+the whole step (one row of the diagram). For boxes whose details differ,
+give a list: either one entry per new box, in the order \code{\link[=flow_nodes]{flow_nodes()}}
+lists them (\code{step_details()}, or \code{NULL} for none), or entries named by
+the labels of new boxes, e.g.
+\code{list(step = step_details(who = "enumerators"), "Village B" = step_details(tool = "paper forms"))}, where the name \code{step} stands for
+the whole step and a label names every new box with that label. For
+\code{\link[=flow_exclude]{flow_exclude()}} the new boxes are its exclusion boxes. Details are
+drawn as a numbered key under the diagram (see \code{\link[=flow_layout]{flow_layout()}}) and
+always given in \code{\link[=flow_describe]{flow_describe()}}; change them with \code{\link[=flow_edit]{flow_edit()}}.}
 }
 \description{
 Draws a box to the right of the line leaving each current end box (or each

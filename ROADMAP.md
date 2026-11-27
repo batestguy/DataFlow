@@ -23,7 +23,7 @@ milestone step; the progress log at the bottom is append-only.
 | 5 | Machine-learning designs, including time series | ✅ built, reviewed, merged into `main` | 2026-11-24 |
 | 6 | Side-by-side test with other packages | ✅ done, merged into `main` | 2026-11-25 |
 | 6b | Textbook designs: 117 listed, then drawn and graded | ⏳ all 117 drawn, read blind and graded (core 2026-11-25, other 71 2026-11-26); user has not seen the pictures of the 71 | — |
-| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) 7j (one measurement box) and 7b (units), both approved 2026-11-27, merged into `main`; 7c step details next | — |
+| 7 | Check numbers, then describe any collection step | ⏳ 7-0, 7i, 7a (copies, approved 2026-11-26) 7j (one measurement box), 7b (units) and 7c (step details), approved 2026-11-27, merged into `main`; 7d physical and data steps next | — |
 | 8 | Explain (long description, exports) | ⬜ | — |
 | 9 | Time | ⬜ | — |
 | 10 | Textbook vignettes, then gallery of 25 workflows | ⬜ | — |
@@ -279,7 +279,7 @@ correctly. Names below are proposals, settled in the design of each part.
 | 7-0 Number check 🟡 (first; moved from milestone 8 on 2026-11-25) | Numbers that do not add up, reasons that do not sum, splits larger than their parent | `flow_check()`, run by the user; reports, never edits or blocks | Designed with 7a and 7b: copies and changes of unit must not be reported |
 | 7a Copies (after 7i) ✅ approved 2026-11-26 | Every branch gets all the items (annotators, models, replicated tests, cloning in target-trial emulation) | `flow_copy()`, marked in the picture by more than colour, described as "each receives all 2,000 records" | Data mode: rows shared, pools of copies count distinct items; no warning about shared ids here |
 | 7b Units (✅ done, approved 2026-11-27) | What each number counts | `unit =` on every verb; "(40 sites)" in place of "(n = 40)" | Default output must not change; `count =` in data mode |
-| 7c Step details | Tool or instrument, who, dates, method | `details =` with fixed fields after Datasheets and Croissant; drawn as a note or a numbered key; always in the description | Long text; layout height |
+| 7c Step details (✅ done, approved 2026-11-27) | Tool or instrument, who, dates, method | `step_details(who, tool, when, where, how)` given to `details =` on every verb and `flow_edit()`; per step, or per box where it differs (user, 2026-11-27); drawn as a numbered key (user, 2026-11-27); always in the description | Long text; layout height |
 | 7d Physical and data steps | A step is done to things or to data | `kind =`; solid and dashed as in the NC3Rs tool, with a legend | Never colour alone; dashed already means gap in grids |
 | 7e Linking | Two sources joined record by record | `flow_link()`: linked box plus unmatched from each side; from data by key | Read GUILD first; one-to-many links; matching errors are typed |
 | 7f Shared groups | One group in two analyses | lift "one pool per box per call" | The layout is a tree today: highest risk, do it on its own branch with the stress test extended first |
@@ -543,6 +543,20 @@ since the data may not reflect the whole design.
 - The textbook scripts in `notes/` were graded with the pictures drawn before
   part 7j (one outcome box per branch); run today, some of them draw one
   shared box instead. The grades stand for the old pictures.
+- Step details (part 7c): five fixed fields (who, tool, when, where, how),
+  each one piece of text; no dates as dates, no structured people or
+  tools. A box's own details are listed on their own, not merged with
+  those of its step. Key headings use the row label of a step (its name
+  when the label is hidden), and for boxes the name from the
+  description, which can be long ("All members listed under 20 per village
+  under Village B"). The key wraps at spaces only, so one very long word
+  runs past the width (the diagram widens to hold it), and it is at least
+  3 inches wide, so under a narrow diagram it is wider than the boxes. A
+  box marker goes after the last line of a multi-line label. Step markers
+  are drawn also with `row_labels = FALSE`. Drawing with details lays the
+  flow out twice (to number the boxes left to right). `flow_check()` does
+  not look at details, fold grids take none, and nothing is exported yet
+  (milestone 8; the Croissant field names are still to be verified).
 
 ## Open risks
 
@@ -1271,3 +1285,73 @@ what is still open.
 - Approved by the user (2026-11-27); committed `8b2aefe`, merged into
   `main` `1294a09`, pushed. CI run 45946059422 green on all 5 platforms.
 - Next: 7c step details.
+
+### 2026-11-27 — Part 7c: step details built (not yet approved)
+- User decisions (2026-11-27): in the picture, details are a numbered key
+  (a marker such as "[1]" by the row label of a step, the details listed
+  under the diagram, boxes keep their size); they are always in the
+  description. Details belong to a step (one row) by default; a box may
+  have its own where it differs (e.g. two sites with different tools).
+- What changed: new `R/details.R`. `step_details(who, tool, when, where,
+  how)` (exported, with a print method; at least one field, each one piece
+  of text; mapped in its help to Datasheets for Datasets and Croissant RAI).
+  `details =` on every verb that makes boxes (`flow_start`, `flow_split`,
+  `flow_assign`, `flow_cluster`, `flow_select`, `flow_apply`,
+  `flow_outcome`, `flow_pool`, `flow_copy`, `flow_partition`,
+  `flow_exclude`): one `step_details()` for the step; or a list, either one
+  entry per new box (`NULL` for none) or entries named by box label with the
+  name `step` for the whole step, e.g. `list(step = ..., "Village B" =
+  ...)` (named like `reasons` and `labels` elsewhere). Stored only when used
+  (`x$details`: `steps` by stage id, `boxes` and `side` by box id) and
+  checked by `validate_studydesignflow()`. `flow_edit(stage =, details =)`
+  (with or without `row_label`) and `flow_edit(box =, details =)` (also
+  exclusion boxes); `NA` removes; other box fields with `stage` are still
+  an error. `flow_layout(show_details = TRUE)`: step marker under the row
+  label (after the method), on its own in the label column for a row
+  without a label; box marker after the label ("Village B [3]"); numbers
+  top to bottom, left to right (the step first), taken from a first layout
+  pass; the key (`lay$key`, one row per line) under the diagram, aligned
+  with the row labels, "[k] <name>" in bold then "Who: ..." lines, wrapped
+  by measured width to the diagram width (at least 3 inches) with a hanging
+  indent; part of the natural size. Rows with a marker get a longer gap
+  where needed, never taller boxes. `flow_describe()` adds after each step
+  "Done by trained enumerators, with tablet questionnaire (CSPro), March to
+  May 2025, in Kaduna State; how: two visits per household." and "For
+  Village B: done with paper forms."; `print()` says how many steps and
+  boxes have details.
+- Checked: the 323-design capture (`dev/m7c/reg.R`, `dev/m7c/cmp.R`; `main`
+  captured from a temporary worktree, since removed) is identical on `main`
+  and `m7c` for all 323 designs in all four parts (object, elbow layout,
+  straight layout, description). Full tests 13,229 pass, 0 fail, 0
+  warnings; no snapshot changed. New `tests/testthat/test-details.R` (139
+  expectations); `all_boxes()` in the test helpers now includes the key,
+  and a new `label_rects()` gives the row-label column (labels, methods,
+  markers). Stress test (`dev/m7c/stress.R`, seed 20261122): 400 designs,
+  379 with details, 1,004 details given (some long, one a single very long
+  word), `show_method` on or off at random; 0 overlaps or lines through
+  boxes, key or labels, key always below and inside the picture and
+  numbered in order, box heights unchanged. Renders looked at
+  (`dev/m7c/render.R`): `survey_details.png`, `trial_details.png` (method
+  shown), `D06_details.png` (a long value wrapped to the diagram's width),
+  `survey_nodetails.png` (`show_details = FALSE`, layout identical to the
+  flow without details). Package check: 0 errors, 0 warnings, 0 notes
+  (`dev/m7c/check.log`).
+- Open: user approval of the pictures and descriptions; independent review;
+  commit, merge, push, CI. Exports and checks of details are milestone 8.
+
+### 2026-11-27 — Part 7c: review findings fixed
+- Independent review (same model family): no code bug in layout, numbering,
+  storage or edits; regression re-done from a fresh export of `main` (323 of
+  323 identical); its own numbering check (554 layouts) found the key order
+  always matching the picture (the builder's stress check of the order was
+  vacuous). Fixed with tests: key headings of exclusion boxes now name the
+  box they hang off ("Out after b"); a step's heading uses its row label
+  (its name when the label is hidden); `flow_edit()` refuses a named list
+  or a list for a step instead of ignoring it. Not changed: `list(x)` on a
+  one-box step means that box; "Done 2024." wording with `when` alone.
+- Checked after the fixes: 323 of 323 earlier designs identical; full tests
+  pass, 0 fail; package check 0 errors, 0 warnings, 1 note ("unable to
+  verify current time": the machine could not reach a time server; not
+  about the package).
+- Approved by the user (2026-11-27); pictures `dev/m7c/survey_details.png`,
+  `trial_details.png`, `D06_details.png`, `try.png`. Merged and pushed.

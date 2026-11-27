@@ -51,10 +51,11 @@
 #'   flow_nodes()
 flow_copy <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                       from = NULL, row_label = NULL, events = NULL,
-                      by = NULL, unit = NULL, count = NULL) {
+                      by = NULL, unit = NULL, count = NULL, details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   check_count_col(.flow, count)
+  check_details_arg(details)
   targets <- resolve_targets(.flow, from)
   st_of <- match(.flow$nodes$stage[match(targets, .flow$nodes$id)],
                  .flow$stages$id)
@@ -110,7 +111,7 @@ flow_copy <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
     x <- set_events(x, ids, events, per = if (!is.list(labels)) length(labels),
                     per_target = per_target)
   }
-  validate_studydesignflow(x)
+  add_details(validate_studydesignflow(x), details)
 }
 
 # What is left in box `id`, as text: its count minus the exclusion boxes

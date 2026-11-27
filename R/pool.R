@@ -44,9 +44,10 @@
 flow_pool <- function(.flow, stage, label, n = NULL, note = NULL,
                       groups = NULL, over = NULL, from = NULL,
                       row_label = NULL, events = NULL, unit = NULL,
-                      count = NULL) {
+                      count = NULL, details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
+  check_details_arg(details)
   if (!is.null(groups)) {
     if (!is.null(over) || !is.null(from)) {
       stop("Give `groups`, or `over`/`from`, not both.", call. = FALSE)
@@ -74,8 +75,9 @@ flow_pool <- function(.flow, stage, label, n = NULL, note = NULL,
          " has only \"", .flow$nodes$label[.flow$nodes$id == groups[[small[1]]]],
          "\".", call. = FALSE)
   }
-  attach_per_group(.flow, stage, label, n, note, over, NULL, "pool", "all",
-                   pick_row_label(row_label, stage), groups = groups,
-                   join = "pool", events = events, unit = unit,
-                   count = count)
+  x <- attach_per_group(.flow, stage, label, n, note, over, NULL, "pool",
+                        "all", pick_row_label(row_label, stage),
+                        groups = groups, join = "pool", events = events,
+                        unit = unit, count = count)
+  add_details(x, details)
 }

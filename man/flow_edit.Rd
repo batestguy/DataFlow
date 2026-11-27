@@ -14,7 +14,8 @@ flow_edit(
   row_label = NULL,
   excluded = FALSE,
   events = NULL,
-  unit = NULL
+  unit = NULL,
+  details = NULL
 )
 }
 \arguments{
@@ -29,8 +30,9 @@ boxes, or one per box, in the order of \code{box}. When a label in \code{box}
 matches several boxes, give one value only (or use ids). \code{NULL} leaves it unchanged; \code{NA} clears a count or
 note. Counts are drawn as given, like typed counts.}
 
-\item{stage, row_label}{To change a row label instead: the stage name and
-its new row label (\code{""} hides it).}
+\item{stage, row_label}{To change a step instead of boxes: the stage name,
+and its new row label (\code{""} hides it). With \code{stage}, give \code{row_label},
+\code{details}, or both.}
 
 \item{excluded}{If \code{TRUE}, \code{box} names exclusion boxes.}
 
@@ -41,6 +43,12 @@ as typed like an edited count. Not for exclusion boxes.}
 value for all chosen boxes, or one per box. Boxes below that have no unit
 of their own take the new one. \code{NA} removes a box's own unit, so it takes
 the unit of the box above again; \code{""} gives it none.}
+
+\item{details}{Details of how a step or box was done (see
+\code{\link[=step_details]{step_details()}}). With \code{stage}: one \code{step_details()} for that step.
+With \code{box}: one for all chosen boxes, or a list with one per box; a box's
+own details are for where it differs from its step. \code{NA} removes the
+details (of the step, or of the boxes).}
 }
 \value{
 The updated \code{studydesignflow}.
@@ -71,4 +79,10 @@ d |>
   flow_edit(c("arm_1", "arm_2"), label = c("Exercise", "Usual care")) |>
   flow_edit(stage = "Arm", row_label = "Allocation") |>
   flow_nodes()
+
+# who did a step, and a box that used another tool
+d |>
+  flow_edit(stage = "Arm", details = step_details(who = "trial nurse")) |>
+  flow_edit("arm_2", details = step_details(tool = "sealed envelopes")) |>
+  flow_describe()
 }

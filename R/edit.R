@@ -33,8 +33,14 @@
 #'   value for all chosen boxes, or one per box. Boxes below that have no unit
 #'   of their own take the new one. `NA` removes a box's own unit, so it takes
 #'   the unit of the box above again; `""` gives it none.
-#' @param stage,row_label To change a row label instead: the stage name and
-#'   its new row label (`""` hides it).
+#' @param stage,row_label To change a step instead of boxes: the stage name,
+#'   and its new row label (`""` hides it). With `stage`, give `row_label`,
+#'   `details`, or both.
+#' @param details Details of how a step or box was done (see
+#'   [step_details()]). With `stage`: one `step_details()` for that step.
+#'   With `box`: one for all chosen boxes, or a list with one per box; a box's
+#'   own details are for where it differs from its step. `NA` removes the
+#'   details (of the step, or of the boxes).
 #' @param excluded If `TRUE`, `box` names exclusion boxes.
 #' @return The updated `studydesignflow`.
 #' @export
@@ -45,38 +51,57 @@
 #'   flow_edit(c("arm_1", "arm_2"), label = c("Exercise", "Usual care")) |>
 #'   flow_edit(stage = "Arm", row_label = "Allocation") |>
 #'   flow_nodes()
+#'
+#' # who did a step, and a box that used another tool
+#' d |>
+#'   flow_edit(stage = "Arm", details = step_details(who = "trial nurse")) |>
+#'   flow_edit("arm_2", details = step_details(tool = "sealed envelopes")) |>
+#'   flow_describe()
 flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
                       stage = NULL, row_label = NULL, excluded = FALSE,
-                      events = NULL, unit = NULL) {
+                      events = NULL, unit = NULL, details = NULL) {
   if (inherits(.flow, "studydesignflow_grid")) {
+    if (!is.null(details)) {
+      stop("Fold grids do not take step details.", call. = FALSE)
+    }
     return(grid_edit(.flow, box, label, n))
   }
   check_flow(.flow)
   if (!is.null(stage) || !is.null(row_label)) {
     if (!is.null(box)) {
-      stop("Edit boxes (`box`) or a row label (`stage`, `row_label`) in ",
-           "one call, not both.", call. = FALSE)
+      stop("Edit boxes (`box`) or a step (`stage`, with `row_label` or ",
+           "`details`) in one call, not both.", call. = FALSE)
     }
     given <- c(label = !is.null(label), n = !is.null(n),
                note = !is.null(note), events = !is.null(events),
                unit = !is.null(unit))
     if (any(given)) {
-      stop("`stage` and `row_label` change a row label only; ",
+      stop("`stage` changes a row label or the details of a step only; ",
            and_list(paste0("`", names(given)[given], "`")),
            " need `box`. Edit them in a separate call.", call. = FALSE)
     }
     check_string(stage %||% NA_character_, "stage")
-    check_string(row_label %||% NA_character_, "row_label")
+    if (is.null(row_label) && is.null(details)) {
+      stop("With `stage`, give `row_label`, `details`, or both.",
+           call. = FALSE)
+    }
     i <- match(stage, .flow$stages$name)
     if (is.na(i)) {
       stop("There is no stage \"", stage, "\".", call. = FALSE)
     }
-    .flow$stages$row_label[i] <- row_label
+    if (!is.null(row_label)) {
+      check_string(row_label, "row_label")
+      .flow$stages$row_label[i] <- row_label
+    }
+    if (!is.null(details)) {
+      d <- edit_details_value(details, 0)[[1]]
+      .flow <- put_details(.flow, "steps", .flow$stages$id[i], d)
+    }
     return(validate_studydesignflow(.flow))
   }
   if (is.null(box)) {
-    stop("Give `box` (ids or labels), or `stage` and `row_label`.",
-         call. = FALSE)
+    stop("Give `box` (ids or labels), or `stage` with `row_label` or ",
+         "`details`.", call. = FALSE)
   }
   what <- if (isTRUE(excluded)) "side" else "nodes"
   tab <- .flow[[what]]
@@ -99,8 +124,11 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     hits <- lapply(box, function(b) tab$id[tab$label == b])
     many <- box[lengths(hits) > 1]
     per_box <- function(v) !is.null(v) && length(v) > 1
+    per_box_details <- is.list(details) && !is_details(details) &&
+      length(details) > 1
     if (length(many) > 0 && (per_box(label) || per_box(n) || per_box(note) ||
-                             per_box(events) || per_box(unit))) {
+                             per_box(events) || per_box(unit) ||
+                             per_box_details)) {
       stop("The label \"", many[1], "\" matches ", max(lengths(hits)),
            " boxes, so one value per box is ambiguous. Give box ids ",
            "(see flow_nodes()) to set different values.", call. = FALSE)
@@ -160,7 +188,43 @@ flow_edit <- function(.flow, box = NULL, label = NULL, n = NULL, note = NULL,
     u <- u[!is.na(u)]
     .flow[[store]] <- if (length(u) > 0) u
   }
+  if (!is.null(details)) {
+    vals <- edit_details_value(details, k)
+    part <- if (isTRUE(excluded)) "side" else "boxes"
+    for (j in seq_len(k)) .flow <- put_details(.flow, part, ids[j], vals[[j]])
+  }
   validate_studydesignflow(.flow)
+}
+
+# The `details` of flow_edit() for `k` steps or boxes: a list of k entries,
+# each a step_details() object or NULL (remove). Accepts one value for all
+# (step_details() or NA), or a list of k such values.
+edit_details_value <- function(details, k) {
+  one <- function(d) {
+    if (is_details(d)) return(d)
+    if (is.null(d) || (is.atomic(d) && length(d) == 1 && is.na(d))) {
+      return(NULL)
+    }
+    stop("`details` must be step_details(), or NA to remove details.",
+         call. = FALSE)
+  }
+  if (is_details(details) || !is.list(details)) {
+    return(rep(list(one(details)), max(k, 1)))  # k = 0: a step
+  }
+  if (!is.null(names(details))) {
+    stop("In flow_edit(), `details` is not a named list: choose the step ",
+         "with `stage` and the boxes with `box`.", call. = FALSE)
+  }
+  if (k == 0) {
+    stop("A step takes one step_details() (or NA), not a list.",
+         call. = FALSE)
+  }
+  if (length(details) != k) {
+    stop("`details` is a list of ", length(details), " but there ",
+         if (k == 1) "is 1 box" else paste("are", k, "boxes"), " to edit. ",
+         "Give one value, or one per box.", call. = FALSE)
+  }
+  lapply(details, one)
 }
 
 # Ids of boxes whose count was edited by hand ("nodes" or "side").

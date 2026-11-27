@@ -13,11 +13,13 @@
 #'
 #' @param object,x A `studydesignflow` object.
 #' @param ... Passed to [flow_layout()] (e.g. `count_format`, `base_size`,
-#'   `hgap`, `vgap`, `connector`, `show_method`).
+#'   `hgap`, `vgap`, `connector`, `show_method`, `show_details`).
 #' @param fill,colour Box fill and border colour.
 #' @param outcome_fill Fill for outcome boxes at the end of each branch.
 #' @param linewidth Line width for boxes and connectors.
-#' @param row_labels Draw stage names down the left margin?
+#' @param row_labels Draw stage names down the left margin? The markers of
+#'   step details (see [step_details()]) are drawn either way, so that every
+#'   entry of the key has its marker.
 #' @return A ggplot object.
 #' @method autoplot studydesignflow
 #' @export
@@ -125,6 +127,25 @@ autoplot.studydesignflow <- function(object, ..., fill = "white", colour = "blac
         fontface = "italic", hjust = 0, lineheight = 1.2, colour = colour
       )
     }
+  }
+  # step details (show_details in flow_layout()): the markers of steps, in
+  # the row-label column, and the key under the diagram
+  marks <- lay$row_labels[!is.na(lay$row_labels$detail %||% NA), ]
+  if (nrow(marks) > 0) {
+    p <- p + ggplot2::geom_text(
+      data = marks,
+      ggplot2::aes(x = .data$x, y = .data$detail_y, label = .data$detail),
+      size = ps$note_size, size.unit = "pt", family = ps$family,
+      hjust = 0, colour = colour
+    )
+  }
+  if (!is.null(lay$key)) {
+    p <- p + ggplot2::geom_text(
+      data = lay$key,
+      ggplot2::aes(x = .data$x, y = .data$y, label = .data$text),
+      size = lay$key$size, size.unit = "pt", family = ps$family,
+      fontface = lay$key$face, hjust = 0, colour = colour
+    )
   }
   p <- p +
     ggplot2::coord_fixed(xlim = ex[c("xmin", "xmax")],

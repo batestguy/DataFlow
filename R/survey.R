@@ -31,14 +31,16 @@ flow_cluster <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                          method = NULL, display = "summary",
                          summary = "{k} clusters selected", from = NULL,
                          row_label = NULL, by = NULL, unit = NULL,
-                         count = NULL) {
+                         count = NULL, details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
-  split_boxes(.flow, stage, labels, n, note, from,
-              pick_row_label(row_label, stage), "cluster", display,
-              method = check_method(method), summary = summary, by = by,
-              unit = unit, count = count)
+  check_details_arg(details)
+  x <- split_boxes(.flow, stage, labels, n, note, from,
+                   pick_row_label(row_label, stage), "cluster", display,
+                   method = check_method(method), summary = summary, by = by,
+                   unit = unit, count = count)
+  add_details(x, details)
 }
 
 #' Select units within each current box
@@ -70,12 +72,15 @@ flow_cluster <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
 #'   flow_select("Adults", "Aged 18 or over", where = ~ age >= 18)
 flow_select <- function(.flow, stage, label, n = NULL, note = NULL,
                         method = NULL, from = NULL, row_label = NULL,
-                        where = NULL, unit = NULL, count = NULL) {
+                        where = NULL, unit = NULL, count = NULL,
+                        details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   where <- tryCatch(where, error = function(e) bad_condition("where", e))
-  attach_per_group(.flow, stage, label, n, note, NULL, from, "select", "all",
-                   pick_row_label(row_label, stage),
-                   method = check_method(method), where = where,
-                   unit = unit, count = count)
+  check_details_arg(details)
+  x <- attach_per_group(.flow, stage, label, n, note, NULL, from, "select",
+                        "all", pick_row_label(row_label, stage),
+                        method = check_method(method), where = where,
+                        unit = unit, count = count)
+  add_details(x, details)
 }

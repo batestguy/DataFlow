@@ -12,7 +12,8 @@ flow_start(
   data = NULL,
   count = NULL,
   events = NULL,
-  unit = NULL
+  unit = NULL,
+  details = NULL
 )
 }
 \arguments{
@@ -67,6 +68,9 @@ of both kinds is counted in both).}
 \code{"villages"}: one value, or one per label. The box then reads
 "(40 villages)" instead of "(n = 40)", and the boxes below take the
 same unit until a step gives another (see \code{\link[=flow_split]{flow_split()}}).}
+
+\item{details}{Optional details of the top row: who, with what, when,
+where and how (see \code{\link[=step_details]{step_details()}}), given as in \code{\link[=flow_split]{flow_split()}}.}
 }
 \value{
 A \code{studydesignflow} object.

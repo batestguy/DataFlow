@@ -16,7 +16,8 @@ flow_pool(
   row_label = NULL,
   events = NULL,
   unit = NULL,
-  count = NULL
+  count = NULL,
+  details = NULL
 )
 }
 \arguments{
@@ -67,6 +68,18 @@ same column until a step gives another. \code{NULL} (the default) keeps
 counting as the box above does. It does not set \code{unit}: give \code{unit} too
 when the count column changes, so the picture says what is counted and
 \code{\link[=flow_check]{flow_check()}} does not compare the counts with those above.}
+
+\item{details}{Optional details of this step: who did it, with what tool,
+when, where and how (see \code{\link[=step_details]{step_details()}}). One \code{step_details()} is for
+the whole step (one row of the diagram). For boxes whose details differ,
+give a list: either one entry per new box, in the order \code{\link[=flow_nodes]{flow_nodes()}}
+lists them (\code{step_details()}, or \code{NULL} for none), or entries named by
+the labels of new boxes, e.g.
+\code{list(step = step_details(who = "enumerators"), "Village B" = step_details(tool = "paper forms"))}, where the name \code{step} stands for
+the whole step and a label names every new box with that label. For
+\code{\link[=flow_exclude]{flow_exclude()}} the new boxes are its exclusion boxes. Details are
+drawn as a numbered key under the diagram (see \code{\link[=flow_layout]{flow_layout()}}) and
+always given in \code{\link[=flow_describe]{flow_describe()}}; change them with \code{\link[=flow_edit]{flow_edit()}}.}
 }
 \value{
 The updated \code{studydesignflow}.

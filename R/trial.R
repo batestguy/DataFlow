@@ -24,14 +24,17 @@
 flow_assign <- function(.flow, stage, labels = NULL, n = NULL, note = NULL,
                         method = "random", from = NULL, row_label = NULL,
                         display = "all", summary = "{k} {stage}",
-                        by = NULL, unit = NULL, count = NULL) {
+                        by = NULL, unit = NULL, count = NULL,
+                        details = NULL) {
   check_flow(.flow)
   check_string(stage, "stage")
   display <- check_display(display, summary_ok = TRUE)
-  split_boxes(.flow, stage, labels, n, note, from,
-              pick_row_label(row_label, stage), "assign", display,
-              method = check_method(method), summary = summary, by = by,
-              unit = unit, count = count)
+  check_details_arg(details)
+  x <- split_boxes(.flow, stage, labels, n, note, from,
+                   pick_row_label(row_label, stage), "assign", display,
+                   method = check_method(method), summary = summary, by = by,
+                   unit = unit, count = count)
+  add_details(x, details)
 }
 
 # A method as stored on the stage: NA for none.
@@ -105,8 +108,9 @@ check_method <- function(method) {
 #'   flow_split("Randomisation", "Randomised", n = 300)
 flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
                          note = NULL, stage = NULL, from = NULL,
-                         where = NULL, unit = NULL) {
+                         where = NULL, unit = NULL, details = NULL) {
   check_flow(.flow)
+  check_details_arg(details)
   targets <- resolve_targets(.flow, from)
   if (!all(targets %in% .flow$leaves)) {
     stop("Exclusion boxes can only hang off current end boxes (see the ",
@@ -200,7 +204,7 @@ flow_exclude <- function(.flow, label = "Excluded", n = NULL, reasons = NULL,
     }
   }
   if (!is.null(unit_vals)) x <- set_units(x, ids, unit_vals, "side_units")
-  validate_studydesignflow(x)
+  add_details(validate_studydesignflow(x), details, side = TRUE)
 }
 
 # Rows, counts and reasons of exclusion boxes computed from data: each row

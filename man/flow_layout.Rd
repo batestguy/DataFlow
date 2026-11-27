@@ -21,7 +21,8 @@ flow_layout(
   side_gap = 0.3,
   show_method = TRUE,
   copy_format = "the same {n} as above",
-  copy_none = "copied from the box above"
+  copy_none = "copied from the box above",
+  show_details = TRUE
 )
 }
 \arguments{
@@ -78,12 +79,29 @@ line, though then nothing in the picture says that the boxes are copies.}
 
 \item{copy_none}{The line for a copied box whose count is missing or
 differs from what is left in the box above.}
+
+\item{show_details}{Draw step details (see \code{\link[=step_details]{step_details()}}) as a numbered
+key? On by default. A step with details gets a marker such as "[1]"
+under its row label (under the method, if shown; in the row-label column
+on its own when the row has no label), and a box with details of its own
+gets one after its label, as in "Village B [3]". Numbers run from top
+to bottom and, in a row, from left to right, the step before its boxes.
+The key under the diagram, aligned with the row labels, lists each
+entry as "[1] Households" followed by one line per field (Who, Tool,
+When, Where, How), wrapped to the width of the diagram (at least 3
+inches). Boxes keep their size; rows with a marker get a longer gap
+above them where needed, as for the method. The details are always in
+the description (\code{\link[=flow_describe]{flow_describe()}}).}
 }
 \value{
 A \code{studydesignflow_layout}: a list of data frames \code{boxes}, \code{side}
 (exclusion boxes), \code{segments}, \code{brackets} and \code{row_labels}, plus
 \code{extent} (xmin, xmax, ymin, ymax) and \code{size} (natural width and height
-in inches).
+in inches). When step details are drawn, also \code{key}: one row per line
+of the key (\code{entry} number, \code{text}, \code{face}, \code{size}, left edge \code{x},
+centre \code{y}, measured width \code{w}, and its rectangle \code{xmin} to \code{ymax});
+\code{boxes} and \code{side} then have a \code{detail} column (the box's number, \code{NA}
+for none) and \code{row_labels} the columns \code{detail} and \code{detail_y}.
 }
 \description{
 Turns a \code{studydesignflow} into coordinates, in inches, for every box, arrow,

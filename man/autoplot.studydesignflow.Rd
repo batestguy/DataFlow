@@ -21,7 +21,7 @@
 \item{object, x}{A \code{studydesignflow} object.}
 
 \item{...}{Passed to \code{\link[=flow_layout]{flow_layout()}} (e.g. \code{count_format}, \code{base_size},
-\code{hgap}, \code{vgap}, \code{connector}, \code{show_method}).}
+\code{hgap}, \code{vgap}, \code{connector}, \code{show_method}, \code{show_details}).}
 
 \item{fill, colour}{Box fill and border colour.}
 
@@ -29,7 +29,9 @@
 
 \item{linewidth}{Line width for boxes and connectors.}
 
-\item{row_labels}{Draw stage names down the left margin?}
+\item{row_labels}{Draw stage names down the left margin? The markers of
+step details (see \code{\link[=step_details]{step_details()}}) are drawn either way, so that every
+entry of the key has its marker.}
 }
 \value{
 A ggplot object.
